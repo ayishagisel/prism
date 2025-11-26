@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export PATH=\"/opt/homebrew/opt/node@20/bin:$PATH\")",
+      "Bash(npm install)",
+      "Bash(npm run db:push:*)",
+      "Bash(npm run seed:*)",
+      "Bash(npm run db:migrate:*)",
+      "Bash(npx drizzle-kit generate:*)",
+      "Bash(npm run db:setup:*)",
+      "Bash(npm run dev:*)",
+      "Bash(ls:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
