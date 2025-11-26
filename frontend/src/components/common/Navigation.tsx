@@ -37,8 +37,17 @@ export const Navigation: React.FC<NavigationProps> = ({ userType }) => {
                 >
                   Opportunities
                 </Link>
-                <Link href="/agency/tasks" className="text-gray-600 hover:text-primary transition">
+                <Link
+                  href="/agency/tasks"
+                  className="text-gray-600 hover:text-primary transition"
+                >
                   Tasks
+                </Link>
+                <Link
+                  href="/agency/clients"
+                  className="text-gray-600 hover:text-primary transition"
+                >
+                  Clients
                 </Link>
               </div>
             )}
