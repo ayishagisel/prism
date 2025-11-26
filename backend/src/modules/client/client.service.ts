@@ -1,6 +1,6 @@
 import { db } from '../../config/db';
-import { clients, clientOpportunityStatus } from '../../db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { clients, clientOpportunityStatus, opportunities } from '../../db/schema';
+import { eq, and, desc, inArray } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import { logger } from '../../utils/logger';
 
@@ -116,13 +116,30 @@ export class ClientService {
 
   async getClientOpportunitiesForClient(agencyId: string, clientId: string) {
     try {
-      return await db.query.clientOpportunityStatus.findMany({
+      const statusRecords = await db.query.clientOpportunityStatus.findMany({
         where: and(
           eq(clientOpportunityStatus.agency_id, agencyId),
           eq(clientOpportunityStatus.client_id, clientId)
         ),
         orderBy: desc(clientOpportunityStatus.created_at),
       });
+
+      // Fetch full opportunity data for each status record
+      const oppIds = statusRecords.map((s) => s.opportunity_id);
+      if (oppIds.length === 0) return [];
+
+      const opps = await db.query.opportunities.findMany({
+        where: inArray(opportunities.id, oppIds),
+      });
+
+      // Create a map of opportunity data by ID for quick lookup
+      const oppMap = new Map(opps.map((o) => [o.id, o]));
+
+      // Combine status records with opportunity data
+      return statusRecords.map((status) => ({
+        ...status,
+        opportunity: oppMap.get(status.opportunity_id),
+      }));
     } catch (err) {
       logger.error('Get client opportunities error', err);
       throw err;

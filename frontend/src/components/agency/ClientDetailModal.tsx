@@ -135,24 +135,24 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
               ) : opportunities.length === 0 ? (
                 <p className="text-gray-600">No opportunities yet</p>
               ) : (
-                opportunities.map((opp) => (
-                  <div key={opp.id} className="p-3 bg-gray-50 rounded border border-gray-200">
+                opportunities.map((status) => (
+                  <div key={status.id} className="p-3 bg-gray-50 rounded border border-gray-200">
                     <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-gray-900">{opp.title}</h4>
+                      <h4 className="font-medium text-gray-900">{status.opportunity?.title || 'Opportunity'}</h4>
                       <span
                         className={`inline-block px-2 py-1 text-xs font-semibold rounded ${
-                          opp.status === 'accepted'
+                          status.response_state === 'accepted'
                             ? 'bg-green-100 text-green-800'
-                            : opp.status === 'interested'
+                            : status.response_state === 'interested'
                               ? 'bg-blue-100 text-blue-800'
                               : 'bg-yellow-100 text-yellow-800'
                         }`}
                       >
-                        {opp.status?.charAt(0).toUpperCase() + opp.status?.slice(1)}
+                        {status.response_state?.charAt(0).toUpperCase() + status.response_state?.slice(1) || 'Pending'}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600">
-                      {new Date(opp.created_at).toLocaleDateString()} • {opp.opportunity_type}
+                      {new Date(status.created_at).toLocaleDateString()} • {status.opportunity?.opportunity_type || status.opportunity?.media_type || 'PR'}
                     </p>
                   </div>
                 ))
