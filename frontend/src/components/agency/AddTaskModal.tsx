@@ -82,6 +82,8 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onSuccess }
       const res = await apiClient.createTask(submitData);
       if (res.success) {
         setFormData({ title: '', description: '', priority: 'medium', due_at: '', opportunity_id: '', client_id: '' });
+        // Trigger data refresh across the app
+        window.dispatchEvent(new Event('storage'));
         onSuccess();
         onClose();
       } else {

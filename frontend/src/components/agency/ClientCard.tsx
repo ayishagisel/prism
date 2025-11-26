@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Client } from '@/lib/types';
+import { apiClient } from '@/lib/api';
 
 interface ClientCardProps {
   client: Client;
@@ -17,6 +18,22 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   onDelete,
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [opportunities, setOpportunities] = useState<any[]>([]);
+
+  // Fetch opportunities for this client on mount
+  useEffect(() => {
+    const fetchOpportunities = async () => {
+      try {
+        const res = await apiClient.getClientOpportunities(client.id);
+        if (res.success) {
+          setOpportunities(res.data || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch opportunities:', err);
+      }
+    };
+    fetchOpportunities();
+  }, [client.id]);
 
   // Generate avatar background color based on first letter
   const getAvatarColor = (name: string) => {
@@ -32,11 +49,11 @@ export const ClientCard: React.FC<ClientCardProps> = ({
     .toUpperCase()
     .slice(0, 2);
 
-  // Count responses by status (mock data based on seed)
-  const totalResponses = 3;
-  const acceptedResponses = 1;
-  const interestedResponses = 1;
-  const pendingResponses = 1;
+  // Count responses by status from actual opportunities
+  const totalResponses = opportunities.length;
+  const acceptedResponses = opportunities.filter((o) => o.status === 'accepted').length;
+  const interestedResponses = opportunities.filter((o) => o.status === 'interested').length;
+  const pendingResponses = opportunities.filter((o) => o.status === 'pending').length || 0;
 
   return (
     <div className="card p-6 hover:shadow-lg transition">

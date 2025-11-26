@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useOpportunities, useTasks, useClients } from '@/lib/hooks';
 import { DashboardKPIs } from '@/components/agency/DashboardKPIs';
@@ -9,8 +9,12 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { StatusChip } from '@/components/common/StatusChip';
 
 export default function DashboardPage() {
-  const { opportunities, loading: oppLoading } = useOpportunities();
-  const { tasks, loading: tasksLoading } = useTasks();
+  // Refresh triggers for data refetching
+  const [oppRefresh, setOppRefresh] = useState(0);
+  const [taskRefresh, setTaskRefresh] = useState(0);
+
+  const { opportunities, loading: oppLoading } = useOpportunities(oppRefresh);
+  const { tasks, loading: tasksLoading } = useTasks(taskRefresh);
   const { clients } = useClients();
 
   // Filter state
@@ -18,6 +22,16 @@ export default function DashboardPage() {
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedResponse, setSelectedResponse] = useState('');
   const [selectedMediaType, setSelectedMediaType] = useState('');
+
+  // Listen for storage changes (when tasks are created in modal)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setTaskRefresh((prev) => prev + 1);
+      setOppRefresh((prev) => prev + 1);
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Calculate KPIs
   const activeOppsCount = opportunities.filter((o) => o.status === 'active').length;

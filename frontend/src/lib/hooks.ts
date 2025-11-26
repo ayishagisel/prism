@@ -59,7 +59,7 @@ export function useAuth() {
   return { user, loading, error, login, logout };
 }
 
-export function useOpportunities() {
+export function useOpportunities(refreshTrigger?: number) {
   const [opportunities, setOpportunities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +79,7 @@ export function useOpportunities() {
     };
 
     fetch();
-  }, []);
+  }, [refreshTrigger]);
 
   return { opportunities, loading, error };
 }
@@ -109,7 +109,7 @@ export function useClients() {
   return { clients, loading, error };
 }
 
-export function useTasks() {
+export function useTasks(refreshTrigger?: number) {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -129,7 +129,7 @@ export function useTasks() {
     };
 
     fetch();
-  }, []);
+  }, [refreshTrigger]);
 
   return { tasks, loading, error };
 }
