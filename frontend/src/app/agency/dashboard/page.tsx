@@ -40,13 +40,14 @@ export default function DashboardPage() {
         opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         opp.outlet_name?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // Client filter (Note: Client association requires client_id field when available)
-      const matchesClient = !selectedClient; // Will be implemented when client_id is added to Opportunity
+      // Client filter - skip if no opportunities have client_id field
+      const matchesClient = !selectedClient; // TODO: Implement once Opportunity has client_id field
 
-      // Response filter (based on status)
+      // Response filter (based on status) - check if opportunity status matches filter
+      // Note: Opportunities have a 'status' field, filter options are pending/interested/accepted/declined/no_response
       const matchesResponse =
         !selectedResponse ||
-        opp.status === selectedResponse;
+        opp.status?.toLowerCase() === selectedResponse?.toLowerCase();
 
       // Media type filter
       const matchesMediaType =
