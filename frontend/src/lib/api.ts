@@ -130,6 +130,11 @@ class ApiClient {
     return res.data;
   }
 
+  async deleteClient(id: string): Promise<ApiResponse<any>> {
+    const res = await this.client.delete(`/api/clients/${id}`);
+    return res.data;
+  }
+
   async getClientOpportunities(clientId: string): Promise<ApiResponse<any[]>> {
     const res = await this.client.get(`/api/clients/${clientId}/opportunities`);
     return res.data;

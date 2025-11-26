@@ -4,12 +4,15 @@ import React, { useState } from 'react';
 import { useTasks } from '@/lib/hooks';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { StatusChip } from '@/components/common/StatusChip';
+import { AddTaskModal } from '@/components/agency/AddTaskModal';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function TasksPage() {
   const { tasks, loading } = useTasks();
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
   const [showCompleted, setShowCompleted] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -102,9 +105,7 @@ export default function TasksPage() {
             📥 Export Report
           </button>
           <button
-            onClick={() => {
-              /* TODO: Implement add task functionality */
-            }}
+            onClick={() => setShowAddModal(true)}
             className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-red-700 transition text-sm whitespace-nowrap"
           >
             + Add Task
@@ -159,6 +160,14 @@ export default function TasksPage() {
             {showCompleted ? '✕ Hide' : '+ Show'} Completed Tasks ({completedTasks.length})
           </button>
         </div>
+      )}
+
+      {/* Add Task Modal */}
+      {showAddModal && (
+        <AddTaskModal
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => setRefreshKey((prev) => prev + 1)}
+        />
       )}
     </div>
   );

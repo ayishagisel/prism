@@ -42,9 +42,16 @@ export default function ClientsPage() {
   }).length;
 
   const handleDeleteClient = async (clientId: string) => {
-    // Delete endpoint would need to be added to backend if not present
-    console.log('Delete client:', clientId);
-    setRefreshKey((prev) => prev + 1);
+    try {
+      const res = await apiClient.deleteClient(clientId);
+      if (res.success) {
+        setRefreshKey((prev) => prev + 1);
+      } else {
+        console.error('Failed to delete client:', res.error);
+      }
+    } catch (err) {
+      console.error('Error deleting client:', err);
+    }
   };
 
   if (loading) {
