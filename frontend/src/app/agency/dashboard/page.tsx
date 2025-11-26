@@ -19,30 +19,35 @@ export default function DashboardPage() {
   const [selectedResponse, setSelectedResponse] = useState('');
   const [selectedMediaType, setSelectedMediaType] = useState('');
 
+  // Calculate KPIs
+  const activeOppsCount = opportunities.filter((o) => o.status === 'active').length;
+  const acceptedOppsCount = opportunities.filter((o) => o.status === 'accepted').length;
+  const pendingTasksCount = tasks.filter((t) => t.status === 'pending').length;
+
   const kpis = [
     {
       label: 'Active Opportunities',
-      value: opportunities.filter((o) => o.status === 'active').length,
+      value: activeOppsCount,
       icon: '📋',
       color: 'text-primary',
     },
     {
-      label: 'Pending Responses',
-      value: 8,
-      icon: '⏳',
-      color: 'text-yellow-600',
+      label: 'Response Rate',
+      value: `${responseRate}%`,
+      icon: '📊',
+      color: 'text-blue-600',
     },
     {
       label: 'Accepted Opportunities',
-      value: 3,
+      value: acceptedOppsCount,
       icon: '✅',
       color: 'text-success',
     },
     {
       label: 'Tasks Due Soon',
-      value: tasks.filter((t) => t.status === 'pending').length,
+      value: pendingTasksCount,
       icon: '📌',
-      color: 'text-blue-600',
+      color: 'text-purple-600',
     },
   ];
 
@@ -80,6 +85,13 @@ export default function DashboardPage() {
 
   // Get unique media types from opportunities
   const mediaTypes = Array.from(new Set(opportunities.map((o) => o.media_type).filter(Boolean)));
+
+  // Calculate response rate % (based on opportunities with responses)
+  const oppWithResponses = opportunities.filter((o) => o.status && o.status !== 'pending');
+  const responseRate =
+    opportunities.length > 0
+      ? Math.round((oppWithResponses.length / opportunities.length) * 100)
+      : 0;
 
   return (
     <div>
