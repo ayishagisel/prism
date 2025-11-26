@@ -11,10 +11,8 @@ interface AddClientModalProps {
 export const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
-    type: '',
-    contact_email: '',
-    contact_phone: '',
-    company_name: '',
+    industry: '',
+    primary_contact_email: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +30,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSucce
     try {
       const res = await apiClient.createClient(formData);
       if (res.success) {
-        setFormData({ name: '', type: '', contact_email: '', contact_phone: '', company_name: '' });
+        setFormData({ name: '', industry: '', primary_contact_email: '' });
         onSuccess();
         onClose();
       } else {
@@ -87,61 +85,28 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSucce
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Client Type <span className="text-red-600">*</span>
-            </label>
-            <select
-              name="type"
-              value={formData.type}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              <option value="">Select type</option>
-              <option value="Agency Client">Agency Client</option>
-              <option value="Founder">Founder</option>
-              <option value="Creative Director">Creative Director</option>
-              <option value="Thought Leader">Thought Leader</option>
-              <option value="Entrepreneur">Entrepreneur</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              name="contact_email"
-              placeholder="client@example.com"
-              value={formData.contact_email}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone
-            </label>
-            <input
-              type="tel"
-              name="contact_phone"
-              placeholder="+1 (555) 123-4567"
-              value={formData.contact_phone}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Company
+              Industry <span className="text-red-600">*</span>
             </label>
             <input
               type="text"
-              name="company_name"
-              placeholder="Company name"
-              value={formData.company_name}
+              name="industry"
+              placeholder="e.g., Tech Startup"
+              value={formData.industry}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Primary Contact Email
+            </label>
+            <input
+              type="email"
+              name="primary_contact_email"
+              placeholder="client@example.com"
+              value={formData.primary_contact_email}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             />

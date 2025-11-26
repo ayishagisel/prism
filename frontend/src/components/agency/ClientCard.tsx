@@ -50,16 +50,20 @@ export const ClientCard: React.FC<ClientCardProps> = ({
           </div>
           <div>
             <h3 className="font-bold text-lg text-gray-900">{client.name}</h3>
-            <p className="text-sm text-gray-600">{client.type || 'Client'}</p>
+            <p className="text-sm text-gray-600">{client.industry || 'Client'}</p>
             <div className="flex gap-2 mt-2">
-              {client.tags?.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-                >
-                  {tag}
-                </span>
-              ))}
+              {client.tags && client.tags.length > 0 ? (
+                client.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+                  >
+                    {tag}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-gray-500">No tags</span>
+              )}
             </div>
           </div>
         </div>
@@ -71,16 +75,16 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       </div>
 
       <div className="space-y-2 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
-        {client.contact_email && (
+        {client.primary_contact_email && (
           <div className="flex items-center gap-2">
             <span>📧</span>
-            <span>{client.contact_email}</span>
+            <span>{client.primary_contact_email}</span>
           </div>
         )}
-        {client.contact_phone && (
+        {client.industry && (
           <div className="flex items-center gap-2">
-            <span>📞</span>
-            <span>{client.contact_phone}</span>
+            <span>🏢</span>
+            <span>{client.industry}</span>
           </div>
         )}
         {client.created_at && (

@@ -23,8 +23,7 @@ export default function ClientsPage() {
     return clients.filter(
       (client) =>
         client.name.toLowerCase().includes(query) ||
-        client.type?.toLowerCase().includes(query) ||
-        client.company_name?.toLowerCase().includes(query)
+        client.industry?.toLowerCase().includes(query)
     );
   }, [clients, searchQuery]);
 
@@ -90,7 +89,7 @@ export default function ClientsPage() {
       <div className="mb-8">
         <input
           type="text"
-          placeholder="Search clients by name, type, or company..."
+          placeholder="Search clients by name or industry..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"

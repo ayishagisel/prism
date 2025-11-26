@@ -92,28 +92,38 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Client Type
+                    Industry
                   </label>
-                  <p className="text-gray-900">{client.type || '-'}</p>
+                  <p className="text-gray-900">{client.industry || '-'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email
                   </label>
-                  <p className="text-gray-900">{client.contact_email || '-'}</p>
+                  <p className="text-gray-900">{client.primary_contact_email || '-'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
+                    Status
                   </label>
-                  <p className="text-gray-900">{client.contact_phone || '-'}</p>
+                  <p className="text-gray-900">{client.status || '-'}</p>
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company
+                  Tags
                 </label>
-                <p className="text-gray-900">{client.company_name || '-'}</p>
+                <div className="flex flex-wrap gap-2">
+                  {client.tags && client.tags.length > 0 ? (
+                    client.tags.map((tag) => (
+                      <span key={tag} className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                        {tag}
+                      </span>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-sm">No tags</p>
+                  )}
+                </div>
               </div>
             </div>
           )}
