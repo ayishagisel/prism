@@ -5,6 +5,7 @@ import { useClients } from '@/lib/hooks';
 import { ClientCard } from '@/components/agency/ClientCard';
 import { ClientDetailModal } from '@/components/agency/ClientDetailModal';
 import { AddClientModal } from '@/components/agency/AddClientModal';
+import { EditClientModal } from '@/components/agency/EditClientModal';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Client } from '@/lib/types';
 import { apiClient } from '@/lib/api';
@@ -13,6 +14,7 @@ export default function ClientsPage() {
   const { clients, loading, error } = useClients();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -110,10 +112,7 @@ export default function ClientsPage() {
               key={client.id}
               client={client}
               onViewDetails={setSelectedClient}
-              onEdit={(client) => {
-                // TODO: Implement edit functionality
-                console.log('Edit client:', client);
-              }}
+              onEdit={setEditingClient}
               onDelete={handleDeleteClient}
             />
           ))}
@@ -125,6 +124,18 @@ export default function ClientsPage() {
         <ClientDetailModal
           client={selectedClient}
           onClose={() => setSelectedClient(null)}
+        />
+      )}
+
+      {/* Edit Client Modal */}
+      {editingClient && (
+        <EditClientModal
+          client={editingClient}
+          onClose={() => setEditingClient(null)}
+          onSuccess={() => {
+            setEditingClient(null);
+            setRefreshKey((prev) => prev + 1);
+          }}
         />
       )}
 
