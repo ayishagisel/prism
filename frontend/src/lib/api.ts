@@ -125,6 +125,11 @@ class ApiClient {
     return res.data;
   }
 
+  async updateClient(id: string, data: any): Promise<ApiResponse<any>> {
+    const res = await this.client.put(`/api/clients/${id}`, data);
+    return res.data;
+  }
+
   async getClientOpportunities(clientId: string): Promise<ApiResponse<any[]>> {
     const res = await this.client.get(`/api/clients/${clientId}/opportunities`);
     return res.data;
