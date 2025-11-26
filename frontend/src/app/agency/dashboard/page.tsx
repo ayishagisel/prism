@@ -104,7 +104,7 @@ export default function DashboardPage() {
 
       {/* Advanced Filters */}
       <div className="card mb-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
             🔍 Advanced Filters
           </h3>
@@ -113,7 +113,7 @@ export default function DashboardPage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
@@ -200,9 +200,9 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
             <h2 className="text-xl font-bold text-gray-900">Recent Opportunities</h2>
-            <Link href="/agency/opportunities" className="text-primary hover:text-red-700 text-sm">
+            <Link href="/agency/opportunities" className="text-primary hover:text-red-700 text-sm whitespace-nowrap">
               View All →
             </Link>
           </div>
@@ -210,9 +210,9 @@ export default function DashboardPage() {
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
             <h2 className="text-xl font-bold text-gray-900">Upcoming Tasks</h2>
-            <Link href="/agency/tasks" className="text-primary hover:text-red-700 text-sm">
+            <Link href="/agency/tasks" className="text-primary hover:text-red-700 text-sm whitespace-nowrap">
               View All →
             </Link>
           </div>

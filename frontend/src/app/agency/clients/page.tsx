@@ -53,21 +53,21 @@ export default function ClientsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Client Management</h1>
           <p className="text-gray-600">Manage your client roster and track engagement</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn btn-primary"
+          className="btn btn-primary w-full sm:w-auto whitespace-nowrap"
         >
           + Add New Client
         </button>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
         <div className="card">
           <p className="text-gray-600 text-sm font-medium">Total Clients</p>
           <p className="text-3xl font-bold text-primary mt-2">{totalClients}</p>
@@ -105,7 +105,7 @@ export default function ClientsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
           {filteredClients.map((client) => (
             <ClientCard
               key={client.id}
