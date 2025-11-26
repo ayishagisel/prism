@@ -98,19 +98,46 @@ export class AgencyService {
 
   /**
    * Get agency metrics (KPIs for dashboard)
+   * Queries real data from opportunities and status tables
    */
   async getAgencyMetrics(agencyId: string) {
     try {
-      const { opportunities, clientOpportunityStatus } = db._.schema;
+      // Get all opportunities for the agency
+      const allOpportunities = await db.query.opportunities.findMany({
+        where: eq(opportunities.agency_id, agencyId),
+      });
 
-      // TODO Phase 2: Add real metric aggregation
-      // For now, return sample structure
+      // Get all status records for the agency
+      const allStatuses = await db.query.clientOpportunityStatus.findMany({
+        where: eq(clientOpportunityStatus.agency_id, agencyId),
+      });
+
+      // Calculate metrics
+      const totalOpportunities = allOpportunities.length;
+      const activeOpportunities = allOpportunities.filter(
+        (o) => o.status === 'active'
+      ).length;
+
+      // Get unique clients that have opportunities assigned
+      const clientsEngaged = new Set(
+        allStatuses.map((s) => s.client_id)
+      ).size;
+
+      // Count responses by status
+      const acceptedResponses = allStatuses.filter(
+        (s) => s.response_state === 'accepted'
+      ).length;
+
+      const interestedResponses = allStatuses.filter(
+        (s) => s.response_state === 'interested'
+      ).length;
+
       return {
-        totalOpportunities: 0,
-        activeOpportunities: 0,
-        clientsEngaged: 0,
-        acceptedResponses: 0,
-        interestedResponses: 0,
+        totalOpportunities,
+        activeOpportunities,
+        clientsEngaged,
+        acceptedResponses,
+        interestedResponses,
       };
     } catch (err) {
       logger.error('Get agency metrics error', err);
