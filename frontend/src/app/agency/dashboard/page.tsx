@@ -31,6 +31,37 @@ export default function DashboardPage() {
       ? Math.round((oppWithResponses.length / opportunities.length) * 100)
       : 0;
 
+  // Filter opportunities based on search and dropdowns - MUST BE BEFORE CONDITIONAL RETURN
+  const filteredOpportunities = useMemo(() => {
+    return opportunities.filter((opp) => {
+      // Search filter
+      const matchesSearch =
+        !searchQuery ||
+        opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        opp.outlet_name?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Client filter (Note: Client association requires client_id field when available)
+      const matchesClient = !selectedClient; // Will be implemented when client_id is added to Opportunity
+
+      // Response filter (based on status)
+      const matchesResponse =
+        !selectedResponse ||
+        opp.status === selectedResponse;
+
+      // Media type filter
+      const matchesMediaType =
+        !selectedMediaType ||
+        opp.media_type === selectedMediaType;
+
+      return matchesSearch && matchesClient && matchesResponse && matchesMediaType;
+    });
+  }, [opportunities, searchQuery, selectedClient, selectedResponse, selectedMediaType]);
+
+  const recentTasks = tasks.slice(0, 5);
+
+  // Get unique media types from opportunities
+  const mediaTypes = Array.from(new Set(opportunities.map((o) => o.media_type).filter(Boolean)));
+
   const kpis = [
     {
       label: 'Active Opportunities',
@@ -61,37 +92,6 @@ export default function DashboardPage() {
   if (oppLoading || tasksLoading) {
     return <LoadingSpinner />;
   }
-
-  // Filter opportunities based on search and dropdowns
-  const filteredOpportunities = useMemo(() => {
-    return opportunities.filter((opp) => {
-      // Search filter
-      const matchesSearch =
-        !searchQuery ||
-        opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        opp.outlet_name?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      // Client filter (Note: Client association requires client_id field when available)
-      const matchesClient = !selectedClient; // Will be implemented when client_id is added to Opportunity
-
-      // Response filter (based on status)
-      const matchesResponse =
-        !selectedResponse ||
-        opp.status === selectedResponse;
-
-      // Media type filter
-      const matchesMediaType =
-        !selectedMediaType ||
-        opp.media_type === selectedMediaType;
-
-      return matchesSearch && matchesClient && matchesResponse && matchesMediaType;
-    });
-  }, [opportunities, searchQuery, selectedClient, selectedResponse, selectedMediaType]);
-
-  const recentTasks = tasks.slice(0, 5);
-
-  // Get unique media types from opportunities
-  const mediaTypes = Array.from(new Set(opportunities.map((o) => o.media_type).filter(Boolean)));
 
   return (
     <div>
