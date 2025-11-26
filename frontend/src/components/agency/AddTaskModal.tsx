@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
 
 interface AddTaskModalProps {
@@ -14,9 +14,33 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onSuccess }
     description: '',
     priority: 'medium',
     due_at: '',
+    opportunity_id: '',
+    client_id: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [opportunities, setOpportunities] = useState<any[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
+  const [oppLoading, setOppLoading] = useState(true);
+
+  // Fetch opportunities and clients
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [oppRes, clientRes] = await Promise.all([
+          apiClient.getOpportunities(),
+          apiClient.getClients(),
+        ]);
+        if (oppRes.success) setOpportunities(oppRes.data || []);
+        if (clientRes.success) setClients(clientRes.data || []);
+      } catch (err) {
+        console.error('Failed to fetch data:', err);
+      } finally {
+        setOppLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -29,16 +53,35 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onSuccess }
     setError(null);
 
     try {
+      // Validate required fields
+      if (!formData.opportunity_id) {
+        setError('Please select an opportunity');
+        setLoading(false);
+        return;
+      }
+      if (!formData.client_id) {
+        setError('Please select a client');
+        setLoading(false);
+        return;
+      }
+      if (!formData.title.trim()) {
+        setError('Please enter a task title');
+        setLoading(false);
+        return;
+      }
+
       const submitData = {
         title: formData.title,
         description: formData.description || undefined,
         priority: formData.priority,
         due_at: formData.due_at ? new Date(formData.due_at).toISOString() : undefined,
+        opportunity_id: formData.opportunity_id,
+        client_id: formData.client_id,
       };
 
       const res = await apiClient.createTask(submitData);
       if (res.success) {
-        setFormData({ title: '', description: '', priority: 'medium', due_at: '' });
+        setFormData({ title: '', description: '', priority: 'medium', due_at: '', opportunity_id: '', client_id: '' });
         onSuccess();
         onClose();
       } else {
@@ -75,6 +118,48 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ onClose, onSuccess }
               {error}
             </div>
           )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Client <span className="text-red-600">*</span>
+            </label>
+            <select
+              name="client_id"
+              value={formData.client_id}
+              onChange={handleChange}
+              required
+              disabled={oppLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
+            >
+              <option value="">Select a client...</option>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Opportunity <span className="text-red-600">*</span>
+            </label>
+            <select
+              name="opportunity_id"
+              value={formData.opportunity_id}
+              onChange={handleChange}
+              required
+              disabled={oppLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
+            >
+              <option value="">Select an opportunity...</option>
+              {opportunities.map((opp) => (
+                <option key={opp.id} value={opp.id}>
+                  {opp.title}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
