@@ -51,25 +51,31 @@ export class NotificationService {
     responseState: string
   ) {
     try {
-      // TODO Phase 2: Get actual PR team members
-      // For MVP, just log
+      // Get all AGENCY_ADMIN and AGENCY_MEMBER users for the agency
+      const teamMembers = await db.query.agencyUsers.findMany({
+        where: eq(agencyUsers.agency_id, agencyId),
+      });
+
       logger.info('PR team notification queued', {
         clientId,
         opportunityId,
         responseState,
+        teamMemberCount: teamMembers.length,
       });
 
-      // Create in-app notification
-      await this.createNotification({
-        agency_id: agencyId,
-        channel: 'in_app',
-        recipient_type: 'agency_user',
-        recipient_id: 'user_amore', // TODO: get actual team members
-        subject: `Client Response: ${responseState}`,
-        body_preview: `A client responded to an opportunity.`,
-        related_entity_type: 'opportunity',
-        related_entity_id: opportunityId,
-      });
+      // Create in-app notification for each team member
+      for (const member of teamMembers) {
+        await this.createNotification({
+          agency_id: agencyId,
+          channel: 'in_app',
+          recipient_type: 'agency_user',
+          recipient_id: member.id,
+          subject: `Client Response: ${responseState}`,
+          body_preview: `A client responded to an opportunity.`,
+          related_entity_type: 'opportunity',
+          related_entity_id: opportunityId,
+        });
+      }
     } catch (err) {
       logger.error('Notify PR team error', err);
     }

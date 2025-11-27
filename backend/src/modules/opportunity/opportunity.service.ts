@@ -6,7 +6,7 @@ import {
   followUpTasks,
   activityLogs,
 } from '../../db/schema';
-import { eq, and, desc, gt, lt, inArray } from 'drizzle-orm';
+import { eq, and, desc, gt, lt, gte, lte, inArray } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import { logger } from '../../utils/logger';
 import { CreateOpportunityInput } from '../../types';
@@ -114,15 +114,41 @@ export class OpportunityService {
     }
   ) {
     try {
-      let query = db.query.opportunities.findMany({
-        where: eq(opportunities.agency_id, agencyId),
+      // Build where conditions dynamically
+      const whereConditions = [eq(opportunities.agency_id, agencyId)];
+
+      if (filters?.status) {
+        whereConditions.push(eq(opportunities.status, filters.status));
+      }
+
+      if (filters?.media_type) {
+        whereConditions.push(eq(opportunities.media_type, filters.media_type));
+      }
+
+      if (filters?.deadline_before) {
+        whereConditions.push(
+          lte(opportunities.deadline_at, filters.deadline_before)
+        );
+      }
+
+      if (filters?.deadline_after) {
+        whereConditions.push(
+          gte(opportunities.deadline_at, filters.deadline_after)
+        );
+      }
+
+      // Execute query with all filters applied
+      const whereClause =
+        whereConditions.length > 1
+          ? and(...whereConditions)
+          : whereConditions[0];
+
+      const result = await db.query.opportunities.findMany({
+        where: whereClause,
         orderBy: desc(opportunities.created_at),
         limit: filters?.limit || 50,
         offset: filters?.offset || 0,
       });
-
-      // TODO: Add filter logic with drizzle-orm's and/or operators
-      const result = await query;
 
       return result;
     } catch (err) {

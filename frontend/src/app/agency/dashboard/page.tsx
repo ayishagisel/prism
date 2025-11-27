@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useOpportunities, useTasks, useClients } from '@/lib/hooks';
+import { apiClient } from '@/lib/api';
 import { DashboardKPIs } from '@/components/agency/DashboardKPIs';
 import { OpportunitiesTable } from '@/components/agency/OpportunitiesTable';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -17,11 +18,38 @@ export default function DashboardPage() {
   const { tasks, loading: tasksLoading } = useTasks(taskRefresh);
   const { clients } = useClients();
 
+  // Client opportunities map for filtering
+  const [clientOppMap, setClientOppMap] = useState<{ [clientId: string]: string[] }>({});
+
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedResponse, setSelectedResponse] = useState('');
   const [selectedMediaType, setSelectedMediaType] = useState('');
+
+  // Build client opportunities map for filtering
+  useEffect(() => {
+    const buildMap = async () => {
+      const map: { [clientId: string]: string[] } = {};
+
+      for (const client of clients) {
+        try {
+          const res = await apiClient.getClientOpportunities(client.id);
+          if (res.success && res.data) {
+            map[client.id] = res.data.map((status: any) => status.opportunity_id);
+          }
+        } catch (err) {
+          // Silent fail for individual client
+        }
+      }
+
+      setClientOppMap(map);
+    };
+
+    if (clients.length > 0) {
+      buildMap();
+    }
+  }, [clients]);
 
   // Listen for storage changes (when tasks are created in modal)
   useEffect(() => {
@@ -54,8 +82,10 @@ export default function DashboardPage() {
         opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         opp.outlet_name?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // Client filter - skip if no opportunities have client_id field
-      const matchesClient = !selectedClient; // TODO: Implement once Opportunity has client_id field
+      // Client filter - check if opportunity is assigned to selected client
+      const matchesClient =
+        !selectedClient ||
+        (clientOppMap[selectedClient] && clientOppMap[selectedClient].includes(opp.id));
 
       // Response filter (based on status) - check if opportunity status matches filter
       // Note: Opportunities have a 'status' field, filter options are pending/interested/accepted/declined/no_response
@@ -70,7 +100,7 @@ export default function DashboardPage() {
 
       return matchesSearch && matchesClient && matchesResponse && matchesMediaType;
     });
-  }, [opportunities, searchQuery, selectedClient, selectedResponse, selectedMediaType]);
+  }, [opportunities, searchQuery, selectedClient, selectedResponse, selectedMediaType, clientOppMap]);
 
   const recentTasks = tasks.slice(0, 5);
 

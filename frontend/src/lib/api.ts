@@ -90,6 +90,11 @@ class ApiClient {
     return res.data;
   }
 
+  async getAgencyMetrics(): Promise<ApiResponse<any>> {
+    const res = await this.client.get('/api/agency/metrics');
+    return res.data;
+  }
+
   async getOpportunities(): Promise<ApiResponse<any[]>> {
     const res = await this.client.get('/api/opportunities');
     return res.data;

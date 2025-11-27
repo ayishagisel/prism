@@ -75,6 +75,7 @@ export const createApp = () => {
   app.get('/api/clients', authMiddleware, (req, res) => clientController.list(req, res));
   app.get('/api/clients/:id', authMiddleware, (req, res) => clientController.getById(req, res));
   app.put('/api/clients/:id', authMiddleware, (req, res) => clientController.update(req, res));
+  app.delete('/api/clients/:id', authMiddleware, (req, res) => clientController.delete(req, res));
   app.get('/api/clients/:id/opportunities', authMiddleware, (req, res) =>
     clientController.getOpportunities(req, res)
   );

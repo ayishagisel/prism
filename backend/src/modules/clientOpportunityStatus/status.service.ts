@@ -93,7 +93,12 @@ export class ClientOpportunityStatusService {
             'accepted'
           );
         } else if (input.response_state === 'interested') {
-          // TODO Phase 2: Auto-generate interested tasks
+          await followUpTaskService.createAutoTasks(
+            agencyId,
+            opportunityId,
+            clientId,
+            'interested'
+          );
         }
 
         // Notify PR team of client response

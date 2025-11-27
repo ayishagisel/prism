@@ -95,6 +95,31 @@ export class ClientService {
     }
   }
 
+  async deleteClient(agencyId: string, clientId: string) {
+    try {
+      // Delete client opportunity status records first
+      await db
+        .delete(clientOpportunityStatus)
+        .where(
+          and(
+            eq(clientOpportunityStatus.agency_id, agencyId),
+            eq(clientOpportunityStatus.client_id, clientId)
+          )
+        );
+
+      // Delete the client
+      await db
+        .delete(clients)
+        .where(and(eq(clients.agency_id, agencyId), eq(clients.id, clientId)));
+
+      logger.info('Client deleted', { clientId });
+      return { success: true };
+    } catch (err) {
+      logger.error('Delete client error', err);
+      throw err;
+    }
+  }
+
   async getClientWithOpportunities(agencyId: string, clientId: string) {
     try {
       const client = await this.getClientById(agencyId, clientId);

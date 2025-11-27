@@ -84,6 +84,21 @@ export class ClientController {
     }
   }
 
+  async delete(req: Request, res: Response) {
+    try {
+      if (!req.auth) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+
+      await clientService.deleteClient(req.auth.agencyId, req.params.id);
+
+      res.json({ success: true, data: { message: 'Client deleted' } });
+    } catch (err) {
+      logger.error('Delete client error', err);
+      res.status(500).json({ success: false, error: 'Failed to delete client' });
+    }
+  }
+
   async getOpportunities(req: Request, res: Response) {
     try {
       if (!req.auth) {
