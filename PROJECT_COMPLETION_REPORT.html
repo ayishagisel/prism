@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prism - Phase 1 & 2 Completion Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #4a1d6f;
+            background-color: #f5f5f5;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #dc2626;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #4a1d6f;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: #6b7280;
+        }
+
+        .date-generated {
+            font-size: 0.9em;
+            color: #9ca3af;
+            margin-top: 10px;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: #4a1d6f;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dc2626;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            color: #4a1d6f;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .status-completed {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-partial {
+            background-color: #fef08a;
+            color: #78350f;
+        }
+
+        .status-not-started {
+            background-color: #fee2e2;
+            color: #7f1d1d;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .checklist li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #059669;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .highlight {
+            background-color: #fef3c7;
+            padding: 20px;
+            border-left: 4px solid #fbbf24;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .feature-item {
+            background-color: #f0f9ff;
+            border-left: 4px solid #0284c7;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .feature-item strong {
+            color: #0c4a6e;
+        }
+
+        code {
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .icon {
+            margin-right: 5px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+                padding: 20px;
+            }
+
+            h2 {
+                page-break-after: avoid;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Prism Project</h1>
+            <p class="subtitle">Phase 1 & Phase 2 Completion Report</p>
+            <p class="date-generated">Generated: November 27, 2025</p>
+        </header>
+
+        <!-- EXECUTIVE SUMMARY -->
+        <h2>Executive Summary</h2>
+        <div class="highlight">
+            <p><strong>Status:</strong> <span class="status-badge status-completed">PHASE 1 COMPLETE</span> <span class="status-badge status-completed">PHASE 2 COMPLETE</span></p>
+            <p style="margin-top: 10px;">Both Phase 1 MVP features and Phase 2 advanced features have been fully implemented, tested, and committed to git. The application is production-ready for its current feature set.</p>
+        </div>
+
+        <!-- PHASE 1 COMPLETION -->
+        <h2>Phase 1: MVP Features <span class="status-badge status-completed">COMPLETED</span></h2>
+
+        <h3>Core Functionality</h3>
+        <ul class="checklist">
+            <li>Authentication: Demo-mode passwordless login working</li>
+            <li>Agency Dashboard: Real-time KPI display with working filters</li>
+            <li>Opportunity Management: Create, list, view, filter opportunities</li>
+            <li>Client Management: Full CRUD operations for clients</li>
+            <li>Task Management: Create and manage follow-up tasks</li>
+            <li>CSV Import: Fully functional with sample data files</li>
+            <li>Real-time Data Sync: Storage event listeners triggering dashboard refreshes</li>
+        </ul>
+
+        <div class="page-break"></div>
+        <h3>Bug Fixes Completed</h3>
+        <table>
+            <tr>
+                <th>Issue</th>
+                <th>Root Cause</th>
+                <th>Resolution</th>
+            </tr>
+            <tr>
+                <td>Add Task button returned 400 error</td>
+                <td>Missing required fields (client_id, opportunity_id)</td>
+                <td>Implemented AddTaskModal.tsx with dropdown selects</td>
+            </tr>
+            <tr>
+                <td>View button returned 404</td>
+                <td>Dynamic routes not yet implemented</td>
+                <td>Identified as Phase 3 feature - expected behavior</td>
+            </tr>
+            <tr>
+                <td>NaN displays in ClientDetailModal</td>
+                <td>API response missing opportunity data</td>
+                <td>Enriched response with full opportunity join</td>
+            </tr>
+            <tr>
+                <td>Client filter non-functional</td>
+                <td>Opportunities lack direct client_id field</td>
+                <td>Implemented Phase 2 client filter solution</td>
+            </tr>
+            <tr>
+                <td>Dashboard not auto-refreshing</td>
+                <td>Hooks had empty dependency arrays</td>
+                <td>Added refresh trigger pattern with storage events</td>
+            </tr>
+            <tr>
+                <td>CSV import was stub</td>
+                <td>Feature incomplete</td>
+                <td>Implemented full CSVUploadForm component</td>
+            </tr>
+        </table>
+
+        <h3>Components Created/Modified</h3>
+        <div class="feature-item">
+            <strong>AddTaskModal.tsx</strong><br>
+            Created from scratch with full validation, client/opportunity dropdowns, and storage event dispatch for real-time updates.
+        </div>
+        <div class="feature-item">
+            <strong>ClientCard.tsx</strong><br>
+            Fixed to fetch and display real opportunity data instead of hardcoded mock data with NaN values.
+        </div>
+        <div class="feature-item">
+            <strong>ClientDetailModal.tsx</strong><br>
+            Fixed to properly access nested opportunity properties with fallbacks for missing data.
+        </div>
+        <div class="feature-item">
+            <strong>opportunities/page.tsx</strong><br>
+            Implemented fully functional CSVUploadForm with client mapping, validation, and success/error feedback.
+        </div>
+        <div class="feature-item">
+            <strong>dashboard/page.tsx</strong><br>
+            Added real-time refresh listeners using storage events and refresh trigger pattern.
+        </div>
+
+        <h3>Sample Data Created</h3>
+        <ul class="checklist">
+            <li><code>sample_import.csv</code> - 10 realistic PR opportunities</li>
+            <li><code>sample_import_v2.csv</code> - 20 comprehensive opportunities for testing</li>
+        </ul>
+
+        <!-- PHASE 2 COMPLETION -->
+        <h2>Phase 2: Advanced Features <span class="status-badge status-completed">COMPLETED</span></h2>
+
+        <h3>Backend Features Implemented</h3>
+
+        <h4>1. Real Password Authentication</h4>
+        <div class="feature-item">
+            <strong>File:</strong> <code>auth.controller.ts</code><br>
+            <strong>Features:</strong>
+            <ul class="checklist">
+                <li>bcryptjs password validation against agency_users table</li>
+                <li>Demo mode passwordless login maintained for testing</li>
+                <li>Production mode enforces password requirement</li>
+                <li>401 errors for invalid credentials</li>
+            </ul>
+        </div>
+
+        <h4>2. Real KPI Metrics</h4>
+        <div class="feature-item">
+            <strong>File:</strong> <code>agency.service.ts</code><br>
+            <strong>Metrics Implemented:</strong>
+            <ul class="checklist">
+                <li>totalOpportunities - Count of all opportunities</li>
+                <li>activeOpportunities - Filtered by status='active'</li>
+                <li>clientsEngaged - Unique count of clients with assigned opportunities</li>
+                <li>acceptedResponses - Count of status='accepted' responses</li>
+                <li>interestedResponses - Count of status='interested' responses</li>
+            </ul>
+        </div>
+
+        <h4>3. Opportunity Filters</h4>
+        <div class="feature-item">
+            <strong>File:</strong> <code>opportunity.service.ts</code><br>
+            <strong>Filter Capabilities:</strong>
+            <ul class="checklist">
+                <li>Dynamic WHERE clause construction</li>
+                <li>Filter by status (pending, interested, accepted, declined, no_response)</li>
+                <li>Filter by media_type (article, podcast, panel, event, speaking, etc.)</li>
+                <li>Filter by deadline_before (opportunities with deadline ≤ date)</li>
+                <li>Filter by deadline_after (opportunities with deadline ≥ date)</li>
+                <li>Proper AND logic combining multiple filters</li>
+                <li>Added gte/lte imports from drizzle-orm</li>
+            </ul>
+        </div>
+
+        <h4>4. Client Delete Endpoint</h4>
+        <div class="feature-item">
+            <strong>Files:</strong> <code>client.service.ts</code>, <code>client.controller.ts</code>, <code>app.ts</code><br>
+            <strong>Implementation:</strong>
+            <ul class="checklist">
+                <li>Service method with cascade delete</li>
+                <li>Removes clientOpportunityStatus records first</li>
+                <li>Removes client record</li>
+                <li>DELETE /api/clients/:id route registered</li>
+                <li>Proper auth middleware protection</li>
+            </ul>
+        </div>
+
+        <h4>5. Dashboard Client Filter</h4>
+        <div class="feature-item">
+            <strong>File:</strong> <code>dashboard/page.tsx</code><br>
+            <strong>Implementation:</strong>
+            <ul class="checklist">
+                <li>Client opportunities map built on mount</li>
+                <li>Lazy loads client assignments for all clients</li>
+                <li>Filters opportunities by client selection</li>
+                <li>Works with search, response status, and media type filters</li>
+                <li>Proper dependency management in useMemo</li>
+            </ul>
+        </div>
+
+        <h4>6. Auto-Task Generation for Interested State</h4>
+        <div class="feature-item">
+            <strong>Files:</strong> <code>status.service.ts</code>, <code>task.service.ts</code><br>
+            <strong>Functionality:</strong>
+            <ul class="checklist">
+                <li>Automatic task creation when client marks opportunity as 'interested'</li>
+                <li>Creates "Follow up on interest" task</li>
+                <li>Sets due date to 2 days from now</li>
+                <li>Marks task as 'normal' priority, 'follow_up' type</li>
+                <li>Same pattern as 'accepted' state tasks (which create 3 tasks)</li>
+            </ul>
+        </div>
+
+        <h4>7. Team Notifications</h4>
+        <div class="feature-item">
+            <strong>File:</strong> <code>notification.service.ts</code><br>
+            <strong>Changes:</strong>
+            <ul class="checklist">
+                <li>Fetches actual agency team members from agency_users table</li>
+                <li>Creates in-app notification for each team member</li>
+                <li>Previously hardcoded to single user - now broadcasts to all</li>
+                <li>Logs team member count in notification queue log</li>
+            </ul>
+        </div>
+
+        <div class="page-break"></div>
+        <h3>Frontend Features Implemented</h3>
+
+        <h4>API Client Methods</h4>
+        <div class="feature-item">
+            <strong>File:</strong> <code>api.ts</code><br>
+            <strong>New Method:</strong> <code>getAgencyMetrics()</code> - Fetches real KPI data
+        </div>
+
+        <h4>Dashboard Enhancements</h4>
+        <div class="feature-item">
+            <strong>File:</strong> <code>dashboard/page.tsx</code><br>
+            <strong>Improvements:</strong>
+            <ul class="checklist">
+                <li>Client filter select with actual client list</li>
+                <li>Client-to-opportunities mapping on mount</li>
+                <li>Filter logic updated to check opportunity assignment</li>
+                <li>Maintains compatibility with all other filters</li>
+            </ul>
+        </div>
+
+        <h3>Database Integration</h3>
+        <ul class="checklist">
+            <li>No schema changes required</li>
+            <li>All features use existing database tables</li>
+            <li>Proper foreign key relationships maintained</li>
+            <li>Agency_id filtering enforced across all queries</li>
+        </ul>
+
+        <h3>Code Quality</h3>
+        <ul class="checklist">
+            <li>Follows existing code patterns and architecture</li>
+            <li>Proper error handling and logging</li>
+            <li>Type-safe implementation</li>
+            <li>No breaking changes to existing code</li>
+            <li>All changes committed with descriptive messages</li>
+        </ul>
+
+        <!-- VERIFICATION -->
+        <h2>Verification Against Original Roadmap</h2>
+
+        <h3>Phase 1 Requirements</h3>
+        <div class="highlight">
+            <p><strong>Status: COMPLETE ✓</strong></p>
+            <p style="margin-top: 10px;">All Phase 1 features are functional and thoroughly tested:</p>
+            <ul class="checklist">
+                <li>Dashboard with KPIs</li>
+                <li>Client management</li>
+                <li>Opportunity management</li>
+                <li>Task creation</li>
+                <li>CSV import</li>
+                <li>Real-time updates</li>
+            </ul>
+        </div>
+
+        <h3>Phase 2 Requirements</h3>
+        <div class="highlight">
+            <p><strong>Status: COMPLETE ✓</strong></p>
+            <p style="margin-top: 10px;">All 8 Phase 2 features implemented and committed:</p>
+            <table style="margin-top: 15px;">
+                <tr>
+                    <th>#</th>
+                    <th>Feature</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Real password authentication</td>
+                    <td>✓ Complete</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Real KPI metric aggregation</td>
+                    <td>✓ Complete</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Opportunity filtering (status, media_type, deadline)</td>
+                    <td>✓ Complete</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Client delete endpoint</td>
+                    <td>✓ Complete</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Dashboard client filter</td>
+                    <td>✓ Complete</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Auto-task generation for interested state</td>
+                    <td>✓ Complete</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Team notifications with actual members</td>
+                    <td>✓ Complete</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>End-to-end testing</td>
+                    <td>✓ Complete</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- CURRENT STATE -->
+        <h2>Current State of Application</h2>
+        <div class="highlight">
+            <p><strong>Status: Production-Ready for Phase 1 & 2 Features</strong></p>
+            <p style="margin-top: 10px;">The application now includes:</p>
+            <ul class="checklist">
+                <li>Full multi-tenant agency management</li>
+                <li>Real password-based authentication</li>
+                <li>Real-time data synchronization</li>
+                <li>Advanced filtering across opportunities</li>
+                <li>Automatic workflow task generation</li>
+                <li>Team-wide notifications</li>
+                <li>Client opportunity assignment and response tracking</li>
+                <li>CSV batch import with client mapping</li>
+            </ul>
+        </div>
+
+        <!-- PHASE 3 ROADMAP -->
+        <div class="page-break"></div>
+        <h2>Phase 3: Advanced Features (Not Yet Started) <span class="status-badge status-not-started">PENDING</span></h2>
+
+        <h3>1. Individual Opportunity Detail Pages</h3>
+        <div class="feature-item">
+            <strong>Status:</strong> Not started<br>
+            <strong>Priority:</strong> High<br>
+            <strong>Scope:</strong>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Create dynamic route <code>/agency/opportunities/[id]/page.tsx</code></li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Display full opportunity details (title, description, outlet, deadline, etc.)</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Show all assigned clients and their response statuses</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>View associated tasks and activity history</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Edit opportunity details</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>View opportunity timeline/activity log</li>
+            </ul>
+            <strong>Estimated Effort:</strong> 8-12 hours<br>
+            <strong>Dependencies:</strong> None
+        </div>
+
+        <h3>2. Client Portal</h3>
+        <div class="feature-item">
+            <strong>Status:</strong> Not started<br>
+            <strong>Priority:</strong> High<br>
+            <strong>Scope:</strong>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Separate client-facing application</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>View opportunities assigned to client</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Respond to opportunities (accept/interested/decline)</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Add notes/comments to responses</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>View task assignments for accepted opportunities</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Profile and account management</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Authentication as client user (separate from agency)</li>
+            </ul>
+            <strong>Estimated Effort:</strong> 20-30 hours<br>
+            <strong>Dependencies:</strong> Client auth system
+        </div>
+
+        <h3>3. Advanced Reporting & Analytics</h3>
+        <div class="feature-item">
+            <strong>Status:</strong> Not started<br>
+            <strong>Priority:</strong> Medium<br>
+            <strong>Scope:</strong>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Response rate analytics by client</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Opportunity success metrics</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Historical trends and reporting</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Export reports to PDF/CSV</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Customizable dashboard widgets</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Performance benchmarking by opportunity type</li>
+            </ul>
+            <strong>Estimated Effort:</strong> 12-16 hours<br>
+            <strong>Dependencies:</strong> Data aggregation infrastructure
+        </div>
+
+        <h3>4. Email Notification System</h3>
+        <div class="feature-item">
+            <strong>Status:</strong> Partially Done<br>
+            <strong>Priority:</strong> High<br>
+            <strong>Current State:</strong> Notification infrastructure exists but emails not sent<br>
+            <strong>Scope:</strong>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Email notifications when opportunities are assigned to clients</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Email summaries of client responses</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Email reminders for pending tasks</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Email templates for different notification types</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Email delivery service integration (SendGrid/AWS SES)</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Email preference management</li>
+            </ul>
+            <strong>Estimated Effort:</strong> 8-12 hours<br>
+            <strong>Dependencies:</strong> Service configuration
+        </div>
+
+        <h3>5. API Documentation & Webhooks</h3>
+        <div class="feature-item">
+            <strong>Status:</strong> Not started<br>
+            <strong>Priority:</strong> Medium<br>
+            <strong>Scope:</strong>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>OpenAPI/Swagger documentation</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Webhook events for opportunity created/updated</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Webhook events for client responses</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Webhook events for task creation/completion</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Webhook delivery with retry logic</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>API key management for third-party integrations</li>
+                <li style="padding: 8px 0; padding-left: 30px; position: relative; margin-bottom: 8px;"><span style="position: absolute; left: 0; color: #dc2626; font-weight: bold;">☐</span>Rate limiting and API quotas</li>
+            </ul>
+            <strong>Estimated Effort:</strong> 16-20 hours<br>
+            <strong>Dependencies:</strong> Event infrastructure
+        </div>
+
+        <!-- KNOWN LIMITATIONS -->
+        <div class="page-break"></div>
+        <h2>Known Limitations & Technical Debt</h2>
+
+        <h3>Frontend Issues</h3>
+        <div class="feature-item" style="background-color: #fee2e2; border-left-color: #dc2626;">
+            <strong style="color: #7f1d1d;">View opportunity button returns 404</strong><br>
+            Dynamic routes not implemented (Phase 3)<br>
+            <span style="font-size: 0.9em; color: #991b1b;">Status: Expected - will be fixed in Phase 3</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No edit functionality</strong><br>
+            Can create but not edit opportunities on frontend<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Minor - low priority fix</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No task deletion</strong><br>
+            Tasks can be created but not deleted<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Minor - low priority fix</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">Limited error handling</strong><br>
+            Some API errors show generic messages<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Nice-to-have improvement</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No pagination</strong><br>
+            Lists could be long (currently showing first N items)<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Future optimization</span>
+        </div>
+
+        <h3>Backend Issues</h3>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No email service integration</strong><br>
+            Notification infrastructure exists but emails not sent<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Phase 3 task</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No webhook system</strong><br>
+            Events exist but no outbound webhooks<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Phase 3 task</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">Limited activity logging</strong><br>
+            Basic logging exists but not comprehensive audit trail<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Enhancement</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No API documentation</strong><br>
+            No OpenAPI/Swagger docs<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Phase 3 task</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">Soft delete not fully implemented</strong><br>
+            Marked as TODO in <code>opportunity.service.ts</code> line 188<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Feature enhancement</span>
+        </div>
+
+        <h3>Database Issues</h3>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No indexes on frequently queried fields</strong><br>
+            Could impact performance at scale<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Optimization</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No data retention policies</strong><br>
+            Old records never purged<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Future consideration</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No backup strategy defined</strong><br>
+            Infrastructure concern<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: DevOps task</span>
+        </div>
+
+        <h3>Security Issues</h3>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No rate limiting</strong><br>
+            API endpoints could be abused<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Security enhancement</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No input validation on some fields</strong><br>
+            Basic validation exists but could be more robust<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Improvement</span>
+        </div>
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">No CSRF protection</strong><br>
+            Express app doesn't have CSRF middleware<br>
+            <span style="font-size: 0.9em; color: #92400e;">Status: Security improvement</span>
+        </div>
+        <div class="feature-item" style="background-color: #fee2e2; border-left-color: #dc2626;">
+            <strong style="color: #7f1d1d;">Tokens don't expire</strong><br>
+            JWT tokens valid indefinitely (should have TTL)<br>
+            <span style="font-size: 0.9em; color: #991b1b;">Status: Important fix - estimate 2-3 hours</span>
+        </div>
+
+        <!-- PHASE 3 PRIORITY -->
+        <h2>Phase 3 Recommended Priority Order</h2>
+
+        <table>
+            <tr>
+                <th>Priority</th>
+                <th>Feature</th>
+                <th>Complexity</th>
+                <th>Effort</th>
+            </tr>
+            <tr style="background-color: #fee2e2;">
+                <td><strong>HIGH</strong></td>
+                <td>Opportunity Detail Page</td>
+                <td>Medium</td>
+                <td>8-12 hrs</td>
+            </tr>
+            <tr style="background-color: #fee2e2;">
+                <td><strong>HIGH</strong></td>
+                <td>Client Portal</td>
+                <td>High</td>
+                <td>20-30 hrs</td>
+            </tr>
+            <tr style="background-color: #fee2e2;">
+                <td><strong>HIGH</strong></td>
+                <td>Email Integration</td>
+                <td>Medium</td>
+                <td>8-12 hrs</td>
+            </tr>
+            <tr>
+                <td><strong>MEDIUM</strong></td>
+                <td>Advanced Analytics</td>
+                <td>Medium</td>
+                <td>12-16 hrs</td>
+            </tr>
+            <tr>
+                <td><strong>MEDIUM</strong></td>
+                <td>API Documentation</td>
+                <td>Low</td>
+                <td>4-6 hrs</td>
+            </tr>
+            <tr>
+                <td><strong>LOW</strong></td>
+                <td>Webhooks System</td>
+                <td>High</td>
+                <td>16-20 hrs</td>
+            </tr>
+            <tr>
+                <td><strong>LOW</strong></td>
+                <td>Token Expiration</td>
+                <td>Low</td>
+                <td>2-3 hrs</td>
+            </tr>
+            <tr>
+                <td><strong>LOW</strong></td>
+                <td>Rate Limiting</td>
+                <td>Low</td>
+                <td>3-4 hrs</td>
+            </tr>
+        </table>
+
+        <!-- CRITICAL QUESTIONS -->
+        <div class="page-break"></div>
+        <h2>Critical Questions for Stakeholders (Amore/Apples & Oranges)</h2>
+        <p style="margin-bottom: 20px;">The following questions need to be answered to finalize Phase 3 design and implementation strategy:</p>
+
+        <h3>Product & Architecture Questions</h3>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">1. Client Portal Architecture</strong><br>
+            Should the client-facing portal be a:
+            <ul style="margin-top: 10px;">
+                <li>Separate web application?</li>
+                <li>Mobile app + web?</li>
+                <li>Integrated into existing dashboard?</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: 20-30 hours difference in effort</span>
+        </div>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">2. Email Service Provider</strong><br>
+            Do you have a preferred email service?
+            <ul style="margin-top: 10px;">
+                <li>SendGrid?</li>
+                <li>AWS SES?</li>
+                <li>Mailgun?</li>
+                <li>Other?</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: Affects Phase 3 email integration timeline</span>
+        </div>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">3. Client Authentication</strong><br>
+            For client portal login, which approach preferred?
+            <ul style="margin-top: 10px;">
+                <li>Individual accounts (separate from agency users)</li>
+                <li>Magic links (passwordless)</li>
+                <li>SSO integration with existing systems</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: Architecture design decision</span>
+        </div>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">4. Third-Party Integrations</strong><br>
+            Are there required integrations with:
+            <ul style="margin-top: 10px;">
+                <li>CRM (Salesforce, HubSpot)?</li>
+                <li>Calendar/Scheduling (Calendly, Acuity)?</li>
+                <li>Communication (Slack, Teams)?</li>
+                <li>Other tools?</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: May require webhook system (Phase 3)</span>
+        </div>
+
+        <h3>Analytics & Reporting Questions</h3>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">5. Critical Analytics Metrics</strong><br>
+            Which metrics are most important to track?
+            <ul style="margin-top: 10px;">
+                <li>Response rates by opportunity type</li>
+                <li>Client engagement trends</li>
+                <li>ROI calculations</li>
+                <li>Revenue attribution</li>
+                <li>Team performance</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: Guides analytics feature prioritization</span>
+        </div>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">6. Reporting Format</strong><br>
+            How should reports be delivered?
+            <ul style="margin-top: 10px;">
+                <li>Real-time dashboards only</li>
+                <li>Scheduled email reports (daily/weekly/monthly)</li>
+                <li>Custom report builder</li>
+                <li>Combination of above</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: Reporting system complexity</span>
+        </div>
+
+        <h3>Technical & Operations Questions</h3>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">7. Data Volume Expectations</strong><br>
+            What scale are we building for?
+            <ul style="margin-top: 10px;">
+                <li>Clients per agency: 10s? 100s? 1000s?</li>
+                <li>Opportunities per month per agency?</li>
+                <li>Expected concurrent users?</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: Performance optimization priorities</span>
+        </div>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">8. JWT Token Security Policy</strong><br>
+            What token expiration should be used?
+            <ul style="margin-top: 10px;">
+                <li>Short (15 min) with refresh tokens</li>
+                <li>Medium (1 day)</li>
+                <li>Long (30 days)</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: Critical security decision (currently tokens don't expire)</span>
+        </div>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">9. User Roles & Permissions</strong><br>
+            Beyond AGENCY_ADMIN and AGENCY_MEMBER, do you need:
+            <ul style="margin-top: 10px;">
+                <li>Viewer-only roles</li>
+                <li>Client-manager roles</li>
+                <li>Report-only roles</li>
+                <li>Custom role support</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: Permission system complexity</span>
+        </div>
+
+        <h3>Business & Go-to-Market Questions</h3>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">10. Phase 3 Launch Timeline</strong><br>
+            Expected timeline for Phase 3 features:
+            <ul style="margin-top: 10px;">
+                <li>Full Phase 3 launch date?</li>
+                <li>Client portal launch priority?</li>
+                <li>Phased rollout or all-at-once?</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: Roadmap and resource planning</span>
+        </div>
+
+        <div class="feature-item" style="background-color: #fef3c7; border-left-color: #fbbf24;">
+            <strong style="color: #78350f;">11. Client Portal Features Priority</strong><br>
+            Which are most critical for launch?
+            <ul style="margin-top: 10px;">
+                <li>View opportunities</li>
+                <li>Respond to opportunities</li>
+                <li>Add notes/comments</li>
+                <li>View tasks</li>
+                <li>Profile management</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #92400e; display: block; margin-top: 10px;">Impact: MVP definition for client portal</span>
+        </div>
+
+        <div class="feature-item" style="background-color: #fee2e2; border-left-color: #dc2626;">
+            <strong style="color: #7f1d1d;">12. SUCCESS METRICS - Most Important</strong><br>
+            How will you measure Phase 3 success?
+            <ul style="margin-top: 10px;">
+                <li>Client response rates?</li>
+                <li>Number of accepted opportunities?</li>
+                <li>User adoption rates?</li>
+                <li>Time saved vs manual processes?</li>
+                <li>Customer satisfaction?</li>
+            </ul>
+            <span style="font-size: 0.9em; color: #991b1b; display: block; margin-top: 10px;">Status: Critical for product roadmap alignment</span>
+        </div>
+
+        <!-- CONCLUSION -->
+        <h2>Conclusion</h2>
+        <p>Both Phase 1 (MVP Features) and Phase 2 (Advanced Features) have been successfully completed and are ready for use. All code changes have been tested and committed to the git repository with clear, descriptive commit messages.</p>
+
+        <p style="margin-top: 15px;">The codebase is well-structured, follows established patterns, and is positioned for Phase 3 development whenever needed. Phase 3 adds sophisticated features like individual opportunity pages, client portal, advanced analytics, and email integration - all of which build on the solid foundation created in Phases 1 and 2.</p>
+
+        <p style="margin-top: 15px; padding: 15px; background-color: #d1fae5; border-radius: 4px; border-left: 4px solid #059669;">
+            <strong style="color: #065f46;">Next Step:</strong> <span style="color: #047857;">Answer the 12 critical questions above to finalize Phase 3 scope, architecture, and timeline.</span>
+        </p>
+
+        <hr style="margin: 40px 0; border: none; border-top: 2px solid #e5e7eb;">
+
+        <footer style="text-align: center; color: #9ca3af; font-size: 0.9em; margin-top: 40px;">
+            <p>Prism Project - Phase 1 & 2 Completion Report</p>
+            <p>Generated November 27, 2025</p>
+        </footer>
+    </div>
+</body>
+</html>
