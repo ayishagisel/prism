@@ -12,7 +12,8 @@
       "Bash(ls:*)",
       "Bash(npm run build:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nFix type errors in Client components to match database schema\n\n- Update ClientCard to use industry field instead of type\n- Update AddClientModal form fields to match Client interface (industry instead of type/company)\n- Update ClientDetailModal to display industry, status, and tags\n- Fix primary_contact_email references in Client components\n- Update clients page search to filter by name and industry\n- Move responseRate calculation before KPI array in dashboard\n- Update dashboard client filter comment for future implementation\n\n✓ Build now passes successfully with no TypeScript errors\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix type errors in Client components to match database schema\n\n- Update ClientCard to use industry field instead of type\n- Update AddClientModal form fields to match Client interface (industry instead of type/company)\n- Update ClientDetailModal to display industry, status, and tags\n- Fix primary_contact_email references in Client components\n- Update clients page search to filter by name and industry\n- Move responseRate calculation before KPI array in dashboard\n- Update dashboard client filter comment for future implementation\n\n✓ Build now passes successfully with no TypeScript errors\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

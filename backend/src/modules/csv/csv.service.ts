@@ -36,7 +36,7 @@ export class CSVImportService {
     title: string;
     summary: string;
     media_type: string;
-    outlet_name: string;
+    outlet_name?: string;
     opportunity_type: string;
     deadline_at: string;
     client_name?: string;
@@ -45,7 +45,7 @@ export class CSVImportService {
       title: row['Title'] || row['title'] || 'Untitled Opportunity',
       summary: row['Description'] || row['description'] || '',
       media_type: this.mapMediaType(row['Type'] || row['type']) || 'other',
-      outlet_name: row['Outlet'] || row['outlet'] || 'Unknown Outlet',
+      outlet_name: row['Outlet'] || row['outlet'],
       opportunity_type: row['Category'] || row['Opportunity Type'] || 'PR',
       deadline_at: this.parseDate(row['Deadline'] || row['deadline']) || new Date().toISOString(),
       client_name: row['Client'] || row['client'],
@@ -61,12 +61,16 @@ export class CSVImportService {
     const mapping: Record<string, string> = {
       article: 'feature_article',
       feature: 'feature_article',
+      feature_article: 'feature_article',
       news: 'news_brief',
       brief: 'news_brief',
+      news_brief: 'news_brief',
       panel: 'panel',
       podcast: 'podcast',
       tv: 'tv_appearance',
+      tv_appearance: 'tv_appearance',
       speaking: 'speaking_engagement',
+      speaking_engagement: 'speaking_engagement',
       event: 'event',
     };
 

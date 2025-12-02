@@ -8,6 +8,9 @@ export const config = {
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'dev-secret-change-in-production',
+    accessTokenExpiry: process.env.JWT_ACCESS_EXPIRY || '1h',
+    refreshTokenExpiry: process.env.JWT_REFRESH_EXPIRY || '30d',
+    // Kept for backward compatibility
     expiry: process.env.JWT_EXPIRY || '7d',
   },
   server: {

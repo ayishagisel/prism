@@ -5,6 +5,7 @@ import { logger } from '../../utils/logger';
 import { db } from '../../config/db';
 import { agencyUsers } from '../../db/schema';
 import { eq, and } from 'drizzle-orm';
+import ms from 'ms';
 
 export class AuthController {
   /**
@@ -28,17 +29,25 @@ export class AuthController {
         const demoUserId = 'user_amore';
         const demoAgencyId = 'agency_aopr';
 
-        const token = authService.createToken({
+        const { accessToken, refreshToken } = authService.createTokenPair({
           userId: demoUserId,
           agencyId: demoAgencyId,
           email,
           role: 'AGENCY_ADMIN',
         });
 
+        // Save refresh token to database
+        const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000; // 30 days fallback
+        const expiresAt = new Date(Date.now() + refreshExpiryMs);
+        await authService.saveRefreshToken(demoAgencyId, demoUserId, refreshToken, expiresAt);
+
         return res.json({
           success: true,
           data: {
-            token,
+            accessToken,
+            refreshToken,
+            expiresIn: config.jwt.accessTokenExpiry,
+            refreshExpiresIn: config.jwt.refreshTokenExpiry,
             user: {
               id: demoUserId,
               email,
@@ -82,20 +91,28 @@ export class AuthController {
         });
       }
 
-      // Password is correct - create token
+      // Password is correct - create token pair
       logger.info('User login', { email, userId: user.id });
 
-      const token = authService.createToken({
+      const { accessToken, refreshToken } = authService.createTokenPair({
         userId: user.id,
         agencyId: user.agency_id,
         email: user.email,
         role: user.role as 'AGENCY_ADMIN' | 'AGENCY_MEMBER' | 'CLIENT_USER',
       });
 
+      // Save refresh token to database
+      const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000; // 30 days fallback
+      const expiresAt = new Date(Date.now() + refreshExpiryMs);
+      await authService.saveRefreshToken(user.agency_id, user.id, refreshToken, expiresAt);
+
       res.json({
         success: true,
         data: {
-          token,
+          accessToken,
+          refreshToken,
+          expiresIn: config.jwt.accessTokenExpiry,
+          refreshExpiresIn: config.jwt.refreshTokenExpiry,
           user: {
             id: user.id,
             email: user.email,
@@ -130,12 +147,26 @@ export class AuthController {
   }
 
   /**
-   * Logout (client-side token deletion in MVP)
+   * Logout - Revoke all refresh tokens for user
    */
   async logout(req: Request, res: Response) {
-    // In MVP, logout is client-side (token deletion)
-    // In Phase 2: implement token blacklist or revocation
-    res.json({ success: true, data: { message: 'Logged out' } });
+    try {
+      if (!req.auth) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+
+      const { userId, agencyId } = req.auth;
+
+      // Revoke all refresh tokens for this user
+      await authService.revokeAllRefreshTokens(agencyId, userId);
+
+      logger.info('User logout', { userId, agencyId });
+
+      res.json({ success: true, data: { message: 'Logged out successfully' } });
+    } catch (err) {
+      logger.error('Logout error', err);
+      res.status(500).json({ success: false, error: 'Logout failed' });
+    }
   }
 }
 

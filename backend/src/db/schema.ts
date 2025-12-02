@@ -149,6 +149,29 @@ export const agencyUsers = pgTable(
   })
 );
 
+export const refreshTokens = pgTable(
+  'refresh_tokens',
+  {
+    id: text('id').primaryKey(),
+    agency_id: text('agency_id')
+      .notNull()
+      .references(() => agencies.id),
+    user_id: text('user_id')
+      .notNull()
+      .references(() => agencyUsers.id),
+    token_hash: text('token_hash').notNull(),
+    expires_at: timestamp('expires_at').notNull(),
+    revoked_at: timestamp('revoked_at'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    agencyIdIdx: index('refresh_tokens_agency_id_idx').on(t.agency_id),
+    userIdIdx: index('refresh_tokens_user_id_idx').on(t.user_id),
+    expiresAtIdx: index('refresh_tokens_expires_at_idx').on(t.expires_at),
+  })
+);
+
 export const clients = pgTable(
   'clients',
   {

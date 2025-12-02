@@ -5,6 +5,7 @@ import { logger } from './utils/logger';
 
 // Controllers
 import { authController } from './modules/auth/auth.controller';
+import { refreshController } from './modules/auth/refresh.controller';
 import { agencyController } from './modules/agency/agency.controller';
 import { opportunityController } from './modules/opportunity/opportunity.controller';
 import { clientController } from './modules/client/client.controller';
@@ -44,6 +45,7 @@ export const createApp = () => {
 
   // Auth routes (no auth required)
   app.post('/api/auth/login', (req, res) => authController.login(req, res));
+  app.post('/api/auth/refresh', authMiddleware, (req, res) => refreshController.refresh(req, res));
   app.post('/api/auth/logout', authMiddleware, (req, res) => authController.logout(req, res));
   app.get('/api/auth/me', authMiddleware, (req, res) => authController.me(req, res));
 
