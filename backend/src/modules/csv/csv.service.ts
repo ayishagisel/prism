@@ -33,21 +33,21 @@ export class CSVImportService {
    * TODO Phase 2: Make this configurable per agency
    */
   normalizeRow(row: CSVRow): {
-    title?: string;
-    summary?: string;
-    media_type?: string;
-    outlet_name?: string;
-    opportunity_type?: string;
-    deadline_at?: string;
+    title: string;
+    summary: string;
+    media_type: string;
+    outlet_name: string;
+    opportunity_type: string;
+    deadline_at: string;
     client_name?: string;
   } {
     return {
-      title: row['Title'] || row['title'],
-      summary: row['Description'] || row['description'],
-      media_type: this.mapMediaType(row['Type'] || row['type']),
-      outlet_name: row['Outlet'] || row['outlet'],
+      title: row['Title'] || row['title'] || 'Untitled Opportunity',
+      summary: row['Description'] || row['description'] || '',
+      media_type: this.mapMediaType(row['Type'] || row['type']) || 'other',
+      outlet_name: row['Outlet'] || row['outlet'] || 'Unknown Outlet',
       opportunity_type: row['Category'] || row['Opportunity Type'] || 'PR',
-      deadline_at: this.parseDate(row['Deadline'] || row['deadline']),
+      deadline_at: this.parseDate(row['Deadline'] || row['deadline']) || new Date().toISOString(),
       client_name: row['Client'] || row['client'],
     };
   }

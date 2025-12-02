@@ -76,10 +76,10 @@ export class ClientOpportunityStatusService {
         // Log the state change
         await this.logStateChange(
           agencyId,
-          actorUserId || clientId,
+          (actorUserId || clientId || 'unknown') as string,
           newStatus.id,
           previousState,
-          newStatus.response_state,
+          newStatus.response_state as string,
           opportunityId,
           clientId
         );
@@ -131,7 +131,7 @@ export class ClientOpportunityStatusService {
     agencyId: string,
     actorUserId: string,
     entityId: string,
-    previousState: any,
+    previousState: string | null,
     newState: string,
     opportunityId: string,
     clientId: string

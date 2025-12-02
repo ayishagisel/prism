@@ -23,9 +23,10 @@ export class AuthService {
    * Create a JWT token for a user
    */
   createToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
-    return jwt.sign(payload, config.jwt.secret, {
+    const secret = config.jwt.secret;
+    return jwt.sign(payload, secret, {
       expiresIn: config.jwt.expiry,
-    });
+    } as any);
   }
 
   /**

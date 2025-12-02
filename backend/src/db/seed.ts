@@ -258,58 +258,60 @@ async function seed() {
     logger.info('Opportunities created');
 
     // Create client opportunity statuses
-    const statuses = [
-      {
-        id: 'cos_throne_forbes',
-        agency_id: agencyId,
-        client_id: clientIds[0],
-        opportunity_id: opportunityIds[0],
-        response_state: 'pending',
-      },
-      {
-        id: 'cos_throne_techcrunch',
-        agency_id: agencyId,
-        client_id: clientIds[0],
-        opportunity_id: opportunityIds[1],
-        response_state: 'interested',
-        responded_at: new Date(),
-      },
-      {
-        id: 'cos_glow_essence',
-        agency_id: agencyId,
-        client_id: clientIds[2],
-        opportunity_id: opportunityIds[2],
-        response_state: 'accepted',
-        responded_at: new Date(),
-      },
-      {
-        id: 'cos_glow_bbc',
-        agency_id: agencyId,
-        client_id: clientIds[2],
-        opportunity_id: opportunityIds[3],
-        response_state: 'pending',
-      },
-      {
-        id: 'cos_nylon_forbes',
-        agency_id: agencyId,
-        client_id: clientIds[1],
-        opportunity_id: opportunityIds[0],
-        response_state: 'declined',
-        responded_at: new Date(),
-        decline_reason: 'Not aligned with current editorial focus',
-      },
-    ];
-
-    for (const status of statuses) {
-      await db
-        .insert(clientOpportunityStatus)
-        .values({
-          ...status,
+    await db
+      .insert(clientOpportunityStatus)
+      .values([
+        {
+          id: 'cos_throne_forbes',
+          agency_id: agencyId,
+          client_id: clientIds[0],
+          opportunity_id: opportunityIds[0],
+          response_state: 'pending',
           created_at: new Date(),
           updated_at: new Date(),
-        })
-        .onConflictDoNothing();
-    }
+        },
+        {
+          id: 'cos_throne_techcrunch',
+          agency_id: agencyId,
+          client_id: clientIds[0],
+          opportunity_id: opportunityIds[1],
+          response_state: 'interested',
+          responded_at: new Date(),
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          id: 'cos_glow_essence',
+          agency_id: agencyId,
+          client_id: clientIds[2],
+          opportunity_id: opportunityIds[2],
+          response_state: 'accepted',
+          responded_at: new Date(),
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          id: 'cos_glow_bbc',
+          agency_id: agencyId,
+          client_id: clientIds[2],
+          opportunity_id: opportunityIds[3],
+          response_state: 'pending',
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          id: 'cos_nylon_forbes',
+          agency_id: agencyId,
+          client_id: clientIds[1],
+          opportunity_id: opportunityIds[0],
+          response_state: 'declined',
+          responded_at: new Date(),
+          decline_reason: 'Not aligned with current editorial focus',
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      ])
+      .onConflictDoNothing();
 
     logger.info('Client opportunity statuses created');
 

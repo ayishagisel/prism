@@ -118,11 +118,11 @@ export class OpportunityService {
       const whereConditions = [eq(opportunities.agency_id, agencyId)];
 
       if (filters?.status) {
-        whereConditions.push(eq(opportunities.status, filters.status));
+        whereConditions.push(eq(opportunities.status, filters.status as any));
       }
 
       if (filters?.media_type) {
-        whereConditions.push(eq(opportunities.media_type, filters.media_type));
+        whereConditions.push(eq(opportunities.media_type, filters.media_type as any));
       }
 
       if (filters?.deadline_before) {

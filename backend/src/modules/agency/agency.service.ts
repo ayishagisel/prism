@@ -1,5 +1,5 @@
 import { db } from '../../config/db';
-import { agencies, agencyUsers } from '../../db/schema';
+import { agencies, agencyUsers, opportunities, clientOpportunityStatus } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import { logger } from '../../utils/logger';

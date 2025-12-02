@@ -3,9 +3,9 @@
  * This bypasses drizzle-kit entirely and uses the schema definitions directly
  */
 
-import { db } from '../../config/db';
+import { db } from '../config/db';
 import * as schema from './schema';
-import { logger } from '../../utils/logger';
+import { logger } from '../utils/logger';
 
 async function createSchema() {
   try {

@@ -3,7 +3,7 @@ import { authService } from './auth.service';
 import { config } from '../../config/env';
 import { logger } from '../../utils/logger';
 import { db } from '../../config/db';
-import { agency_users } from '../../db/schema';
+import { agencyUsers } from '../../db/schema';
 import { eq, and } from 'drizzle-orm';
 
 export class AuthController {
@@ -58,8 +58,8 @@ export class AuthController {
       }
 
       // Look up user by email
-      const users = await db.query.agency_users.findMany({
-        where: eq(agency_users.email, email.toLowerCase()),
+      const users = await db.query.agencyUsers.findMany({
+        where: eq(agencyUsers.email, email.toLowerCase()),
         limit: 1,
       });
 
