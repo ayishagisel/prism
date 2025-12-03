@@ -50,9 +50,13 @@ export function useAuth() {
   const logout = async () => {
     try {
       await apiClient.logout();
-      setUser(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Logout failed');
+      // Even if logout fails, we still want to clear local user state
+      console.warn('Logout API error (continuing with local logout)', err);
+    } finally {
+      // Always clear user state and tokens on logout
+      setUser(null);
+      setError(null);
     }
   };
 

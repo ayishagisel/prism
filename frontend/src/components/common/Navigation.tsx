@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks';
 
 interface NavigationProps {
@@ -7,12 +8,20 @@ interface NavigationProps {
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ userType }) => {
+  const router = useRouter();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
-    window.location.href = '/login';
+    try {
+      await logout();
+      // Use router.push to navigate to login after logout completes
+      router.push('/login');
+    } catch (err) {
+      console.error('Logout error:', err);
+      // Still redirect to login even if logout fails
+      router.push('/login');
+    }
   };
 
   const agencyNavLinks = [

@@ -14,7 +14,25 @@ export default function LoginPage() {
     // Check if already logged in
     const token = localStorage.getItem('auth_token');
     if (token) {
-      router.push('/agency/dashboard');
+      // Verify token is still valid before redirecting
+      const verifyToken = async () => {
+        try {
+          const res = await apiClient.getMe();
+          if (res.success) {
+            // Token is valid, redirect to dashboard
+            router.push('/agency/dashboard');
+          } else {
+            // Token is invalid, clear it and stay on login
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('refresh_token');
+          }
+        } catch (err) {
+          // Token is invalid, clear it and stay on login
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+        }
+      };
+      verifyToken();
     }
   }, [router]);
 

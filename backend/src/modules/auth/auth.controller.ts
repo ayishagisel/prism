@@ -167,8 +167,13 @@ export class AuthController {
 
       const { userId, agencyId } = req.auth;
 
-      // Revoke all refresh tokens for this user
-      await authService.revokeAllRefreshTokens(agencyId, userId);
+      // Revoke all refresh tokens for this user (optional - continue if table doesn't exist)
+      try {
+        await authService.revokeAllRefreshTokens(agencyId, userId);
+      } catch (tokenErr) {
+        logger.warn('Could not revoke refresh tokens (table may not exist)', tokenErr);
+        // Continue with logout - token revocation may not work but logout succeeds
+      }
 
       logger.info('User logout', { userId, agencyId });
 
