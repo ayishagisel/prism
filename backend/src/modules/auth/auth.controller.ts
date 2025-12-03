@@ -36,10 +36,15 @@ export class AuthController {
           role: 'AGENCY_ADMIN',
         });
 
-        // Save refresh token to database
-        const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000; // 30 days fallback
-        const expiresAt = new Date(Date.now() + refreshExpiryMs);
-        await authService.saveRefreshToken(demoAgencyId, demoUserId, refreshToken, expiresAt);
+        // Save refresh token to database (optional - continue if table doesn't exist)
+        try {
+          const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000; // 30 days fallback
+          const expiresAt = new Date(Date.now() + refreshExpiryMs);
+          await authService.saveRefreshToken(demoAgencyId, demoUserId, refreshToken, expiresAt);
+        } catch (tokenErr) {
+          logger.warn('Could not save refresh token (table may not exist)', tokenErr);
+          // Continue with login - token refresh may not work but demo login succeeds
+        }
 
         return res.json({
           success: true,
@@ -101,10 +106,15 @@ export class AuthController {
         role: user.role as 'AGENCY_ADMIN' | 'AGENCY_MEMBER' | 'CLIENT_USER',
       });
 
-      // Save refresh token to database
-      const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000; // 30 days fallback
-      const expiresAt = new Date(Date.now() + refreshExpiryMs);
-      await authService.saveRefreshToken(user.agency_id, user.id, refreshToken, expiresAt);
+      // Save refresh token to database (optional - continue if table doesn't exist)
+      try {
+        const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000; // 30 days fallback
+        const expiresAt = new Date(Date.now() + refreshExpiryMs);
+        await authService.saveRefreshToken(user.agency_id, user.id, refreshToken, expiresAt);
+      } catch (tokenErr) {
+        logger.warn('Could not save refresh token (table may not exist)', tokenErr);
+        // Continue with login - token refresh may not work but login succeeds
+      }
 
       res.json({
         success: true,

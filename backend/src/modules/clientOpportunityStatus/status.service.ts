@@ -12,7 +12,25 @@ import { UpdateClientOpportunityStatusInput } from '../../types';
 import { followUpTaskService } from '../followUpTask/task.service';
 import { notificationService } from '../notification/notification.service';
 
+// Valid state transitions for client responses
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  pending: ['interested', 'declined', 'no_response'],
+  interested: ['accepted', 'declined'],
+  accepted: [],
+  declined: [],
+  no_response: [],
+};
+
 export class ClientOpportunityStatusService {
+  /**
+   * Check if a state transition is valid
+   */
+  private isValidTransition(currentState: string, newState: string): boolean {
+    if (currentState === newState) return true; // Allow same state
+    const validNextStates = VALID_TRANSITIONS[currentState] || [];
+    return validNextStates.includes(newState);
+  }
+
   /**
    * Get a client's response status for an opportunity
    */
@@ -49,7 +67,14 @@ export class ClientOpportunityStatusService {
         return null;
       }
 
-      const previousState = status.response_state;
+      const previousState = status.response_state || 'pending';
+
+      // Validate state transition
+      if (!this.isValidTransition(previousState, input.response_state)) {
+        throw new Error(
+          `Invalid state transition: ${previousState} → ${input.response_state}`
+        );
+      }
 
       const updated = await db
         .update(clientOpportunityStatus)

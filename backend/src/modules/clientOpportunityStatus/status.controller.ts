@@ -57,6 +57,11 @@ export class StatusController {
         return res.status(400).json({ success: false, errors: err.errors });
       }
 
+      // Handle invalid state transition
+      if (err.message && err.message.includes('Invalid state transition')) {
+        return res.status(400).json({ success: false, error: err.message });
+      }
+
       res.status(500).json({ success: false, error: 'Failed to update status' });
     }
   }
