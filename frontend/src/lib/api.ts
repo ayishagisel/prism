@@ -256,6 +256,16 @@ class ApiClient {
     return res.data;
   }
 
+  async getOpportunitySummary(opportunityId: string): Promise<ApiResponse<any>> {
+    const res = await this.client.get(`/api/opportunities/${opportunityId}/summary`);
+    return res.data;
+  }
+
+  async getClientOpportunityStatuses(opportunityId: string): Promise<ApiResponse<any[]>> {
+    const res = await this.client.get(`/api/opportunities/${opportunityId}/statuses`);
+    return res.data;
+  }
+
   async importCSV(csvContent: string, clientMapping?: any): Promise<ApiResponse<any>> {
     const res = await this.client.post('/api/csv/import', {
       csv_content: csvContent,

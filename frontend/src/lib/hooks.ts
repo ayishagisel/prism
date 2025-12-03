@@ -133,3 +133,60 @@ export function useTasks(refreshTrigger?: number) {
 
   return { tasks, loading, error };
 }
+
+export function useOpportunityDetail(opportunityId: string) {
+  const [opportunity, setOpportunity] = useState<any>(null);
+  const [summary, setSummary] = useState<any>(null);
+  const [statuses, setStatuses] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch all data in parallel for performance
+        const [oppRes, summaryRes, statusesRes, tasksRes] = await Promise.all([
+          apiClient.getOpportunity(opportunityId),
+          apiClient.getOpportunitySummary(opportunityId),
+          apiClient.getClientOpportunityStatuses(opportunityId),
+          apiClient.getTasksByOpportunity(opportunityId),
+        ]);
+
+        if (oppRes.success) {
+          setOpportunity(oppRes.data);
+        }
+
+        if (summaryRes.success) {
+          setSummary(summaryRes.data);
+        }
+
+        if (statusesRes.success) {
+          setStatuses(statusesRes.data || []);
+        }
+
+        if (tasksRes.success) {
+          setTasks(tasksRes.data || []);
+        }
+
+        // TODO: Fetch activities/audit log when endpoint is available
+        // For now, we'll leave activities as empty array
+        setActivities([]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch opportunity details');
+        console.error('useOpportunityDetail error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (opportunityId) {
+      fetch();
+    }
+  }, [opportunityId]);
+
+  return { opportunity, summary, statuses, tasks, activities, loading, error };
+}
