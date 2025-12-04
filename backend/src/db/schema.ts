@@ -348,6 +348,44 @@ export const activityLogs = pgTable(
   })
 );
 
+export const emailVerificationTokens = pgTable(
+  'email_verification_tokens',
+  {
+    id: text('id').primaryKey(),
+    user_id: text('user_id').notNull(),
+    user_type: text('user_type').notNull(), // 'agency_user' or 'client_user'
+    email: text('email').notNull(),
+    token_hash: text('token_hash').notNull(),
+    expires_at: timestamp('expires_at').notNull(),
+    verified_at: timestamp('verified_at'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    userIdIdx: index('email_verification_tokens_user_id_idx').on(t.user_id),
+    tokenIdx: index('email_verification_tokens_token_idx').on(t.token_hash),
+    expiresAtIdx: index('email_verification_tokens_expires_at_idx').on(t.expires_at),
+  })
+);
+
+export const passwordResetTokens = pgTable(
+  'password_reset_tokens',
+  {
+    id: text('id').primaryKey(),
+    user_id: text('user_id').notNull(),
+    user_type: text('user_type').notNull(), // 'agency_user' or 'client_user'
+    email: text('email').notNull(),
+    token_hash: text('token_hash').notNull(),
+    expires_at: timestamp('expires_at').notNull(),
+    used_at: timestamp('used_at'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    userIdIdx: index('password_reset_tokens_user_id_idx').on(t.user_id),
+    tokenIdx: index('password_reset_tokens_token_idx').on(t.token_hash),
+    expiresAtIdx: index('password_reset_tokens_expires_at_idx').on(t.expires_at),
+  })
+);
+
 export const notifications = pgTable(
   'notifications',
   {
