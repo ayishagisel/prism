@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { statusService } from './status.service';
+import { notificationService } from '../notification/notification.service';
 import { logger } from '../../utils/logger';
 import { validate, required } from '../../utils/validation';
 
@@ -48,6 +49,14 @@ export class StatusController {
       if (!status) {
         return res.status(404).json({ success: false, error: 'Status not found' });
       }
+
+      // Notify PR team of client response (async - don't wait)
+      notificationService.notifyPRTeamOfClientResponse(
+        req.auth.agencyId,
+        req.params.clientId,
+        req.params.opportunityId,
+        req.body.response_state
+      ).catch(err => logger.error('Notification error', err));
 
       res.json({ success: true, data: status });
     } catch (err: any) {

@@ -18,4 +18,13 @@ export const config = {
     env: process.env.NODE_ENV || 'development',
   },
   demoMode: process.env.DEMO_MODE === 'true',
+  email: {
+    provider: process.env.EMAIL_PROVIDER || 'ses',
+    senderEmail: process.env.EMAIL_FROM || 'noreply@prism.amore.dev',
+    aws: {
+      region: process.env.AWS_REGION || 'us-east-1',
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  },
 };

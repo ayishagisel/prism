@@ -12,6 +12,7 @@ import { clientController } from './modules/client/client.controller';
 import { statusController } from './modules/clientOpportunityStatus/status.controller';
 import { taskController } from './modules/followUpTask/task.controller';
 import { csvController } from './modules/csv/csv.controller';
+import { emailController } from './modules/email/email.controller';
 
 export const createApp = () => {
   const app = express();
@@ -113,6 +114,10 @@ export const createApp = () => {
   app.get('/api/csv/client-mapping', authMiddleware, (req, res) =>
     csvController.getClientMapping(req, res)
   );
+
+  // Email routes
+  app.post('/api/email/process-pending', (req, res) => emailController.processPendingEmails(req, res));
+  app.get('/api/email/health', (req, res) => emailController.healthCheck(req, res));
 
   // Error handling
   app.use((err: any, req: Request, res: Response, next: any) => {

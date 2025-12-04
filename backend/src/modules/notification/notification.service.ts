@@ -159,6 +159,47 @@ export class NotificationService {
       throw err;
     }
   }
+
+  /**
+   * Get all pending email notifications to be sent
+   */
+  async getPendingEmailNotifications() {
+    try {
+      return await db.query.notifications.findMany({
+        where: and(
+          eq(notifications.channel, 'email'),
+          eq(notifications.status, 'pending' as any)
+        ),
+        limit: 100,
+      });
+    } catch (err) {
+      logger.error('Get pending email notifications error', err);
+      return [];
+    }
+  }
+
+  /**
+   * Get recipient email address based on recipient type and ID
+   */
+  async getRecipientEmail(recipientType: string, recipientId: string): Promise<string | null> {
+    try {
+      if (recipientType === 'agency_user') {
+        const user = await db.query.agencyUsers.findFirst({
+          where: eq(agencyUsers.id, recipientId),
+        });
+        return user?.email || null;
+      } else if (recipientType === 'client_user') {
+        const user = await db.query.clientUsers.findFirst({
+          where: eq(clientUsers.id, recipientId),
+        });
+        return user?.email || null;
+      }
+      return null;
+    } catch (err) {
+      logger.error('Get recipient email error', err);
+      return null;
+    }
+  }
 }
 
 export const notificationService = new NotificationService();
