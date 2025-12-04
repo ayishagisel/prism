@@ -13,6 +13,7 @@ import { statusController } from './modules/clientOpportunityStatus/status.contr
 import { taskController } from './modules/followUpTask/task.controller';
 import { csvController } from './modules/csv/csv.controller';
 import { emailController } from './modules/email/email.controller';
+import { zohoController } from './modules/zoho/zoho.controller';
 
 export const createApp = () => {
   const app = express();
@@ -123,6 +124,15 @@ export const createApp = () => {
   // Email routes
   app.post('/api/email/process-pending', (req, res) => emailController.processPendingEmails(req, res));
   app.get('/api/email/health', (req, res) => emailController.healthCheck(req, res));
+
+  // Zoho CRM Integration routes
+  app.get('/api/zoho/authorize', authMiddleware, (req, res) => zohoController.getAuthorizationUrl(req, res));
+  app.post('/api/zoho/callback', authMiddleware, (req, res) => zohoController.handleOAuthCallback(req, res));
+  app.post('/api/zoho/sync', authMiddleware, (req, res) => zohoController.triggerSync(req, res));
+  app.get('/api/zoho/status', authMiddleware, (req, res) => zohoController.getConnectionStatus(req, res));
+
+  // Zoho Webhook (no auth required - Zoho has own verification)
+  app.post('/api/webhooks/zoho', (req, res) => zohoController.handleWebhook(req, res));
 
   // Error handling
   app.use((err: any, req: Request, res: Response, next: any) => {

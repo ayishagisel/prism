@@ -179,6 +179,7 @@ export const clients = pgTable(
     agency_id: text('agency_id')
       .notNull()
       .references(() => agencies.id),
+    zoho_id: text('zoho_id'), // Zoho Account ID for sync tracking
     name: text('name').notNull(),
     industry: text('industry'),
     primary_contact_name: text('primary_contact_name'),
@@ -192,6 +193,7 @@ export const clients = pgTable(
   },
   (t) => ({
     agencyIdIdx: index('clients_agency_id_idx').on(t.agency_id),
+    zohoIdIdx: index('clients_zoho_id_idx').on(t.zoho_id),
   })
 );
 
@@ -229,6 +231,7 @@ export const opportunities = pgTable(
     agency_id: text('agency_id')
       .notNull()
       .references(() => agencies.id),
+    zoho_id: text('zoho_id'), // Zoho Deal ID for sync tracking
     created_by_user_id: text('created_by_user_id').references(() => agencyUsers.id),
     title: text('title').notNull(),
     summary: text('summary'),
@@ -254,6 +257,7 @@ export const opportunities = pgTable(
   },
   (t) => ({
     agencyIdIdx: index('opportunities_agency_id_idx').on(t.agency_id),
+    zohoIdIdx: index('opportunities_zoho_id_idx').on(t.zoho_id),
     statusIdx: index('opportunities_status_idx').on(t.status),
     deadlineIdx: index('opportunities_deadline_idx').on(t.deadline_at),
   })
@@ -410,5 +414,26 @@ export const notifications = pgTable(
     agencyIdIdx: index('notifications_agency_id_idx').on(t.agency_id),
     recipientIdx: index('notifications_recipient_idx').on(t.recipient_type, t.recipient_id),
     statusIdx: index('notifications_status_idx').on(t.status),
+  })
+);
+
+export const zohoTokens = pgTable(
+  'zoho_tokens',
+  {
+    id: text('id').primaryKey(),
+    agency_id: text('agency_id')
+      .notNull()
+      .references(() => agencies.id),
+    access_token: text('access_token').notNull(),
+    refresh_token: text('refresh_token').notNull(),
+    expires_at: timestamp('expires_at').notNull(),
+    scope: text('scope'),
+    api_domain: text('api_domain'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    agencyIdIdx: uniqueIndex('zoho_tokens_agency_id_idx').on(t.agency_id),
+    expiresAtIdx: index('zoho_tokens_expires_at_idx').on(t.expires_at),
   })
 );
