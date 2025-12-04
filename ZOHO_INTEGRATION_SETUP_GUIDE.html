@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRISM Zoho Integration Setup Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #DC2626 0%, #991b1b 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .timestamp {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .content {
+            padding: 60px 40px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #DC2626;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #DC2626;
+            font-weight: 700;
+        }
+
+        .subsection-title {
+            font-size: 1.3em;
+            color: #374151;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            padding-left: 20px;
+            border-left: 4px solid #DC2626;
+        }
+
+        .section-description {
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 1em;
+            line-height: 1.6;
+        }
+
+        .step-box {
+            background: #f9fafb;
+            border-left: 4px solid #DC2626;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #DC2626;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #111;
+            margin-bottom: 10px;
+        }
+
+        .step-content {
+            color: #555;
+            line-height: 1.7;
+            padding-left: 42px;
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 15px 0;
+            line-height: 1.5;
+            border-left: 4px solid #10b981;
+        }
+
+        .important-box {
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+
+        .important-box h4 {
+            color: #991b1b;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .important-box p {
+            color: #7c2d12;
+            line-height: 1.6;
+        }
+
+        .success-box {
+            background: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+
+        .success-box h4 {
+            color: #166534;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .success-box p {
+            color: #375e3e;
+            line-height: 1.6;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #0284c7;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+
+        .info-box h4 {
+            color: #0c4a6e;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .info-box p {
+            color: #164e63;
+            line-height: 1.6;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+
+        th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #111;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .variable {
+            background: #f3f4f6;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #374151;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .checklist li:before {
+            content: "☐ ";
+            position: absolute;
+            left: 0;
+            color: #DC2626;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .toc {
+            background: #f3f4f6;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            color: #DC2626;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            padding: 8px 0;
+            color: #374151;
+        }
+
+        .toc a {
+            color: #DC2626;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            background: #f9fafb;
+            padding: 40px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer p {
+            margin: 8px 0;
+        }
+
+        .screenshot-note {
+            background: #eff6ff;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 0.9em;
+            color: #164e63;
+            border-left: 3px solid #0284c7;
+        }
+
+        .workflow-diagram {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+            color: #374151;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid #e5e7eb;
+        }
+
+        .credential-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+
+        .credential-table th {
+            background: #DC2626;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .credential-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .credential-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .nested-list {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .nested-list li {
+            list-style-type: circle;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 30px 20px;
+            }
+
+            .section-title {
+                font-size: 1.4em;
+            }
+
+            table {
+                font-size: 0.85em;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PRISM Zoho Integration Setup Guide</h1>
+            <p>Complete Instructions for OAuth, Credentials, and Test Data Creation</p>
+            <div class="timestamp">Generated: December 4, 2025 | Phase 2 Zoho Foundation</div>
+        </div>
+
+        <div class="content">
+            <!-- Table of Contents -->
+            <div class="toc">
+                <h2>Table of Contents</h2>
+                <ul>
+                    <li><a href="#overview">Overview & Architecture</a></li>
+                    <li><a href="#part1">Part 1: Zoho Developer Account Setup</a></li>
+                    <li><a href="#part2">Part 2: OAuth Credentials & Configuration</a></li>
+                    <li><a href="#part3">Part 3: PRISM Environment Setup</a></li>
+                    <li><a href="#part4">Part 4: Database Migrations</a></li>
+                    <li><a href="#part5">Part 5: Creating Test Data in Zoho</a></li>
+                    <li><a href="#part6">Part 6: Testing OAuth & Sync</a></li>
+                    <li><a href="#part7">Part 7: Email Integration Testing</a></li>
+                    <li><a href="#part8">Part 8: Troubleshooting</a></li>
+                    <li><a href="#checklist">Complete Setup Checklist</a></li>
+                </ul>
+            </div>
+
+            <!-- Overview -->
+            <div class="section" id="overview">
+                <h2 class="section-title">Overview & Architecture</h2>
+
+                <div class="subsection-title">What You're Setting Up</div>
+                <p class="section-description">
+                    This guide walks through the complete setup for connecting PRISM to Zoho CRM using OAuth 2.0. The integration allows PRISM to:
+                </p>
+                <ul style="margin: 15px 0 20px 20px; color: #555; line-height: 1.8;">
+                    <li><strong>Fetch Opportunities:</strong> Sync Zoho Deals as PR opportunities in PRISM</li>
+                    <li><strong>Fetch Clients:</strong> Sync Zoho Accounts as PR clients/brands in PRISM</li>
+                    <li><strong>Track Responses:</strong> Store client responses back to Zoho via metadata</li>
+                    <li><strong>Auto-Task Generation:</strong> Create follow-up tasks when clients accept opportunities</li>
+                </ul>
+
+                <div class="workflow-diagram">
+Zoho OAuth Flow:
+┌─────────────────┐
+│  PRISM Frontend │
+└────────┬────────┘
+         │ Click "Connect to Zoho"
+         ↓
+┌─────────────────────────────────┐
+│ Redirects to Zoho Authorization │
+│ GET /oauth/v2/auth (with scope) │
+└────────┬────────────────────────┘
+         │ User logs in & grants permission
+         ↓
+┌─────────────────────────────────┐
+│ Zoho Redirects to PRISM Callback │
+│ (with authorization code)        │
+└────────┬────────────────────────┘
+         │
+         ↓
+┌──────────────────────────────────┐
+│ PRISM Backend Exchanges Code      │
+│ POST /api/zoho/callback           │
+│ (sends code + client_secret)      │
+└────────┬─────────────────────────┘
+         │
+         ↓
+┌──────────────────────────────────┐
+│ Zoho Returns Access + Refresh     │
+│ Tokens Stored in Database         │
+└──────────────────────────────────┘
+                </div>
+
+                <div class="subsection-title">Integration Components</div>
+                <p class="section-description">
+                    <strong>Backend Files (Already Created):</strong>
+                </p>
+                <table style="margin: 15px 0;">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">File</th>
+                            <th style="width: 60%">Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="variable">backend/src/config/zoho.ts</span></td>
+                            <td>Zoho OAuth endpoints and realm configuration</td>
+                        </tr>
+                        <tr>
+                            <td><span class="variable">backend/src/modules/zoho/zoho.service.ts</span></td>
+                            <td>OAuth token management, API calls, data sync</td>
+                        </tr>
+                        <tr>
+                            <td><span class="variable">backend/src/modules/zoho/zoho.controller.ts</span></td>
+                            <td>REST API endpoints (/authorize, /callback, /sync, /status, /webhook)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="variable">backend/src/db/schema.ts</span></td>
+                            <td>zoho_tokens table, zoho_id fields on opportunities & clients</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Part 1: Developer Account -->
+            <div class="section" id="part1">
+                <h2 class="section-title">Part 1: Zoho Developer Account Setup</h2>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Create a Zoho Account (if you don't have one)</span>
+                    </div>
+                    <div class="step-content">
+                        Go to <strong>https://www.zoho.com/crm/</strong> and sign up for a free Zoho CRM account. You'll need this to create opportunities and clients for testing.
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Access Zoho Developer Console</span>
+                    </div>
+                    <div class="step-content">
+                        Navigate to <strong>https://accounts.zoho.com/developerconsole</strong>. Log in with your Zoho account credentials.
+                    </div>
+                    <div class="screenshot-note">
+                        📸 You should see a dashboard with "My Apps" section on the left sidebar.
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">3</span>
+                        <span class="step-title">Create a New OAuth Application</span>
+                    </div>
+                    <div class="step-content">
+                        <ol class="nested-list">
+                            <li>In Developer Console, click <strong>"Add Client"</strong> or <strong>"+ New Application"</strong></li>
+                            <li>Choose <strong>"Server-based Applications"</strong> (not Web or Desktop)</li>
+                            <li>Fill in the form:
+                                <ul class="nested-list">
+                                    <li><strong>Client Name:</strong> <span class="variable">PRISM</span></li>
+                                    <li><strong>Client Domain:</strong> <span class="variable">localhost</span> (for dev) or your domain (for prod)</li>
+                                    <li><strong>Authorized Redirect URIs:</strong> <span class="variable">http://localhost:3000/zoho/callback</span> (dev) or <span class="variable">https://yourdomain.com/zoho/callback</span> (prod)</li>
+                                </ul>
+                            </li>
+                            <li>Click <strong>"Create"</strong></li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="important-box">
+                    <h4>⚠️ Important: Redirect URI Matching</h4>
+                    <p>
+                        The redirect URI must match <strong>exactly</strong> what you put in your environment variables. Mismatches cause OAuth failures.
+                        <br><br>
+                        <strong>For local development:</strong> <span class="variable">http://localhost:3000/zoho/callback</span>
+                        <br>
+                        <strong>For production:</strong> <span class="variable">https://yourdomain.com/zoho/callback</span>
+                    </p>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">4</span>
+                        <span class="step-title">Copy Your Client Credentials</span>
+                    </div>
+                    <div class="step-content">
+                        After creating your application, you'll see:
+                        <ul class="nested-list">
+                            <li><strong>Client ID</strong> — Looks like: <span class="variable">1000.abc123def456</span></li>
+                            <li><strong>Client Secret</strong> — A long random string</li>
+                        </ul>
+                        <strong>Save these somewhere safe!</strong> You'll need them in the next steps. Don't share them publicly.
+                    </div>
+                    <div class="screenshot-note">
+                        📸 These are usually displayed once. If you lose them, you can regenerate them in the Developer Console.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 2: OAuth Credentials -->
+            <div class="section" id="part2">
+                <h2 class="section-title">Part 2: OAuth Credentials & Configuration</h2>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Find Your Zoho Organization ID</span>
+                    </div>
+                    <div class="step-content">
+                        <ol class="nested-list">
+                            <li>Log in to <strong>https://crm.zoho.com</strong> (your CRM instance)</li>
+                            <li>Click your profile icon → <strong>Settings</strong></li>
+                            <li>In the left sidebar, click <strong>Organization</strong> → <strong>Organization Details</strong></li>
+                            <li>Look for <strong>"Organization ID"</strong> — This is a numeric value (e.g., <span class="variable">123456789012</span>)</li>
+                            <li>Copy this value</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Identify Your Zoho Realm</span>
+                    </div>
+                    <div class="step-content">
+                        Your Zoho realm depends on your region. Look at your Zoho CRM URL:
+                        <ul class="nested-list">
+                            <li><strong>https://crm.zoho.com</strong> → Realm is <span class="variable">us</span></li>
+                            <li><strong>https://crm.zoho.eu</strong> → Realm is <span class="variable">eu</span></li>
+                            <li><strong>https://crm.zoho.in</strong> → Realm is <span class="variable">in</span></li>
+                            <li><strong>https://crm.zoho.com.au</strong> → Realm is <span class="variable">au</span></li>
+                            <li><strong>https://crm.zoho.co.jp</strong> → Realm is <span class="variable">jp</span></li>
+                            <li><strong>https://crm.zoho.ca</strong> → Realm is <span class="variable">ca</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="success-box">
+                    <h4>✓ You Now Have All Credentials!</h4>
+                    <p>
+                        Collect these four values and keep them safe:
+                    </p>
+                    <div style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px; font-family: 'Monaco', monospace;">
+                        <div><strong>ZOHO_CLIENT_ID=</strong> 1000.your_client_id_here</div>
+                        <div><strong>ZOHO_CLIENT_SECRET=</strong> your_client_secret_here</div>
+                        <div><strong>ZOHO_ORG_ID=</strong> 123456789012</div>
+                        <div><strong>ZOHO_REALM=</strong> us (or eu, in, au, jp, ca)</div>
+                    </div>
+                </p>
+                </div>
+            </div>
+
+            <!-- Part 3: PRISM Environment -->
+            <div class="section" id="part3">
+                <h2 class="section-title">Part 3: PRISM Environment Setup</h2>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Update backend/.env</span>
+                    </div>
+                    <div class="step-content">
+                        Open <span class="variable">backend/.env</span> in your editor and add your Zoho credentials:
+                    </div>
+                    <div class="code-block">
+ZOHO_CLIENT_ID=1000.your_client_id_here
+ZOHO_CLIENT_SECRET=your_client_secret_here
+ZOHO_ORG_ID=123456789012
+ZOHO_REALM=us
+ZOHO_REDIRECT_URI=http://localhost:3000/zoho/callback
+                    </div>
+                    <div class="section-description">
+                        <strong>Replace the values</strong> with your actual credentials from Part 2.
+                    </div>
+                </div>
+
+                <div class="important-box">
+                    <h4>⚠️ Never Commit Credentials</h4>
+                    <p>
+                        <span class="variable">backend/.env</span> is in <span class="variable">.gitignore</span> and should never be committed to git.
+                        Only commit <span class="variable">.env.example</span> with placeholder values.
+                    </p>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Verify Environment Loading</span>
+                    </div>
+                    <div class="step-content">
+                        The backend will automatically read these variables on startup. No additional setup needed.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 4: Database -->
+            <div class="section" id="part4">
+                <h2 class="section-title">Part 4: Database Migrations</h2>
+
+                <div class="section-description">
+                    The Phase 2 Zoho Foundation already updated your database schema. You need to apply these migrations.
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Run Database Push (Apply Migrations)</span>
+                    </div>
+                    <div class="step-content">
+                        From the project root directory, run:
+                    </div>
+                    <div class="code-block">
+npm run db:push -w backend
+                    </div>
+                    <div class="section-description">
+                        This will:
+                    </div>
+                    <ul style="margin: 10px 0 15px 20px; color: #555;">
+                        <li>Create the <span class="variable">zoho_tokens</span> table (stores OAuth tokens)</li>
+                        <li>Add <span class="variable">zoho_id</span> field to <span class="variable">opportunities</span> table</li>
+                        <li>Add <span class="variable">zoho_id</span> field to <span class="variable">clients</span> table</li>
+                    </ul>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Verify Migration Success</span>
+                    </div>
+                    <div class="step-content">
+                        You should see output like:
+                    </div>
+                    <div class="code-block">
+✓ Schema changes applied successfully
+Tables created/modified:
+  - zoho_tokens (NEW)
+  - opportunities (MODIFIED - added zoho_id)
+  - clients (MODIFIED - added zoho_id)
+                    </div>
+                </div>
+
+                <div class="success-box">
+                    <h4>✓ Database Ready!</h4>
+                    <p>Your database schema is now ready to store Zoho tokens and track Zoho data synchronization.</p>
+                </div>
+            </div>
+
+            <!-- Part 5: Test Data -->
+            <div class="section" id="part5">
+                <h2 class="section-title">Part 5: Creating Test Data in Zoho</h2>
+
+                <p class="section-description">
+                    To test PRISM's sync functionality, you need to create sample Deals (opportunities) and Accounts (clients) in Zoho CRM.
+                    This simulates real PR opportunities from your Zoho system.
+                </p>
+
+                <div class="subsection-title">Creating Test Accounts (Clients)</div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Navigate to Accounts</span>
+                    </div>
+                    <div class="step-content">
+                        <ol class="nested-list">
+                            <li>Log in to <strong>https://crm.zoho.com</strong></li>
+                            <li>In the left sidebar, click <strong>Accounts</strong></li>
+                            <li>Click <strong>"+ New Account"</strong> button</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Fill in Account Details</span>
+                    </div>
+                    <div class="step-content">
+                        Create 3-4 test accounts. Example:
+                    </div>
+                    <table style="margin: 15px 0; background: white;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="text-align: left; padding: 10px;">Field</th>
+                                <th style="text-align: left; padding: 10px;">Example Value 1</th>
+                                <th style="text-align: left; padding: 10px;">Example Value 2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 10px;"><strong>Account Name</strong></td>
+                                <td style="padding: 10px;">Tech Innovations Inc.</td>
+                                <td style="padding: 10px;">Green Energy Solutions</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 10px;"><strong>Industry</strong></td>
+                                <td style="padding: 10px;">Technology</td>
+                                <td style="padding: 10px;">Energy & Utilities</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px;"><strong>Email</strong></td>
+                                <td style="padding: 10px;">contact@techinnovations.com</td>
+                                <td style="padding: 10px;">pr@greenenergy.com</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 10px;"><strong>Phone</strong></td>
+                                <td style="padding: 10px;">+1 (555) 123-4567</td>
+                                <td style="padding: 10px;">+1 (555) 987-6543</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="section-description">
+                        Fill in at least <strong>Account Name</strong>, <strong>Industry</strong>, and <strong>Email</strong>.
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">3</span>
+                        <span class="step-title">Save Accounts</span>
+                    </div>
+                    <div class="step-content">
+                        Click <strong>"Save"</strong>. Repeat this process to create 3-4 test accounts.
+                    </div>
+                </div>
+
+                <div class="subsection-title">Creating Test Deals (Opportunities)</div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Navigate to Deals</span>
+                    </div>
+                    <div class="step-content">
+                        <ol class="nested-list">
+                            <li>In the left sidebar, click <strong>Deals</strong></li>
+                            <li>Click <strong>"+ New Deal"</strong> button</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Fill in Deal Details</span>
+                    </div>
+                    <div class="step-content">
+                        Create 5-6 test deals. These represent PR opportunities. Example:
+                    </div>
+                    <table style="margin: 15px 0; background: white; width: 100%;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="text-align: left; padding: 10px;">Field</th>
+                                <th style="text-align: left; padding: 10px;">Example Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 10px;"><strong>Deal Name</strong></td>
+                                <td style="padding: 10px;">Feature Article: "The Future of AI in Business"</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 10px;"><strong>Account Name</strong></td>
+                                <td style="padding: 10px;">Tech Innovations Inc. (select from your accounts)</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px;"><strong>Closing Date</strong></td>
+                                <td style="padding: 10px;">2025-12-20 (or 2-3 weeks from today)</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 10px;"><strong>Description</strong></td>
+                                <td style="padding: 10px;">Seeking thought leader in AI/ML for feature article about enterprise AI adoption</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px;"><strong>Stage</strong></td>
+                                <td style="padding: 10px;">Qualification (or whatever your workflow uses)</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 10px;"><strong>Amount</strong></td>
+                                <td style="padding: 10px;">5000 (optional, for estimated value)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h4>ℹ️ Media Type Mapping</h4>
+                    <p>
+                        When PRISM syncs your deals, it converts the <strong>Description</strong> field into a media type.
+                        Use these keywords in your deal descriptions to help PRISM classify them:
+                    </p>
+                    <div style="margin-top: 10px; background: white; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.9em;">
+                        <div>• "Article" or "Blog" → feature_article</div>
+                        <div>• "News" → news_brief</div>
+                        <div>• "Podcast" → podcast</div>
+                        <div>• "TV" or "Video" → tv_appearance</div>
+                        <div>• "Speaking" or "Conference" → speaking_engagement</div>
+                        <div>• "Event" → event</div>
+                    </div>
+                </p>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">3</span>
+                        <span class="step-title">Create Multiple Deals</span>
+                    </div>
+                    <div class="step-content">
+                        Create deals with different media types for comprehensive testing:
+                    </div>
+                    <table style="margin: 15px 0; background: white; width: 100%;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="text-align: left; padding: 10px;">Deal Name</th>
+                                <th style="text-align: left; padding: 10px;">Media Type Hint</th>
+                                <th style="text-align: left; padding: 10px;">Deadline</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 10px;">Article: "Enterprise Cloud Solutions"</td>
+                                <td style="padding: 10px;">Article</td>
+                                <td style="padding: 10px;">Dec 20, 2025</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 10px;">News Brief: "Startup Funding Announcement"</td>
+                                <td style="padding: 10px;">News</td>
+                                <td style="padding: 10px;">Dec 15, 2025</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px;">Podcast: "Leadership Insights Podcast"</td>
+                                <td style="padding: 10px;">Podcast</td>
+                                <td style="padding: 10px;">Dec 25, 2025</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 10px;">Speaking Opportunity: "Tech Summit 2025"</td>
+                                <td style="padding: 10px;">Speaking</td>
+                                <td style="padding: 10px;">Jan 15, 2026</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px;">TV Appearance: "Morning Business Show"</td>
+                                <td style="padding: 10px;">TV</td>
+                                <td style="padding: 10px;">Dec 22, 2025</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 10px;">Event: "Annual Industry Conference"</td>
+                                <td style="padding: 10px;">Event</td>
+                                <td style="padding: 10px;">Jan 10, 2026</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="success-box">
+                    <h4>✓ Test Data Created!</h4>
+                    <p>You now have sample Accounts and Deals in Zoho that PRISM can sync.</p>
+                </div>
+            </div>
+
+            <!-- Part 6: OAuth Testing -->
+            <div class="section" id="part6">
+                <h2 class="section-title">Part 6: Testing OAuth & Sync</h2>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Start PRISM Development Server</span>
+                    </div>
+                    <div class="step-content">
+                        From the project root:
+                    </div>
+                    <div class="code-block">
+npm run dev
+                    </div>
+                    <div class="section-description">
+                        This starts both backend (port 3001) and frontend (port 3000).
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Log In to PRISM</span>
+                    </div>
+                    <div class="step-content">
+                        <ol class="nested-list">
+                            <li>Open <strong>http://localhost:3000</strong> in your browser</li>
+                            <li>You'll see the login page</li>
+                            <li>Enter any email (demo mode accepts all): <span class="variable">test@prism.local</span></li>
+                            <li>Click <strong>"Sign In"</strong></li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">3</span>
+                        <span class="step-title">Look for Zoho Connection Button</span>
+                    </div>
+                    <div class="step-content">
+                        After logging in, navigate to <strong>Dashboard</strong> or <strong>Opportunities</strong> page.
+                        You should see a <strong>"Connect to Zoho"</strong> button or similar in the UI.
+                        <br><br>
+                        <strong>Current Status (Dec 4, 2025):</strong> This button may need to be added to the frontend.
+                        As a workaround, you can test the backend API directly.
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">4</span>
+                        <span class="step-title">Test OAuth via API (Manual Testing)</span>
+                    </div>
+                    <div class="step-content">
+                        Use <strong>curl</strong> or <strong>Postman</strong> to test the endpoints. First, get your auth token:
+                    </div>
+                    <div class="code-block">
+# Step 1: Login and get JWT token
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@prism.local"}'
+
+# Response contains: { "token": "eyJhbGc..." }
+# Copy this token for the next steps
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">5</span>
+                        <span class="step-title">Get Zoho Authorization URL</span>
+                    </div>
+                    <div class="step-content">
+                        <div class="code-block">
+curl -X GET http://localhost:3001/api/zoho/authorize \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+
+# Response: { "authUrl": "https://accounts.zoho.com/oauth/v2/auth?..." }
+                        </div>
+                        <div class="section-description">
+                            Open the returned <span class="variable">authUrl</span> in your browser. This will redirect you to Zoho login.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">6</span>
+                        <span class="step-title">Complete Zoho OAuth Login</span>
+                    </div>
+                    <div class="step-content">
+                        <ol class="nested-list">
+                            <li>Click the <span class="variable">authUrl</span> link</li>
+                            <li>You'll be taken to Zoho login</li>
+                            <li>Log in with your Zoho credentials</li>
+                            <li>Zoho will ask you to grant permissions to PRISM (approve it)</li>
+                            <li>You'll be redirected to <strong>http://localhost:3000/zoho/callback?code=xxxx&state=yyyy</strong></li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">7</span>
+                        <span class="step-title">Check Connection Status</span>
+                    </div>
+                    <div class="step-content">
+                        After completing OAuth, check if the token was stored:
+                    </div>
+                    <div class="code-block">
+curl -X GET http://localhost:3001/api/zoho/status \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+
+# Response should show:
+# { "connected": true, "expiresAt": "2025-12-05T14:30:00Z" }
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">8</span>
+                        <span class="step-title">Trigger Manual Sync</span>
+                    </div>
+                    <div class="step-content">
+                        Now sync your Zoho Deals and Accounts into PRISM:
+                    </div>
+                    <div class="code-block">
+curl -X POST http://localhost:3001/api/zoho/sync \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+
+# Response should show:
+# { "opportunitiesSynced": 6, "clientsSynced": 4 }
+                    </div>
+                </div>
+
+                <div class="success-box">
+                    <h4>✓ Sync Complete!</h4>
+                    <p>
+                        Check your PRISM dashboard. You should now see:
+                    </p>
+                    <ul style="margin: 10px 0; color: #375e3e;">
+                        <li><strong>New Clients:</strong> Your Zoho Accounts (Tech Innovations Inc., Green Energy Solutions, etc.)</li>
+                        <li><strong>New Opportunities:</strong> Your Zoho Deals (Feature Articles, News Briefs, Podcasts, etc.)</li>
+                        <li><strong>Response States:</strong> All marked as "pending" (waiting for client responses)</li>
+                    </ul>
+                </p>
+                </div>
+
+                <div class="info-box">
+                    <h4>ℹ️ Zoho Realm Mismatch?</h4>
+                    <p>
+                        If you get an error like "Invalid realm" or "API domain mismatch", double-check:
+                    </p>
+                    <ul style="margin: 10px 0; color: #164e63;">
+                        <li>Your <span class="variable">ZOHO_REALM</span> env variable matches your Zoho CRM URL</li>
+                        <li>Your Zoho organization is in the correct region</li>
+                        <li>Your OAuth app was created in the Developer Console for the correct region</li>
+                    </ul>
+                </p>
+                </div>
+            </div>
+
+            <!-- Part 7: Email Testing -->
+            <div class="section" id="part7">
+                <h2 class="section-title">Part 7: Email Integration Testing</h2>
+
+                <p class="section-description">
+                    <strong>Current Status (Dec 4, 2025):</strong> Email ingestion is a placeholder in the schema.
+                    This section describes the architecture for future implementation and how to test it.
+                </p>
+
+                <div class="subsection-title">Email Ingestion Workflow</div>
+
+                <div class="workflow-diagram">
+Email Ingestion (Future):
+┌─────────────────────────────────┐
+│ PR opportunities sent via email  │
+│ (from Zoho or manual forward)    │
+└────────┬────────────────────────┘
+         │
+         ↓
+┌─────────────────────────────────────┐
+│ PRISM Email Receiver                │
+│ (Future: Postmark/SendGrid webhook) │
+└────────┬────────────────────────────┘
+         │
+         ↓
+┌─────────────────────────────────────┐
+│ Parse Email & Extract:              │
+│ - Opportunity name, deadline        │
+│ - Client/brand name                 │
+│ - Media type (article, podcast...)  │
+│ - Contact info                      │
+└────────┬────────────────────────────┘
+         │
+         ↓
+┌─────────────────────────────────────┐
+│ Create Opportunity & Client in PRISM│
+│ Set source: 'email_parser'          │
+│ Store raw email in source_raw_payload
+└─────────────────────────────────────┘
+                </div>
+
+                <div class="subsection-title">Current Email Architecture in PRISM</div>
+
+                <div class="info-box">
+                    <h4>ℹ️ Schema Fields Ready for Email</h4>
+                    <p>The opportunities table has these fields to support email ingestion:</p>
+                    <ul style="margin: 10px 0; color: #164e63;">
+                        <li><span class="variable">source</span> — Can be: 'manual_form', 'csv_import', 'email_parser', or 'zoho_api'</li>
+                        <li><span class="variable">source_reference</span> — Email message ID or reference</li>
+                        <li><span class="variable">source_raw_payload</span> — Stores the full email JSON/raw text</li>
+                    </ul>
+                </p>
+                </div>
+
+                <div class="subsection-title">Testing Email Integration (Future Implementation)</div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Set Up Email Forwarding (Option A: Manual Testing)</span>
+                    </div>
+                    <div class="step-content">
+                        <ol class="nested-list">
+                            <li>Create a test email account (or use your own)</li>
+                            <li>Send emails to it with opportunity details in the body:</li>
+                        </ol>
+                        <div class="code-block">
+Subject: PR Opportunity: TechCrunch Feature Article
+
+Body:
+---
+CLIENT: Tech Innovations Inc.
+OPPORTUNITY: "The Future of AI in Business"
+MEDIA TYPE: Feature Article
+DEADLINE: 2025-12-20
+CONTACT: contact@techinnovations.com
+DETAILS: Seeking thought leader for TechCrunch feature
+---
+                        </div>
+                    </li>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Set Up Email Parser Service (Option B: Automated)</span>
+                    </div>
+                    <div class="step-content">
+                        For production, integrate with email webhook services:
+                        <ul class="nested-list">
+                            <li><strong>Postmark:</strong> Inbound parse webhook (POST /api/webhooks/postmark)</li>
+                            <li><strong>SendGrid:</strong> Inbound parse webhook (POST /api/webhooks/sendgrid)</li>
+                            <li><strong>Custom IMAP:</strong> Poll IMAP server and parse emails</li>
+                        </ul>
+                        These would POST to a new endpoint: <span class="variable">POST /api/webhooks/email</span>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">3</span>
+                        <span class="step-title">Email Parser Implementation (Future)</span>
+                    </div>
+                    <div class="step-content">
+                        When you're ready to implement email parsing, you would:
+                        <ol class="nested-list">
+                            <li>Create <span class="variable">backend/src/modules/email/email.service.ts</span></li>
+                            <li>Implement parsing logic to extract:
+                                <ul class="nested-list">
+                                    <li>Client name (via regex or Gemini AI)</li>
+                                    <li>Opportunity title and deadline</li>
+                                    <li>Media type from keywords</li>
+                                    <li>Contact information</li>
+                                </ul>
+                            </li>
+                            <li>Call <span class="variable">opportunityService.createOpportunity()</span> with <span class="variable">source: 'email_parser'</span></li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>ℹ️ Why Zoho Sync First?</h4>
+                    <p>
+                        For your Dec 18 demo, focus on Zoho sync first. It's:
+                    </p>
+                    <ul style="margin: 10px 0; color: #164e63;">
+                        <li><strong>Faster to implement:</strong> No email parsing complexity</li>
+                        <li><strong>More reliable:</strong> Structured Zoho API data (no parsing errors)</li>
+                        <li><strong>Better for demo:</strong> Real opportunities from your Zoho instance</li>
+                        <li><strong>Email parsing</strong> can be Phase 3+ feature</li>
+                    </ul>
+                </p>
+                </div>
+            </div>
+
+            <!-- Part 8: Troubleshooting -->
+            <div class="section" id="part8">
+                <h2 class="section-title">Part 8: Troubleshooting</h2>
+
+                <div class="subsection-title">Common Issues & Solutions</div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Error: "Invalid Client ID/Secret"</span>
+                    </div>
+                    <div class="step-content">
+                        <strong>Symptoms:</strong> OAuth fails immediately with authentication error.
+                        <br><br>
+                        <strong>Solution:</strong>
+                        <ul class="nested-list">
+                            <li>Double-check your <span class="variable">ZOHO_CLIENT_ID</span> and <span class="variable">ZOHO_CLIENT_SECRET</span> in <span class="variable">backend/.env</span></li>
+                            <li>Make sure they match exactly what's in the Zoho Developer Console</li>
+                            <li>Restart the backend: <span class="variable">npm run dev -w backend</span></li>
+                            <li>Check that there are no extra spaces or quotes around values</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Error: "Redirect URI Mismatch"</span>
+                    </div>
+                    <div class="step-content">
+                        <strong>Symptoms:</strong> Zoho shows error like "The redirect_uri does not match the registered redirect_uri"
+                        <br><br>
+                        <strong>Solution:</strong>
+                        <ul class="nested-list">
+                            <li>Your <span class="variable">ZOHO_REDIRECT_URI</span> must match exactly what's registered in Zoho Developer Console</li>
+                            <li><strong>Development:</strong> <span class="variable">http://localhost:3000/zoho/callback</span></li>
+                            <li><strong>Production:</strong> <span class="variable">https://yourdomain.com/zoho/callback</span></li>
+                            <li>Update in Zoho Developer Console → Your App → Authorized Redirect URIs</li>
+                            <li>Restart backend after updating</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">3</span>
+                        <span class="step-title">Error: "Realm/Organization ID Not Found"</span>
+                    </div>
+                    <div class="step-content">
+                        <strong>Symptoms:</strong> Sync fails with "Invalid organization" or API 404 errors.
+                        <br><br>
+                        <strong>Solution:</strong>
+                        <ul class="nested-list">
+                            <li>Verify your <span class="variable">ZOHO_ORG_ID</span> is correct (numeric, 12 digits)</li>
+                            <li>Verify your <span class="variable">ZOHO_REALM</span> matches your Zoho region:
+                                <ul class="nested-list">
+                                    <li>https://crm.zoho.com → us</li>
+                                    <li>https://crm.zoho.eu → eu</li>
+                                    <li>https://crm.zoho.in → in</li>
+                                    <li>etc.</li>
+                                </ul>
+                            </li>
+                            <li>Make sure your Zoho organization hasn't been suspended</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">4</span>
+                        <span class="step-title">Error: "No Opportunities/Clients Synced"</span>
+                    </div>
+                    <div class="step-content">
+                        <strong>Symptoms:</strong> Sync completes but returns 0 records synced.
+                        <br><br>
+                        <strong>Solution:</strong>
+                        <ul class="nested-list">
+                            <li>Verify you created Deals and Accounts in your Zoho instance</li>
+                            <li>Check that Deals and Accounts have at least these fields:
+                                <ul class="nested-list">
+                                    <li><strong>Deal:</strong> Deal Name, Closing Date</li>
+                                    <li><strong>Account:</strong> Account Name, Industry, Email</li>
+                                </ul>
+                            </li>
+                            <li>Verify your OAuth token has correct scopes:
+                                <ul class="nested-list">
+                                    <li><span class="variable">CRM.modules.read</span> (to read Deals & Accounts)</li>
+                                    <li><span class="variable">Webhooks.events.create</span> (for webhook support)</li>
+                                </ul>
+                            </li>
+                            <li>Check backend logs for more details: <span class="variable">npm run dev -w backend</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">5</span>
+                        <span class="step-title">Error: "Token Expired"</span>
+                    </div>
+                    <div class="step-content">
+                        <strong>Symptoms:</strong> Sync fails after 1-2 hours with "Invalid access token"
+                        <br><br>
+                        <strong>Solution:</strong>
+                        <ul class="nested-list">
+                            <li>Zoho tokens expire after ~1 hour</li>
+                            <li>PRISM automatically refreshes tokens before expiry</li>
+                            <li>If you see this error:
+                                <ul class="nested-list">
+                                    <li>Check your refresh token is stored correctly in <span class="variable">zoho_tokens</span> table</li>
+                                    <li>Clear the token and re-authorize: <span class="variable">DELETE FROM zoho_tokens WHERE agency_id = 'your_agency_id'</span></li>
+                                    <li>Re-run OAuth flow to get fresh tokens</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">6</span>
+                        <span class="step-title">Error: "Database Migration Failed"</span>
+                    </div>
+                    <div class="step-content">
+                        <strong>Symptoms:</strong> <span class="variable">npm run db:push -w backend</span> fails.
+                        <br><br>
+                        <strong>Solution:</strong>
+                        <ul class="nested-list">
+                            <li>Ensure your <span class="variable">DATABASE_URL</span> in <span class="variable">backend/.env</span> is correct</li>
+                            <li>Check PostgreSQL is running</li>
+                            <li>Try clearing migrations: <span class="variable">npm run db:migrate -w backend</span></li>
+                            <li>Check the Drizzle Studio: <span class="variable">npm run db:studio -w backend</span> (opens GUI to inspect schema)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div style="margin-bottom: 15px;">
+                        <span class="step-number">7</span>
+                        <span class="step-title">CORS or Network Errors</span>
+                    </div>
+                    <div class="step-content">
+                        <strong>Symptoms:</strong> Frontend can't reach backend API.
+                        <br><br>
+                        <strong>Solution:</strong>
+                        <ul class="nested-list">
+                            <li>Ensure backend is running on port 3001: <span class="variable">npm run dev -w backend</span></li>
+                            <li>Check <span class="variable">NEXT_PUBLIC_API_URL=http://localhost:3001</span> in <span class="variable">frontend/.env</span></li>
+                            <li>Clear browser cache and reload</li>
+                            <li>Check browser console (F12) for specific CORS errors</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="section" id="checklist">
+                <h2 class="section-title">Complete Setup Checklist</h2>
+
+                <p class="section-description">
+                    Use this checklist to track your progress through the entire Zoho integration setup.
+                </p>
+
+                <h3 style="font-size: 1.1em; color: #374151; margin: 20px 0 15px 0; font-weight: 600;">Phase 1: Zoho Developer Setup</h3>
+                <ul class="checklist">
+                    <li>Created Zoho CRM account at https://www.zoho.com/crm/</li>
+                    <li>Accessed Zoho Developer Console at https://accounts.zoho.com/developerconsole</li>
+                    <li>Created OAuth application ("PRISM")</li>
+                    <li>Set Client Domain to "localhost" (dev)</li>
+                    <li>Set Authorized Redirect URI to http://localhost:3000/zoho/callback</li>
+                    <li>Copied Client ID and Client Secret</li>
+                    <li>Found Organization ID from Settings → Organization Details</li>
+                    <li>Identified Zoho Realm (us/eu/in/au/jp/ca)</li>
+                </ul>
+
+                <h3 style="font-size: 1.1em; color: #374151; margin: 20px 0 15px 0; font-weight: 600;">Phase 2: PRISM Configuration</h3>
+                <ul class="checklist">
+                    <li>Updated backend/.env with ZOHO_CLIENT_ID</li>
+                    <li>Updated backend/.env with ZOHO_CLIENT_SECRET</li>
+                    <li>Updated backend/.env with ZOHO_ORG_ID</li>
+                    <li>Updated backend/.env with ZOHO_REALM</li>
+                    <li>Updated backend/.env with ZOHO_REDIRECT_URI</li>
+                    <li>Verified backend/.env is in .gitignore</li>
+                </ul>
+
+                <h3 style="font-size: 1.1em; color: #374151; margin: 20px 0 15px 0; font-weight: 600;">Phase 3: Database Setup</h3>
+                <ul class="checklist">
+                    <li>Ran npm run db:push -w backend</li>
+                    <li>Verified zoho_tokens table created</li>
+                    <li>Verified zoho_id field added to opportunities</li>
+                    <li>Verified zoho_id field added to clients</li>
+                </ul>
+
+                <h3 style="font-size: 1.1em; color: #374151; margin: 20px 0 15px 0; font-weight: 600;">Phase 4: Test Data in Zoho</h3>
+                <ul class="checklist">
+                    <li>Created 3-4 test Accounts in Zoho (Tech Innovations Inc., Green Energy Solutions, etc.)</li>
+                    <li>Filled in Account Name, Industry, Email for each</li>
+                    <li>Created 5-6 test Deals in Zoho with varied media types</li>
+                    <li>Added media type hints in Deal descriptions (Article, News, Podcast, etc.)</li>
+                    <li>Set realistic Closing Dates (2-4 weeks out)</li>
+                </ul>
+
+                <h3 style="font-size: 1.1em; color: #374151; margin: 20px 0 15px 0; font-weight: 600;">Phase 5: OAuth Testing</h3>
+                <ul class="checklist">
+                    <li>Started backend: npm run dev -w backend</li>
+                    <li>Started frontend: npm run dev -w frontend</li>
+                    <li>Logged in to PRISM at http://localhost:3000</li>
+                    <li>Got authorization URL via /api/zoho/authorize</li>
+                    <li>Completed Zoho OAuth login and consent</li>
+                    <li>Verified callback received token code</li>
+                    <li>Checked /api/zoho/status shows connected: true</li>
+                </ul>
+
+                <h3 style="font-size: 1.1em; color: #374151; margin: 20px 0 15px 0; font-weight: 600;">Phase 6: Data Sync Testing</h3>
+                <ul class="checklist">
+                    <li>Called POST /api/zoho/sync endpoint</li>
+                    <li>Verified response shows opportunities synced (count > 0)</li>
+                    <li>Verified response shows clients synced (count > 0)</li>
+                    <li>Checked PRISM dashboard for new clients from Zoho</li>
+                    <li>Checked PRISM Opportunities page for new opportunities</li>
+                    <li>Verified media types are correctly mapped</li>
+                </ul>
+
+                <h3 style="font-size: 1.1em; color: #374151; margin: 20px 0 15px 0; font-weight: 600;">Phase 7: End-to-End Testing</h3>
+                <ul class="checklist">
+                    <li>Test client response workflow (pending → interested → accepted)</li>
+                    <li>Verify auto-task generation on acceptance</li>
+                    <li>Check activity logs for all state changes</li>
+                    <li>Test sync multiple times (verify idempotency - no duplicates)</li>
+                    <li>Create new Deals in Zoho and re-sync to verify incremental sync</li>
+                </ul>
+
+                <h3 style="font-size: 1.1em; color: #374151; margin: 20px 0 15px 0; font-weight: 600;">Phase 8: Production Readiness (Optional for Demo)</h3>
+                <ul class="checklist">
+                    <li>Tested with production domain and HTTPS redirect URI</li>
+                    <li>Updated ZOHO_REDIRECT_URI for production domain</li>
+                    <li>Tested rate limiting on sync endpoint</li>
+                    <li>Set up error monitoring (Sentry or similar)</li>
+                    <li>Tested token refresh after 1+ hour of inactivity</li>
+                </ul>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="section">
+                <h2 class="section-title">Next Steps After Setup</h2>
+
+                <p class="section-description">
+                    Once you've completed this setup, here's what comes next in the PRISM development roadmap:
+                </p>
+
+                <div class="info-box">
+                    <h4>🔄 Phase 3: Client Portal (Dec 9-10)</h4>
+                    <p>
+                        Build client-facing UI where brands/clients can:
+                        <ul style="margin: 10px 0; color: #164e63;">
+                            <li>Log in and view opportunities sent to them</li>
+                            <li>Submit responses (accept/decline/interested)</li>
+                            <li>Track their response status and tasks</li>
+                            <li>Update their profile and media readiness</li>
+                        </ul>
+                    </p>
+                </div>
+
+                <div class="info-box">
+                    <h4>🎬 Phase 4: Demo Data & Polish (Dec 11-17)</h4>
+                    <p>
+                        Prepare for the Dec 18 demo:
+                        <ul style="margin: 10px 0; color: #164e63;">
+                            <li>Seed real Apples & Oranges PR data from Zoho</li>
+                            <li>Test complete workflow end-to-end</li>
+                            <li>Polish UI/UX and fix any bugs</li>
+                            <li>Write demo script and presentation</li>
+                        </ul>
+                    </p>
+                </div>
+
+                <div class="success-box">
+                    <h4>📅 Demo Day: December 18, 2025</h4>
+                    <p>
+                        Show off complete PRISM platform with:
+                        <ul style="margin: 10px 0; color: #375e3e;">
+                            <li>Real opportunities synced from Zoho</li>
+                            <li>Client responses and state machine</li>
+                            <li>Auto-task generation workflow</li>
+                            <li>Activity logging and audit trails</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>PRISM Zoho Integration Setup Guide</strong></p>
+            <p>Complete instructions for OAuth 2.0 configuration and testing</p>
+            <p>Generated: December 4, 2025 | Phase 2 Zoho Foundation</p>
+            <p style="margin-top: 20px; font-size: 0.85em; color: #999;">
+                This guide covers everything needed to set up Zoho integration with PRISM,
+                including OAuth configuration, test data creation, and troubleshooting.
+                For questions about the backend implementation, see docs/PHASE2_ZOHO_FOUNDATION.md
+            </p>
+        </div>
+    </div>
+</body>
+</html>
