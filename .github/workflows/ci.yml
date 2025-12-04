@@ -1,0 +1,103 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build backend
+        run: npm run build -w backend
+
+      - name: Build frontend
+        run: npm run build -w frontend
+
+      - name: Run backend tests
+        run: npm run test -w backend
+        continue-on-error: false
+
+      - name: Check TypeScript types (backend)
+        run: npx tsc --noEmit -w backend
+        continue-on-error: false
+
+      - name: Lint frontend
+        run: npm run lint -w frontend
+        continue-on-error: true
+
+  code-quality:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check for TypeScript errors (both packages)
+        run: |
+          npm run build -w backend
+          npm run build -w frontend
+
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+  notify-success:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, code-quality]
+    if: success()
+
+    steps:
+      - name: Notify build success
+        run: echo "✅ CI/CD pipeline passed successfully!"
+
+  notify-failure:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, code-quality]
+    if: failure()
+
+    steps:
+      - name: Notify build failure
+        run: |
+          echo "❌ CI/CD pipeline failed!"
+          echo "Check the logs above for details."
+        shell: bash
