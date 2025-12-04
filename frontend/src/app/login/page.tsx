@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 
 export default function LoginPage() {
@@ -90,6 +91,15 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
+
+          <div className="mt-6 flex items-center justify-between text-sm">
+            <Link href="/forgot-password" className="text-primary font-semibold hover:text-primary-dark">
+              Forgot Password?
+            </Link>
+            <Link href="/register" className="text-primary font-semibold hover:text-primary-dark">
+              Sign Up
+            </Link>
+          </div>
 
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded text-xs text-gray-600">
             <p className="font-semibold text-gray-900 mb-1">Demo Mode</p>

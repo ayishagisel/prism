@@ -278,6 +278,22 @@ class ApiClient {
     const res = await this.client.get('/api/csv/client-mapping');
     return res.data;
   }
+
+  /**
+   * Generic POST request for auth and other endpoints
+   */
+  async post(url: string, data?: any): Promise<ApiResponse<any>> {
+    const res = await this.client.post(url, data);
+    return res.data;
+  }
+
+  /**
+   * Generic GET request for other endpoints
+   */
+  async get(url: string): Promise<ApiResponse<any>> {
+    const res = await this.client.get(url);
+    return res.data;
+  }
 }
 
 export const apiClient = new ApiClient();
