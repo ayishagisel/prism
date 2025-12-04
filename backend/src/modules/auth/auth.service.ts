@@ -5,7 +5,7 @@ import { config } from '../../config/env';
 import { JWTPayload, AuthContext } from '../../types';
 import { logger } from '../../utils/logger';
 import { db } from '../../config/db';
-import { refreshTokens } from '../../db/schema';
+import { refreshTokens, emailVerificationTokens, passwordResetTokens, agencyUsers, clientUsers } from '../../db/schema';
 import { eq, and } from 'drizzle-orm';
 
 export class AuthService {
@@ -201,6 +201,190 @@ export class AuthService {
     } catch (err) {
       logger.error('Revoke all refresh tokens error', err);
       throw err;
+    }
+  }
+
+  /**
+   * Generate email verification token
+   */
+  async generateEmailVerificationToken(
+    userId: string,
+    userType: 'agency_user' | 'client_user',
+    email: string
+  ): Promise<string> {
+    try {
+      const token = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      await db.insert(emailVerificationTokens).values({
+        id: `evt_${crypto.randomUUID()}`,
+        user_id: userId,
+        user_type: userType,
+        email,
+        token_hash: tokenHash,
+        expires_at: expiresAt,
+        created_at: new Date(),
+      });
+
+      return token;
+    } catch (err) {
+      logger.error('Generate email verification token error', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Verify email with token
+   */
+  async verifyEmail(token: string): Promise<{ userId: string; userType: string; email: string } | null> {
+    try {
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const now = new Date();
+
+      const record = await db.query.emailVerificationTokens.findFirst({
+        where: and(
+          eq(emailVerificationTokens.token_hash, tokenHash)
+        ),
+      });
+
+      if (!record) {
+        logger.warn('Email verification token not found');
+        return null;
+      }
+
+      // Check if token expired
+      if (record.expires_at < now) {
+        logger.warn('Email verification token expired');
+        return null;
+      }
+
+      // Check if already verified
+      if (record.verified_at) {
+        logger.warn('Email verification token already used');
+        return null;
+      }
+
+      // Mark as verified
+      await db
+        .update(emailVerificationTokens)
+        .set({ verified_at: new Date() })
+        .where(eq(emailVerificationTokens.id, record.id));
+
+      return {
+        userId: record.user_id,
+        userType: record.user_type,
+        email: record.email,
+      };
+    } catch (err) {
+      logger.error('Verify email error', err);
+      return null;
+    }
+  }
+
+  /**
+   * Generate password reset token
+   */
+  async generatePasswordResetToken(email: string, userType: 'agency_user' | 'client_user'): Promise<string | null> {
+    try {
+      // Find user by email
+      let user;
+      if (userType === 'agency_user') {
+        user = await db.query.agencyUsers.findFirst({
+          where: eq(agencyUsers.email, email),
+        });
+      } else {
+        user = await db.query.clientUsers.findFirst({
+          where: eq(clientUsers.email, email),
+        });
+      }
+
+      if (!user) {
+        logger.warn(`User not found for password reset: ${email}`);
+        return null;
+      }
+
+      const token = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
+
+      await db.insert(passwordResetTokens).values({
+        id: `prt_${crypto.randomUUID()}`,
+        user_id: user.id,
+        user_type: userType,
+        email,
+        token_hash: tokenHash,
+        expires_at: expiresAt,
+        created_at: new Date(),
+      });
+
+      return token;
+    } catch (err) {
+      logger.error('Generate password reset token error', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Reset password with token
+   */
+  async resetPassword(token: string, newPassword: string): Promise<{ userId: string; userType: string } | null> {
+    try {
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const now = new Date();
+
+      const record = await db.query.passwordResetTokens.findFirst({
+        where: and(
+          eq(passwordResetTokens.token_hash, tokenHash)
+        ),
+      });
+
+      if (!record) {
+        logger.warn('Password reset token not found');
+        return null;
+      }
+
+      // Check if token expired
+      if (record.expires_at < now) {
+        logger.warn('Password reset token expired');
+        return null;
+      }
+
+      // Check if already used
+      if (record.used_at) {
+        logger.warn('Password reset token already used');
+        return null;
+      }
+
+      // Hash new password
+      const passwordHash = await this.hashPassword(newPassword);
+
+      // Update user's password
+      if (record.user_type === 'agency_user') {
+        await db
+          .update(agencyUsers)
+          .set({ password_hash: passwordHash, updated_at: new Date() })
+          .where(eq(agencyUsers.id, record.user_id));
+      } else {
+        await db
+          .update(clientUsers)
+          .set({ password_hash: passwordHash, updated_at: new Date() })
+          .where(eq(clientUsers.id, record.user_id));
+      }
+
+      // Mark token as used
+      await db
+        .update(passwordResetTokens)
+        .set({ used_at: new Date() })
+        .where(eq(passwordResetTokens.id, record.id));
+
+      return {
+        userId: record.user_id,
+        userType: record.user_type,
+      };
+    } catch (err) {
+      logger.error('Reset password error', err);
+      return null;
     }
   }
 }

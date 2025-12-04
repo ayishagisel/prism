@@ -17,6 +17,7 @@ export const config = {
     port: parseInt(process.env.PORT || '3001', 10),
     env: process.env.NODE_ENV || 'development',
   },
+  appUrl: process.env.APP_URL || 'http://localhost:3000',
   demoMode: process.env.DEMO_MODE === 'true',
   email: {
     provider: process.env.EMAIL_PROVIDER || 'ses',

@@ -46,6 +46,11 @@ export const createApp = () => {
 
   // Auth routes (no auth required)
   app.post('/api/auth/login', (req, res) => authController.login(req, res));
+  app.post('/api/auth/register', (req, res) => authController.registerAgency(req, res));
+  app.post('/api/auth/register-client', (req, res) => authController.registerClient(req, res));
+  app.post('/api/auth/verify-email', (req, res) => authController.verifyEmail(req, res));
+  app.post('/api/auth/request-password-reset', (req, res) => authController.requestPasswordReset(req, res));
+  app.post('/api/auth/reset-password', (req, res) => authController.resetPassword(req, res));
   app.post('/api/auth/refresh', authMiddleware, (req, res) => refreshController.refresh(req, res));
   app.post('/api/auth/logout', authMiddleware, (req, res) => authController.logout(req, res));
   app.get('/api/auth/me', authMiddleware, (req, res) => authController.me(req, res));
