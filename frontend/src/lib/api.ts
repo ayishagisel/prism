@@ -280,6 +280,24 @@ class ApiClient {
   }
 
   /**
+   * Zoho Integration Methods
+   */
+  async getZohoAuthorizationUrl(): Promise<ApiResponse<any>> {
+    const res = await this.client.get('/api/zoho/authorize');
+    return res.data;
+  }
+
+  async triggerZohoSync(): Promise<ApiResponse<any>> {
+    const res = await this.client.post('/api/zoho/sync');
+    return res.data;
+  }
+
+  async getZohoConnectionStatus(): Promise<ApiResponse<any>> {
+    const res = await this.client.get('/api/zoho/status');
+    return res.data;
+  }
+
+  /**
    * Generic POST request for auth and other endpoints
    */
   async post(url: string, data?: any): Promise<ApiResponse<any>> {

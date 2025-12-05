@@ -14,6 +14,11 @@ export default function DashboardPage() {
   const [oppRefresh, setOppRefresh] = useState(0);
   const [taskRefresh, setTaskRefresh] = useState(0);
 
+  // Zoho integration state
+  const [zohoConnected, setZohoConnected] = useState(false);
+  const [zohoLoading, setZohoLoading] = useState(false);
+  const [syncInProgress, setSyncInProgress] = useState(false);
+
   const { opportunities, loading: oppLoading } = useOpportunities(oppRefresh);
   const { tasks, loading: tasksLoading } = useTasks(taskRefresh);
   const { clients } = useClients();
@@ -50,6 +55,64 @@ export default function DashboardPage() {
       buildMap();
     }
   }, [clients]);
+
+  // Check Zoho connection status on mount
+  useEffect(() => {
+    const checkZohoStatus = async () => {
+      setZohoLoading(true);
+      try {
+        const res = await apiClient.getZohoConnectionStatus();
+        setZohoConnected(res.success && res.data?.connected);
+      } catch (err) {
+        setZohoConnected(false);
+      } finally {
+        setZohoLoading(false);
+      }
+    };
+
+    checkZohoStatus();
+  }, []);
+
+  // Handle Zoho authorization
+  const handleConnectToZoho = async () => {
+    try {
+      setZohoLoading(true);
+      const res = await apiClient.getZohoAuthorizationUrl();
+      if (res.success && res.data?.authorization_url) {
+        // Redirect to Zoho authorization URL
+        window.location.href = res.data.authorization_url;
+      } else {
+        alert('Failed to get authorization URL');
+      }
+    } catch (err) {
+      alert(`Error: ${err instanceof Error ? err.message : 'Failed to connect'}`);
+    } finally {
+      setZohoLoading(false);
+    }
+  };
+
+  // Handle Zoho sync
+  const handleSyncFromZoho = async () => {
+    try {
+      setSyncInProgress(true);
+      const res = await apiClient.triggerZohoSync();
+      if (res.success) {
+        alert(
+          `Sync successful!\n\n` +
+          `Opportunities synced: ${res.data?.opportunities_synced || 0}\n` +
+          `Clients synced: ${res.data?.clients_synced || 0}`
+        );
+        // Refresh opportunities and clients
+        setOppRefresh((prev) => prev + 1);
+      } else {
+        alert(`Sync failed: ${res.error}`);
+      }
+    } catch (err) {
+      alert(`Error: ${err instanceof Error ? err.message : 'Sync failed'}`);
+    } finally {
+      setSyncInProgress(false);
+    }
+  };
 
   // Listen for storage changes (when tasks are created in modal)
   useEffect(() => {
@@ -143,6 +206,41 @@ export default function DashboardPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Agency Dashboard</h1>
         <p className="text-gray-600">Overview of your PR opportunities and tasks</p>
+      </div>
+
+      {/* Zoho Integration Section */}
+      <div className="card mb-8 border-l-4 border-blue-500">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-2">
+              🔗 Zoho CRM Integration
+            </h3>
+            <p className="text-sm text-gray-600">
+              {zohoConnected
+                ? '✓ Connected - You can now sync your Zoho deals and accounts'
+                : 'Connect to Zoho CRM to automatically sync deals and accounts'}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {!zohoConnected ? (
+              <button
+                onClick={handleConnectToZoho}
+                disabled={zohoLoading}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition text-sm font-medium whitespace-nowrap"
+              >
+                {zohoLoading ? 'Connecting...' : 'Connect to Zoho'}
+              </button>
+            ) : (
+              <button
+                onClick={handleSyncFromZoho}
+                disabled={syncInProgress}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition text-sm font-medium whitespace-nowrap"
+              >
+                {syncInProgress ? 'Syncing...' : 'Sync from Zoho'}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <DashboardKPIs kpis={kpis} />
