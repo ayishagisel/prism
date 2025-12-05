@@ -10,7 +10,7 @@ export class ZohoController {
    */
   async getAuthorizationUrl(req: Request, res: Response) {
     try {
-      const agencyId = (req as any).user?.agency_id;
+      const agencyId = (req as any).auth?.agencyId;
 
       if (!agencyId) {
         return res.status(401).json({
@@ -51,7 +51,7 @@ export class ZohoController {
   async handleOAuthCallback(req: Request, res: Response) {
     try {
       const { code, state } = req.query;
-      const agencyId = (req as any).user?.agency_id;
+      const agencyId = (req as any).auth?.agencyId;
 
       if (!code) {
         return res.status(400).json({
@@ -121,7 +121,7 @@ export class ZohoController {
    */
   async triggerSync(req: Request, res: Response) {
     try {
-      const agencyId = (req as any).user?.agency_id;
+      const agencyId = (req as any).auth?.agencyId;
 
       if (!agencyId) {
         return res.status(401).json({
@@ -222,7 +222,7 @@ export class ZohoController {
    */
   async getConnectionStatus(req: Request, res: Response) {
     try {
-      const agencyId = (req as any).user?.agency_id;
+      const agencyId = (req as any).auth?.agencyId;
 
       if (!agencyId) {
         return res.status(401).json({
