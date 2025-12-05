@@ -188,6 +188,158 @@ Now PRISM will automatically sync changes from Zoho in real-time!
 
 ---
 
+## Step 6: Test OAuth Flow (Part 6 - Testing)
+
+Once you have Zoho credentials configured in `.env` and test data imported to Zoho, follow these steps to test the full OAuth flow:
+
+### 6.1 Verify Backend is Running
+
+```bash
+# In another terminal, start the backend
+npm run dev -w backend
+```
+
+Wait for the server to start (you should see: "Server running on port 3001")
+
+### 6.2 Get a Fresh JWT Token
+
+In your terminal, log in to PRISM to get a valid access token:
+
+```bash
+curl -X POST http://localhost:3001/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"test@agency.com"}'
+```
+
+Response:
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "4f39e4fc3d782c91e64b338b3c9342dde545edbcbd06a97e4b414573dd3b071c",
+    "expiresIn": "1h",
+    "user": {
+      "id": "user_amore",
+      "email": "test@agency.com",
+      "agencyId": "agency_aopr",
+      "role": "AGENCY_ADMIN"
+    }
+  }
+}
+```
+
+**Copy the `accessToken` value** - you'll use it in the next steps.
+
+### 6.3 Test the OAuth Authorization Endpoint
+
+This endpoint generates the Zoho OAuth URL that users click to authorize PRISM:
+
+```bash
+# Replace YOUR_ACCESS_TOKEN with the token from step 6.2
+curl -X GET http://localhost:3001/api/zoho/authorize \
+  -H 'Authorization: Bearer YOUR_ACCESS_TOKEN'
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "authorization_url": "https://accounts.zoho.com/oauth/v2/auth?client_id=1000.YB5M5GLPS0SVRVOVD6XOHVXYAIK2HO&response_type=code&scope=CRM.modules.read%2CCRM.modules.write%2CWebhooks.events.create&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fzoho%2Fcallback&state=agency_aopr_1764944534312_wuzzde&access_type=offline",
+    "state": "agency_aopr_1764944534312_wuzzde"
+  }
+}
+```
+
+### 6.4 Complete OAuth in Browser (Manual Step)
+
+This is the part that requires human interaction:
+
+1. Copy the `authorization_url` from the response above
+2. Open it in your browser
+3. Sign in to your Zoho account (if not already signed in)
+4. Review the permissions - PRISM is requesting:
+   - `CRM.modules.read` - Read access to CRM modules
+   - `CRM.modules.write` - Write access to CRM modules
+   - `Webhooks.events.create` - Permission to create webhooks
+5. Click **"Allow"** to grant permissions
+6. You'll be redirected back to `http://localhost:3000/zoho/callback` with an authorization code
+
+### 6.5 Verify Token Storage (OAuth Callback Completed)
+
+After completing the OAuth flow in the browser, PRISM's backend automatically:
+1. Receives the authorization code at `/zoho/callback`
+2. Exchanges the code for an access token from Zoho
+3. Stores the token securely in the `zohoTokens` database table
+
+Check that the token was stored:
+
+```bash
+npm run db:studio -w backend
+```
+
+This opens a visual database explorer. Navigate to the `zoho_tokens` table and verify:
+- A new row exists with your `agency_id` (should be `agency_aopr`)
+- `access_token` field has a value
+- `refresh_token` field has a value
+- `expires_at` is set to a future time
+
+### 6.6 Test Sync Endpoint (Part 7 - Data Sync)
+
+Once the OAuth token is stored, you can trigger a sync:
+
+```bash
+curl -X POST http://localhost:3001/api/zoho/sync \
+  -H 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
+  -H 'Content-Type: application/json'
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "opportunities_synced": 12,
+    "clients_synced": 6,
+    "timestamp": "2025-12-05T09:20:45Z"
+  }
+}
+```
+
+This means:
+- 12 opportunities (deals from Zoho) have been imported to PRISM
+- 6 clients (accounts from Zoho) have been imported to PRISM
+
+### 6.7 Verify Synced Data in Database
+
+```bash
+npm run db:studio -w backend
+```
+
+Check these tables for synced data:
+- **opportunities** - Should have 12+ rows with `zoho_id` populated
+- **clients** - Should have 6+ rows with `zoho_id` populated
+- **activity_logs** - Should show sync events
+
+Each row should have:
+- `zoho_id` - The ID from Zoho (proves it came from sync)
+- `agency_id` - Should be `agency_aopr`
+- `created_at` - Recent timestamp
+
+### 6.8 Check Frontend for Synced Data (Optional UI Verification)
+
+If the frontend is running, you can also verify visually:
+
+1. Navigate to http://localhost:3000
+2. Log in with email `test@agency.com` (no password needed)
+3. Go to **Opportunities** page
+4. You should see all 12 synced opportunities listed
+5. Go to **Clients** page (if available)
+6. You should see all 6 synced clients listed
+
+---
+
 ## Troubleshooting
 
 ### "Invalid Client ID/Secret" Error
