@@ -298,6 +298,62 @@ class ApiClient {
   }
 
   /**
+   * Chat Methods
+   */
+  async sendChatMessage(opportunityId: string, message: string): Promise<ApiResponse<any>> {
+    const res = await this.client.post(`/api/chat/${opportunityId}/message`, { message });
+    return res.data;
+  }
+
+  async getChatMessages(opportunityId: string): Promise<ApiResponse<any>> {
+    const res = await this.client.get(`/api/chat/${opportunityId}/messages`);
+    return res.data;
+  }
+
+  async escalateChatToAOPR(opportunityId: string): Promise<ApiResponse<any>> {
+    const res = await this.client.post(`/api/chat/${opportunityId}/escalate`);
+    return res.data;
+  }
+
+  async getEscalatedChats(): Promise<ApiResponse<any>> {
+    const res = await this.client.get('/api/chat/escalated');
+    return res.data;
+  }
+
+  async sendAOPRResponse(opportunityId: string, clientId: string, message: string): Promise<ApiResponse<any>> {
+    const res = await this.client.post(`/api/chat/${opportunityId}/aopr-response`, { clientId, message });
+    return res.data;
+  }
+
+  /**
+   * Restore Request Methods
+   */
+  async createRestoreRequest(data: { opportunity_id: string; client_id: string }): Promise<any> {
+    const res = await this.client.post('/api/restore/request', data);
+    return res.data;
+  }
+
+  async getPendingRestoreRequests(): Promise<any> {
+    const res = await this.client.get('/api/restore/requests');
+    return res.data;
+  }
+
+  async getRestoreRequestsByOpportunityAndClient(opportunityId: string, clientId: string): Promise<any> {
+    const res = await this.client.get(`/api/restore/requests/opportunity/${opportunityId}/client/${clientId}`);
+    return res.data;
+  }
+
+  async approveRestoreRequest(requestId: string, data?: { review_notes?: string }): Promise<any> {
+    const res = await this.client.put(`/api/restore/requests/${requestId}/approve`, data || {});
+    return res.data;
+  }
+
+  async denyRestoreRequest(requestId: string, data?: { review_notes?: string }): Promise<any> {
+    const res = await this.client.put(`/api/restore/requests/${requestId}/deny`, data || {});
+    return res.data;
+  }
+
+  /**
    * Generic POST request for auth and other endpoints
    */
   async post(url: string, data?: any): Promise<ApiResponse<any>> {

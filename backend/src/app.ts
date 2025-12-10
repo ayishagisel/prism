@@ -16,6 +16,11 @@ import { emailController } from './modules/email/email.controller';
 import { zohoController } from './modules/zoho/zoho.controller';
 import { emailIngestController } from './modules/email-ingest/email.controller';
 import { notificationController } from './modules/notifications/notification.controller';
+import { dashboardController } from './modules/dashboard/dashboard.controller';
+import { ChatController } from './modules/chat/chat.controller';
+import { restoreController } from './modules/restore/restore.controller';
+
+const chatController = new ChatController();
 
 export const createApp = () => {
   const app = express();
@@ -149,6 +154,25 @@ export const createApp = () => {
   app.get('/api/notifications/preferences/:userId', authMiddleware, (req, res) => notificationController.getPreferences(req, res));
   app.put('/api/notifications/preferences/:userId', authMiddleware, (req, res) => notificationController.updatePreferences(req, res));
   app.get('/api/notifications/vapid-public-key', authMiddleware, (req, res) => notificationController.getVapidPublicKey(req, res));
+
+  // Chat routes
+  app.post('/api/chat/:opportunityId/message', authMiddleware, (req, res) => chatController.sendMessage(req, res));
+  app.get('/api/chat/:opportunityId/messages', authMiddleware, (req, res) => chatController.getMessages(req, res));
+  app.post('/api/chat/:opportunityId/escalate', authMiddleware, (req, res) => chatController.escalateToAOPR(req, res));
+  app.get('/api/chat/escalated', authMiddleware, (req, res) => chatController.getEscalatedChats(req, res));
+  app.post('/api/chat/:opportunityId/aopr-response', authMiddleware, (req, res) => chatController.sendAOPRResponse(req, res));
+
+  // Restore Request routes
+  app.post('/api/restore/request', authMiddleware, (req, res) => restoreController.createRestoreRequest(req, res));
+  app.get('/api/restore/requests', authMiddleware, (req, res) => restoreController.getPendingRestoreRequests(req, res));
+  app.get('/api/restore/requests/opportunity/:opportunityId/client/:clientId', authMiddleware, (req, res) => restoreController.getRestoreRequestsByOpportunityAndClient(req, res));
+  app.put('/api/restore/requests/:id/approve', authMiddleware, (req, res) => restoreController.approveRestoreRequest(req, res));
+  app.put('/api/restore/requests/:id/deny', authMiddleware, (req, res) => restoreController.denyRestoreRequest(req, res));
+
+  // Dashboard routes
+  app.get('/api/dashboard/summary', authMiddleware, (req, res) => dashboardController.getSummary(req, res));
+  app.get('/api/dashboard/escalated-chats', authMiddleware, (req, res) => dashboardController.getEscalatedChats(req, res));
+  app.get('/api/dashboard/contact-messages', authMiddleware, (req, res) => dashboardController.getContactMessages(req, res));
 
   // Error handling
   app.use((err: any, req: Request, res: Response, next: any) => {
