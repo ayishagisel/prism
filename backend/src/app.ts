@@ -15,6 +15,7 @@ import { csvController } from './modules/csv/csv.controller';
 import { emailController } from './modules/email/email.controller';
 import { zohoController } from './modules/zoho/zoho.controller';
 import { emailIngestController } from './modules/email-ingest/email.controller';
+import { notificationController } from './modules/notifications/notification.controller';
 
 export const createApp = () => {
   const app = express();
@@ -140,6 +141,14 @@ export const createApp = () => {
   app.post('/api/opportunities/pending-review/:id/assign', authMiddleware, (req, res) => emailIngestController.assignToClients(req, res));
   app.post('/api/opportunities/pending-review/:id/discard', authMiddleware, (req, res) => emailIngestController.discardOpportunity(req, res));
   app.post('/api/email-ingest/poll', authMiddleware, (req, res) => emailIngestController.pollEmails(req, res));
+
+  // Notification routes
+  app.post('/api/notifications/subscribe', authMiddleware, (req, res) => notificationController.subscribe(req, res));
+  app.post('/api/notifications/unsubscribe', authMiddleware, (req, res) => notificationController.unsubscribe(req, res));
+  app.post('/api/notifications/send', authMiddleware, (req, res) => notificationController.send(req, res));
+  app.get('/api/notifications/preferences/:userId', authMiddleware, (req, res) => notificationController.getPreferences(req, res));
+  app.put('/api/notifications/preferences/:userId', authMiddleware, (req, res) => notificationController.updatePreferences(req, res));
+  app.get('/api/notifications/vapid-public-key', authMiddleware, (req, res) => notificationController.getVapidPublicKey(req, res));
 
   // Error handling
   app.use((err: any, req: Request, res: Response, next: any) => {
