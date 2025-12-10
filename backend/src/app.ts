@@ -19,8 +19,10 @@ import { notificationController } from './modules/notifications/notification.con
 import { dashboardController } from './modules/dashboard/dashboard.controller';
 import { ChatController } from './modules/chat/chat.controller';
 import { restoreController } from './modules/restore/restore.controller';
+import { ContactController } from './modules/contact/contact.controller';
 
 const chatController = new ChatController();
+const contactController = new ContactController();
 
 export const createApp = () => {
   const app = express();
@@ -173,6 +175,10 @@ export const createApp = () => {
   app.get('/api/dashboard/summary', authMiddleware, (req, res) => dashboardController.getSummary(req, res));
   app.get('/api/dashboard/escalated-chats', authMiddleware, (req, res) => dashboardController.getEscalatedChats(req, res));
   app.get('/api/dashboard/contact-messages', authMiddleware, (req, res) => dashboardController.getContactMessages(req, res));
+
+  // Contact AOPR routes (for accepted opportunities)
+  app.post('/api/contact/:opportunityId/message', authMiddleware, (req, res) => contactController.sendMessage(req, res));
+  app.get('/api/contact/:opportunityId/messages', authMiddleware, (req, res) => contactController.getMessages(req, res));
 
   // Error handling
   app.use((err: any, req: Request, res: Response, next: any) => {

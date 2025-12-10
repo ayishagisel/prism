@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { apiClient } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/lib/hooks';
 
 interface RestoreRequestButtonProps {
   opportunityId: string;

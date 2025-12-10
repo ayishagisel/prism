@@ -344,7 +344,7 @@ function AgencyView({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
             >
               <option value="">All Clients</option>
-              {clients.map((client) => (
+              {clients.map((client: { id: string; name: string }) => (
                 <option key={client.id} value={client.id}>
                   {client.name}
                 </option>
@@ -380,7 +380,7 @@ function AgencyView({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
             >
               <option value="">All Categories</option>
-              {mediaTypes.map((type) => (
+              {mediaTypes.map((type: string) => (
                 <option key={type} value={type}>
                   {type}
                 </option>
@@ -431,7 +431,7 @@ function AgencyView({
                 <p className="text-gray-500 text-sm">No tasks yet</p>
               </div>
             ) : (
-              recentTasks.map((task) => (
+              recentTasks.map((task: { id: string; title: string; status: string; priority: string }) => (
                 <div key={task.id} className="card p-4 hover:shadow-md transition">
                   <p className="font-medium text-gray-900 text-sm">{task.title}</p>
                   <div className="mt-2 flex items-center justify-between">

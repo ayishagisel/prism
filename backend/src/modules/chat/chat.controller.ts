@@ -1,5 +1,17 @@
 import { Request, Response } from 'express';
 import { ChatService } from './chat.service';
+import { db } from '../../config/db';
+import { clientUsers } from '../../db/schema';
+import { eq } from 'drizzle-orm';
+import { AuthContext } from '../../types';
+
+declare global {
+  namespace Express {
+    interface Request {
+      auth?: AuthContext;
+    }
+  }
+}
 
 const chatService = new ChatService();
 
@@ -12,14 +24,26 @@ export class ChatController {
     try {
       const { opportunityId } = req.params;
       const { message } = req.body;
-      const agencyId = req.user?.agencyId;
-      const clientId = req.user?.clientId;
-      const clientUserId = req.user?.id;
+      const agencyId = req.auth?.agencyId;
+      const userId = req.auth?.userId;
 
-      if (!agencyId || !clientId || !clientUserId) {
+      if (!agencyId || !userId) {
         res.status(401).json({ error: 'Unauthorized - Client authentication required' });
         return;
       }
+
+      // Get client user info to retrieve clientId
+      const clientUser = await db.query.clientUsers.findFirst({
+        where: eq(clientUsers.id, userId),
+      });
+
+      if (!clientUser) {
+        res.status(401).json({ error: 'Client user not found' });
+        return;
+      }
+
+      const clientId = clientUser.client_id;
+      const clientUserId = userId;
 
       if (!message || typeof message !== 'string' || message.trim().length === 0) {
         res.status(400).json({ error: 'Message is required and cannot be empty' });
@@ -56,13 +80,25 @@ export class ChatController {
   async getMessages(req: Request, res: Response): Promise<void> {
     try {
       const { opportunityId } = req.params;
-      const agencyId = req.user?.agencyId;
-      const clientId = req.user?.clientId;
+      const agencyId = req.auth?.agencyId;
+      const userId = req.auth?.userId;
 
-      if (!agencyId || !clientId) {
+      if (!agencyId || !userId) {
         res.status(401).json({ error: 'Unauthorized - Client authentication required' });
         return;
       }
+
+      // Get client user info to retrieve clientId
+      const clientUser = await db.query.clientUsers.findFirst({
+        where: eq(clientUsers.id, userId),
+      });
+
+      if (!clientUser) {
+        res.status(401).json({ error: 'Client user not found' });
+        return;
+      }
+
+      const clientId = clientUser.client_id;
 
       const messages = await chatService.getMessages(agencyId, opportunityId, clientId);
 
@@ -80,14 +116,26 @@ export class ChatController {
   async escalateToAOPR(req: Request, res: Response): Promise<void> {
     try {
       const { opportunityId } = req.params;
-      const agencyId = req.user?.agencyId;
-      const clientId = req.user?.clientId;
-      const clientUserId = req.user?.id;
+      const agencyId = req.auth?.agencyId;
+      const userId = req.auth?.userId;
 
-      if (!agencyId || !clientId || !clientUserId) {
+      if (!agencyId || !userId) {
         res.status(401).json({ error: 'Unauthorized - Client authentication required' });
         return;
       }
+
+      // Get client user info to retrieve clientId
+      const clientUser = await db.query.clientUsers.findFirst({
+        where: eq(clientUsers.id, userId),
+      });
+
+      if (!clientUser) {
+        res.status(401).json({ error: 'Client user not found' });
+        return;
+      }
+
+      const clientId = clientUser.client_id;
+      const clientUserId = userId;
 
       const systemMessage = await chatService.escalateToAOPR(agencyId, opportunityId, clientId, clientUserId);
 
@@ -104,10 +152,10 @@ export class ChatController {
    */
   async getEscalatedChats(req: Request, res: Response): Promise<void> {
     try {
-      const agencyId = req.user?.agencyId;
-      const userType = req.user?.userType;
+      const agencyId = req.auth?.agencyId;
+      const role = req.auth?.role;
 
-      if (!agencyId || userType !== 'agency') {
+      if (!agencyId || (role !== 'AGENCY_ADMIN' && role !== 'AGENCY_MEMBER')) {
         res.status(401).json({ error: 'Unauthorized - AOPR authentication required' });
         return;
       }
@@ -129,11 +177,11 @@ export class ChatController {
     try {
       const { opportunityId } = req.params;
       const { clientId, message } = req.body;
-      const agencyId = req.user?.agencyId;
-      const aoprUserId = req.user?.id;
-      const userType = req.user?.userType;
+      const agencyId = req.auth?.agencyId;
+      const aoprUserId = req.auth?.userId;
+      const role = req.auth?.role;
 
-      if (!agencyId || userType !== 'agency' || !aoprUserId) {
+      if (!agencyId || (role !== 'AGENCY_ADMIN' && role !== 'AGENCY_MEMBER') || !aoprUserId) {
         res.status(401).json({ error: 'Unauthorized - AOPR authentication required' });
         return;
       }

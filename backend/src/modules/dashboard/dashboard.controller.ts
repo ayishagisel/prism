@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db } from '../../db';
+import { db } from '../../config/db';
 import {
   clientOpportunityStatus,
   opportunityChats,
@@ -27,7 +27,7 @@ class DashboardController {
    */
   async getSummary(req: Request, res: Response) {
     try {
-      const agencyId = req.user?.agencyId;
+      const agencyId = req.auth?.agencyId;
 
       if (!agencyId) {
         return res.status(401).json({
@@ -56,7 +56,7 @@ class DashboardController {
         total: 0,
       };
 
-      responseBreakdown.forEach((row) => {
+      responseBreakdown.forEach((row: { response_state: string | null; count: number }) => {
         const state = row.response_state || 'pending';
         responseSummary[state as keyof typeof responseSummary] = row.count;
         responseSummary.total += row.count;
@@ -144,7 +144,7 @@ class DashboardController {
    */
   async getEscalatedChats(req: Request, res: Response) {
     try {
-      const agencyId = req.user?.agencyId;
+      const agencyId = req.auth?.agencyId;
 
       if (!agencyId) {
         return res.status(401).json({
@@ -178,9 +178,9 @@ class DashboardController {
         .orderBy(opportunityChats.created_at); // Oldest first = most urgent
 
       // Group by opportunity to get the latest escalated message per conversation
-      const chatsByOpportunity = new Map();
+      const chatsByOpportunity = new Map<string, typeof escalatedChats[0]>();
 
-      escalatedChats.forEach((chat) => {
+      escalatedChats.forEach((chat: typeof escalatedChats[0]) => {
         const key = `${chat.opportunity_id}-${chat.client_id}`;
         if (!chatsByOpportunity.has(key)) {
           chatsByOpportunity.set(key, chat);
@@ -209,7 +209,7 @@ class DashboardController {
    */
   async getContactMessages(req: Request, res: Response) {
     try {
-      const agencyId = req.user?.agencyId;
+      const agencyId = req.auth?.agencyId;
 
       if (!agencyId) {
         return res.status(401).json({
@@ -233,7 +233,17 @@ class DashboardController {
         );
 
       // For each accepted opportunity, get the latest message
-      const contactMessages = [];
+      const contactMessages: Array<{
+        chat_id: string;
+        opportunity_id: string;
+        opportunity_title: string;
+        client_id: string;
+        client_name: string;
+        message: string;
+        sender_type: string;
+        message_type: string;
+        created_at: Date;
+      }> = [];
 
       for (const opp of acceptedOpportunities) {
         const latestMessage = await db
@@ -267,7 +277,7 @@ class DashboardController {
       }
 
       // Sort by most recent first
-      contactMessages.sort((a, b) => {
+      contactMessages.sort((a: typeof contactMessages[0], b: typeof contactMessages[0]) => {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
 

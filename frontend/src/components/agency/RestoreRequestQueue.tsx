@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/lib/hooks';
 import { MediaTypeBadge } from '@/components/common/MediaTypeBadge';
 
 interface RestoreRequest {

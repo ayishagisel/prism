@@ -25,7 +25,8 @@
       "Bash(kill:*)",
       "Bash(node:*)",
       "Bash(npx tsc:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

@@ -3,32 +3,33 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { apiClient } from '@/lib/api';
 
-interface ChatMessage {
+interface ContactMessage {
   id: string;
-  messageType: 'client_question' | 'ai_response' | 'aopr_response' | 'system_message';
-  senderType: string;
-  senderId: string | null;
+  message_type: 'client_question' | 'aopr_response';
+  sender_type: 'client' | 'aopr_rep';
+  sender_id: string | null;
+  sender_name?: string;
   message: string;
-  isEscalated: boolean;
   metadata: any;
-  createdAt: string;
+  created_at: string;
 }
 
-interface QAChatProps {
+interface ContactAOPRChatProps {
   opportunityId: string;
   opportunityTitle: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const QAChat: React.FC<QAChatProps> = ({
+export const ContactAOPRChat: React.FC<ContactAOPRChatProps> = ({
   opportunityId,
   opportunityTitle,
   isOpen,
   onClose,
 }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
+  const [issueCategory, setIssueCategory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -52,10 +53,9 @@ export const QAChat: React.FC<QAChatProps> = ({
   const fetchMessages = async () => {
     try {
       setIsLoading(true);
-      const response = await apiClient.getChatMessages(opportunityId);
-      // Response is the direct backend response: { messages: [...] }
-      if (response && (response as any).messages) {
-        setMessages((response as any).messages);
+      const response = await apiClient.getContactMessages(opportunityId);
+      if (response.success && response.data) {
+        setMessages(response.data);
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
@@ -68,26 +68,30 @@ export const QAChat: React.FC<QAChatProps> = ({
     if (!inputMessage.trim() || isSending) return;
 
     const messageText = inputMessage.trim();
+    const category = issueCategory.trim();
     setInputMessage('');
+    setIssueCategory('');
     setIsSending(true);
 
     try {
-      const response = await apiClient.sendChatMessage(opportunityId, messageText);
+      const response = await apiClient.sendContactMessage(
+        opportunityId,
+        messageText,
+        category || undefined
+      );
 
-      // Response is the direct backend response: { clientMessage: {...}, aiResponse?: {...} }
-      // Add client message
-      if (response && (response as any).clientMessage) {
-        setMessages((prev) => [...prev, (response as any).clientMessage]);
+      if (response.success && response.data) {
+        // Add the new message to the list
+        setMessages((prev) => [...prev, response.data]);
       }
 
-      // Add AI response if present
-      if (response && (response as any).aiResponse) {
-        setMessages((prev) => [...prev, (response as any).aiResponse]);
-      }
+      // Optionally refetch to get any server-side updates
+      await fetchMessages();
     } catch (error) {
       console.error('Failed to send message:', error);
       // Restore message on error
       setInputMessage(messageText);
+      setIssueCategory(category);
     } finally {
       setIsSending(false);
     }
@@ -120,21 +124,9 @@ export const QAChat: React.FC<QAChatProps> = ({
     }
   };
 
-  const renderMessage = (msg: ChatMessage) => {
-    const isClient = msg.messageType === 'client_question';
-    const isAI = msg.messageType === 'ai_response';
-    const isAOPR = msg.messageType === 'aopr_response';
-    const isSystem = msg.messageType === 'system_message';
-
-    if (isSystem) {
-      return (
-        <div key={msg.id} className="flex justify-center my-4">
-          <div className="text-sm text-gray-500 italic text-center max-w-md">
-            {msg.message}
-          </div>
-        </div>
-      );
-    }
+  const renderMessage = (msg: ContactMessage) => {
+    const isClient = msg.sender_type === 'client';
+    const isAOPR = msg.sender_type === 'aopr_rep';
 
     return (
       <div
@@ -146,47 +138,25 @@ export const QAChat: React.FC<QAChatProps> = ({
           className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
             isClient
               ? 'bg-blue-100 text-blue-600'
-              : isAI
-              ? 'bg-red-100 text-red-600'
               : 'bg-gray-100 text-gray-600'
           }`}
         >
-          {isClient ? (
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                clipRule="evenodd"
-              />
-            </svg>
-          ) : isAI ? (
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
-              <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                clipRule="evenodd"
-              />
-            </svg>
-          )}
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+              clipRule="evenodd"
+            />
+          </svg>
         </div>
 
         {/* Message bubble */}
         <div className={`flex-1 ${isClient ? 'flex flex-col items-end' : ''}`}>
-          {/* Sender name and badge */}
+          {/* Sender name */}
           <div className={`flex items-center gap-2 mb-1 ${isClient ? 'flex-row-reverse' : ''}`}>
             <span className="text-xs font-medium text-gray-700">
-              {isClient ? 'You' : isAI ? 'AI Assistant' : 'AOPR Team'}
+              {isClient ? (msg.sender_name || 'You') : (msg.sender_name || 'AOPR Team')}
             </span>
-            {isAI && (
-              <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">
-                AI-Assisted
-              </span>
-            )}
           </div>
 
           {/* Message content */}
@@ -198,11 +168,18 @@ export const QAChat: React.FC<QAChatProps> = ({
             }`}
           >
             <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+            {msg.metadata?.issueCategory && (
+              <div className="mt-2 pt-2 border-t border-red-400">
+                <span className="text-xs text-red-100 font-medium">
+                  Category: {msg.metadata.issueCategory}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Timestamp */}
           <div className={`text-xs text-gray-500 mt-1 ${isClient ? 'text-right' : ''}`}>
-            {formatTimestamp(msg.createdAt)}
+            {formatTimestamp(msg.created_at)}
           </div>
         </div>
       </div>
@@ -225,7 +202,7 @@ export const QAChat: React.FC<QAChatProps> = ({
         <div className="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
           <div className="flex-1 pr-4">
             <h2 className="text-lg font-semibold truncate">{opportunityTitle}</h2>
-            <p className="text-sm text-red-100">Ask questions about this opportunity</p>
+            <p className="text-sm text-red-100">Contact AOPR about this opportunity</p>
           </div>
           <button
             onClick={onClose}
@@ -263,7 +240,7 @@ export const QAChat: React.FC<QAChatProps> = ({
                 </div>
                 <h3 className="text-sm font-medium text-gray-900 mb-1">No messages yet</h3>
                 <p className="text-xs text-gray-500">
-                  Ask a question about this opportunity and our AI assistant will help you!
+                  Start a conversation with the AOPR team about this opportunity.
                 </p>
               </div>
             </div>
@@ -277,13 +254,30 @@ export const QAChat: React.FC<QAChatProps> = ({
 
         {/* Input area */}
         <div className="border-t border-gray-200 bg-white px-6 py-4">
+          {/* Optional issue category input */}
+          <div className="mb-3">
+            <label htmlFor="issueCategory" className="block text-xs font-medium text-gray-700 mb-1">
+              Issue Category (Optional)
+            </label>
+            <input
+              id="issueCategory"
+              type="text"
+              value={issueCategory}
+              onChange={(e) => setIssueCategory(e.target.value)}
+              placeholder="e.g., Deadline, Requirements, Technical"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              disabled={isSending}
+              maxLength={100}
+            />
+          </div>
+
           <div className="flex items-end gap-3">
             <div className="flex-1">
               <textarea
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your question here..."
+                placeholder="Type your message to AOPR..."
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                 rows={3}
                 disabled={isSending}

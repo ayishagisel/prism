@@ -326,6 +326,19 @@ class ApiClient {
   }
 
   /**
+   * Contact AOPR Methods
+   */
+  async sendContactMessage(opportunityId: string, message: string, issueCategory?: string): Promise<ApiResponse<any>> {
+    const res = await this.client.post(`/api/contact/${opportunityId}/message`, { message, issueCategory });
+    return res.data;
+  }
+
+  async getContactMessages(opportunityId: string): Promise<ApiResponse<any>> {
+    const res = await this.client.get(`/api/contact/${opportunityId}/messages`);
+    return res.data;
+  }
+
+  /**
    * Restore Request Methods
    */
   async createRestoreRequest(data: { opportunity_id: string; client_id: string }): Promise<any> {
@@ -350,6 +363,24 @@ class ApiClient {
 
   async denyRestoreRequest(requestId: string, data?: { review_notes?: string }): Promise<any> {
     const res = await this.client.put(`/api/restore/requests/${requestId}/deny`, data || {});
+    return res.data;
+  }
+
+  /**
+   * Dashboard Methods
+   */
+  async getDashboardSummary(): Promise<ApiResponse<any>> {
+    const res = await this.client.get('/api/dashboard/summary');
+    return res.data;
+  }
+
+  async getDashboardEscalatedChats(): Promise<ApiResponse<any>> {
+    const res = await this.client.get('/api/dashboard/escalated-chats');
+    return res.data;
+  }
+
+  async getDashboardContactMessages(): Promise<ApiResponse<any>> {
+    const res = await this.client.get('/api/dashboard/contact-messages');
     return res.data;
   }
 

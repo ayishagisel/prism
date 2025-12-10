@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { restoreService } from './restore.service';
+import { logger } from '../../utils/logger';
 
 export class RestoreController {
   /**
@@ -8,10 +9,10 @@ export class RestoreController {
    * Body: { opportunity_id, client_id }
    * Auth: client_user (from JWT)
    */
-  async createRestoreRequest(req: Request, res: Response, next: NextFunction) {
+  async createRestoreRequest(req: Request, res: Response) {
     try {
       const { opportunity_id, client_id } = req.body;
-      const user = (req as any).user;
+      const user = (req as any).auth;
 
       if (!user) {
         return res.status(401).json({ error: 'Unauthorized' });
@@ -25,32 +26,26 @@ export class RestoreController {
       }
 
       // Ensure the authenticated user is a client user
-      if (user.user_type !== 'client_user') {
+      if (user.role !== 'CLIENT_USER') {
         return res.status(403).json({
           error: 'Only client users can create restore requests',
-        });
-      }
-
-      // Ensure the client_id matches the authenticated user's client
-      if (user.client_id !== client_id) {
-        return res.status(403).json({
-          error: 'You can only create restore requests for your own client',
         });
       }
 
       const restoreRequest = await restoreService.createRestoreRequest({
         opportunity_id,
         client_id,
-        client_user_id: user.id,
-        agency_id: user.agency_id,
+        client_user_id: user.userId,
+        agency_id: user.agencyId,
       });
 
       return res.status(201).json(restoreRequest);
     } catch (error: any) {
+      logger.error('Error creating restore request', error);
       if (error.message.includes('not found') || error.message.includes('deadline has passed') || error.message.includes('declined')) {
         return res.status(400).json({ error: error.message });
       }
-      next(error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 
@@ -59,26 +54,27 @@ export class RestoreController {
    * Get all pending restore requests (AOPR dashboard)
    * Auth: agency_user (from JWT)
    */
-  async getPendingRestoreRequests(req: Request, res: Response, next: NextFunction) {
+  async getPendingRestoreRequests(req: Request, res: Response) {
     try {
-      const user = (req as any).user;
+      const user = (req as any).auth;
 
       if (!user) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
       // Ensure the authenticated user is an agency user
-      if (user.user_type !== 'agency_user') {
+      if (user.role !== 'AGENCY_ADMIN' && user.role !== 'AGENCY_MEMBER') {
         return res.status(403).json({
           error: 'Only agency users can view restore requests',
         });
       }
 
-      const requests = await restoreService.getPendingRestoreRequests(user.agency_id);
+      const requests = await restoreService.getPendingRestoreRequests(user.agencyId);
 
       return res.status(200).json(requests);
     } catch (error) {
-      next(error);
+      logger.error('Error getting pending restore requests', error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 
@@ -87,35 +83,25 @@ export class RestoreController {
    * Get all restore requests for a specific opportunity and client
    * Auth: client_user or agency_user (from JWT)
    */
-  async getRestoreRequestsByOpportunityAndClient(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  async getRestoreRequestsByOpportunityAndClient(req: Request, res: Response) {
     try {
       const { opportunityId, clientId } = req.params;
-      const user = (req as any).user;
+      const user = (req as any).auth;
 
       if (!user) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      // If client user, ensure they own the client
-      if (user.user_type === 'client_user' && user.client_id !== clientId) {
-        return res.status(403).json({
-          error: 'You can only view restore requests for your own client',
-        });
-      }
-
       const requests = await restoreService.getRestoreRequestsByOpportunityAndClient(
         opportunityId,
         clientId,
-        user.agency_id
+        user.agencyId
       );
 
       return res.status(200).json(requests);
     } catch (error) {
-      next(error);
+      logger.error('Error getting restore requests by opportunity and client', error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 
@@ -125,18 +111,18 @@ export class RestoreController {
    * Body: { review_notes? }
    * Auth: agency_user (from JWT)
    */
-  async approveRestoreRequest(req: Request, res: Response, next: NextFunction) {
+  async approveRestoreRequest(req: Request, res: Response) {
     try {
       const { id } = req.params;
       const { review_notes } = req.body;
-      const user = (req as any).user;
+      const user = (req as any).auth;
 
       if (!user) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
       // Ensure the authenticated user is an agency user
-      if (user.user_type !== 'agency_user') {
+      if (user.role !== 'AGENCY_ADMIN' && user.role !== 'AGENCY_MEMBER') {
         return res.status(403).json({
           error: 'Only agency users can approve restore requests',
         });
@@ -144,18 +130,19 @@ export class RestoreController {
 
       const updatedRequest = await restoreService.approveRestoreRequest({
         request_id: id,
-        reviewed_by_user_id: user.id,
-        agency_id: user.agency_id,
+        reviewed_by_user_id: user.userId,
+        agency_id: user.agencyId,
         status: 'approved',
         review_notes,
       });
 
       return res.status(200).json(updatedRequest);
     } catch (error: any) {
+      logger.error('Error approving restore request', error);
       if (error.message.includes('not found') || error.message.includes('already been reviewed')) {
         return res.status(400).json({ error: error.message });
       }
-      next(error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 
@@ -165,18 +152,18 @@ export class RestoreController {
    * Body: { review_notes? }
    * Auth: agency_user (from JWT)
    */
-  async denyRestoreRequest(req: Request, res: Response, next: NextFunction) {
+  async denyRestoreRequest(req: Request, res: Response) {
     try {
       const { id } = req.params;
       const { review_notes } = req.body;
-      const user = (req as any).user;
+      const user = (req as any).auth;
 
       if (!user) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
       // Ensure the authenticated user is an agency user
-      if (user.user_type !== 'agency_user') {
+      if (user.role !== 'AGENCY_ADMIN' && user.role !== 'AGENCY_MEMBER') {
         return res.status(403).json({
           error: 'Only agency users can deny restore requests',
         });
@@ -184,18 +171,19 @@ export class RestoreController {
 
       const updatedRequest = await restoreService.denyRestoreRequest({
         request_id: id,
-        reviewed_by_user_id: user.id,
-        agency_id: user.agency_id,
+        reviewed_by_user_id: user.userId,
+        agency_id: user.agencyId,
         status: 'denied',
         review_notes,
       });
 
       return res.status(200).json(updatedRequest);
     } catch (error: any) {
+      logger.error('Error denying restore request', error);
       if (error.message.includes('not found') || error.message.includes('already been reviewed')) {
         return res.status(400).json({ error: error.message });
       }
-      next(error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 }

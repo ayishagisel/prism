@@ -1,4 +1,4 @@
-import { db } from '../../db';
+import { db } from '../../config/db';
 import { opportunityChats, opportunities, clients } from '../../db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';

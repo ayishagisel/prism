@@ -25,7 +25,7 @@ export class ContactController {
       const { message, issueCategory } = req.body;
       const { opportunityId } = req.params;
       const agencyId = req.auth.agencyId;
-      const userType = req.auth.userType;
+      const role = req.auth.role;
       const userId = req.auth.userId;
 
       // Verify opportunity exists
@@ -45,7 +45,7 @@ export class ContactController {
       let clientId: string | null = null;
       let clientUserId: string | null = null;
 
-      if (userType === 'client_user') {
+      if (role === 'CLIENT_USER') {
         senderType = 'client';
         // Get client user info
         const clientUser = await db.query.clientUsers.findFirst({
@@ -58,7 +58,7 @@ export class ContactController {
 
         clientId = clientUser.client_id;
         clientUserId = userId;
-      } else if (userType === 'agency_user') {
+      } else if (role === 'AGENCY_ADMIN' || role === 'AGENCY_MEMBER') {
         senderType = 'aopr_rep';
         // For agency user, we need to get the client_id from the request or context
         // In this case, we'll need to find it from the last message in the chat
@@ -177,7 +177,7 @@ export class ContactController {
 
       const { opportunityId } = req.params;
       const agencyId = req.auth.agencyId;
-      const userType = req.auth.userType;
+      const role = req.auth.role;
       const userId = req.auth.userId;
 
       // Verify opportunity exists
@@ -195,7 +195,7 @@ export class ContactController {
       // Build where clause based on user type
       let whereClause: any;
 
-      if (userType === 'client_user') {
+      if (role === 'CLIENT_USER') {
         // Get client user's client_id
         const clientUser = await db.query.clientUsers.findFirst({
           where: eq(clientUsers.id, userId),
@@ -212,7 +212,7 @@ export class ContactController {
           eq(opportunityChats.client_id, clientUser.client_id),
           eq(opportunityChats.is_escalated, false)
         );
-      } else if (userType === 'agency_user') {
+      } else if (role === 'AGENCY_ADMIN' || role === 'AGENCY_MEMBER') {
         // Agency users can see all contact messages (not escalated)
         whereClause = and(
           eq(opportunityChats.opportunity_id, opportunityId),
