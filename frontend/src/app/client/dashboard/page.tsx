@@ -3,17 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import TabNavigation from '@/components/client/TabNavigation';
+import { OpportunityCard } from '@/components/client/OpportunityCard';
+import { QAChat } from '@/components/client/QAChat';
+import { ContactAOPRChat } from '@/components/client/ContactAOPRChat';
+import { RestoreRequestButton } from '@/components/client/RestoreRequestButton';
 import { apiClient } from '@/lib/api';
+import { Opportunity } from '@/lib/types';
 
 type TabType = 'new' | 'interested' | 'accepted' | 'declined';
 
-interface OpportunityWithStatus {
-  id: string;
-  title: string;
-  summary: string;
-  outlet_name: string;
-  media_type: string;
-  deadline_at: string;
+interface OpportunityWithStatus extends Opportunity {
   response_state: 'pending' | 'interested' | 'accepted' | 'declined' | 'no_response';
   notes_for_agency?: string;
   responded_at?: string;
@@ -26,6 +25,17 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string | null>(null);
+
+  // Chat state
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatOpportunityId, setChatOpportunityId] = useState<string | null>(null);
+  const [chatOpportunityTitle, setChatOpportunityTitle] = useState<string>('');
+  const [chatType, setChatType] = useState<'qa' | 'contact'>('qa');
+
+  // Restore request state
+  const [restoreModalOpen, setRestoreModalOpen] = useState(false);
+  const [restoreOpportunityId, setRestoreOpportunityId] = useState<string | null>(null);
+  const [pendingRestoreRequests, setPendingRestoreRequests] = useState<Set<string>>(new Set());
 
   // Fetch opportunities on mount
   useEffect(() => {
@@ -61,6 +71,76 @@ export default function ClientDashboard() {
     }
   };
 
+  // Handle status change (Accept/Decline/Interested)
+  const handleStatusChange = async (
+    opportunityId: string,
+    newStatus: 'interested' | 'accepted' | 'declined'
+  ) => {
+    if (!clientId) return;
+
+    try {
+      const response = await apiClient.updateOpportunityStatus(clientId, opportunityId, {
+        response_state: newStatus,
+        responded_at: new Date().toISOString(),
+      });
+
+      if (response.success) {
+        // Update local state
+        setOpportunities((prev) =>
+          prev.map((opp) =>
+            opp.id === opportunityId ? { ...opp, response_state: newStatus } : opp
+          )
+        );
+
+        // If moving to interested, open chat
+        if (newStatus === 'interested') {
+          const opp = opportunities.find((o) => o.id === opportunityId);
+          if (opp) {
+            handleOpenChat(opportunityId, 'qa');
+          }
+        }
+      } else {
+        alert('Failed to update status: ' + (response.error || 'Unknown error'));
+      }
+    } catch (err: any) {
+      console.error('Error updating status:', err);
+      alert('Failed to update status');
+    }
+  };
+
+  // Handle opening chat
+  const handleOpenChat = (opportunityId: string, type: 'qa' | 'contact' = 'qa') => {
+    const opp = opportunities.find((o) => o.id === opportunityId);
+    if (opp) {
+      setChatOpportunityId(opportunityId);
+      setChatOpportunityTitle(opp.title);
+      setChatType(type);
+      setChatOpen(true);
+    }
+  };
+
+  // Handle restore request
+  const handleRequestRestore = async (opportunityId: string) => {
+    if (!clientId) return;
+
+    try {
+      const response = await apiClient.createRestoreRequest({
+        opportunity_id: opportunityId,
+        client_id: clientId,
+      });
+
+      if (response.success) {
+        setPendingRestoreRequests((prev) => new Set([...prev, opportunityId]));
+        alert('Restore request submitted! Your agency will review it shortly.');
+      } else {
+        alert('Failed to submit restore request: ' + (response.error || 'Unknown error'));
+      }
+    } catch (err: any) {
+      console.error('Error creating restore request:', err);
+      alert('Failed to submit restore request');
+    }
+  };
+
   // Filter opportunities by response state
   const getFilteredOpportunities = (tab: TabType): OpportunityWithStatus[] => {
     const stateMap: Record<TabType, string[]> = {
@@ -84,14 +164,6 @@ export default function ClientDashboard() {
 
   // Get opportunities for the active tab
   const filteredOpportunities = getFilteredOpportunities(activeTab);
-
-  // Handle "Ask Questions" button click - switch to interested tab
-  const handleAskQuestions = (opportunityId: string) => {
-    // This will be implemented when OpportunityCard is integrated
-    setActiveTab('interested');
-    // TODO: Update opportunity state to 'interested'
-    // TODO: Navigate to chat or questions interface
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -126,7 +198,7 @@ export default function ClientDashboard() {
                 <p className="text-sm font-medium text-red-800">
                   You have{' '}
                   <span className="font-bold">{counts.new}</span> new{' '}
-                  {counts.new === 1 ? 'opportunity' : 'opportunities'}!
+                  {counts.new === 1 ? 'opportunity' : 'opportunities'} awaiting your response!
                 </p>
               </div>
             </div>
@@ -147,14 +219,14 @@ export default function ClientDashboard() {
           <div className="px-6 py-8">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
               </div>
             ) : error ? (
               <div className="text-center py-12">
                 <p className="text-red-600 mb-4">{error}</p>
                 <button
                   onClick={fetchOpportunities}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
                   Try Again
                 </button>
@@ -175,7 +247,7 @@ export default function ClientDashboard() {
                   />
                 </svg>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No {activeTab} opportunities
+                  No {activeTab === 'new' ? 'new' : activeTab} opportunities
                 </h3>
                 <p className="text-gray-500">
                   {activeTab === 'new'
@@ -185,66 +257,96 @@ export default function ClientDashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {/* Placeholder for OpportunityCard components */}
                 {filteredOpportunities.map((opp) => (
-                  <div
+                  <OpportunityCard
                     key={opp.id}
-                    className="border border-gray-200 rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {opp.title}
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-3">
-                          {opp.outlet_name} • {opp.media_type}
-                        </p>
-                        {opp.summary && (
-                          <p className="text-sm text-gray-700 line-clamp-2 mb-3">
-                            {opp.summary}
-                          </p>
-                        )}
-                        {opp.deadline_at && (
-                          <p className="text-sm text-gray-500">
-                            Deadline:{' '}
-                            {new Date(opp.deadline_at).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </p>
-                        )}
-                      </div>
-                      <span
-                        className={`
-                          ml-4 px-3 py-1 rounded-full text-xs font-semibold
-                          ${
-                            opp.response_state === 'pending'
-                              ? 'bg-red-100 text-red-700'
-                              : opp.response_state === 'interested'
-                              ? 'bg-blue-100 text-blue-700'
-                              : opp.response_state === 'accepted'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-purple-100 text-purple-700'
-                          }
-                        `}
-                      >
-                        {opp.response_state.charAt(0).toUpperCase() +
-                          opp.response_state.slice(1)}
-                      </span>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <p className="text-xs text-gray-500 italic">
-                        Opportunity cards will go here
-                      </p>
-                    </div>
-                  </div>
+                    opportunity={opp}
+                    responseState={opp.response_state}
+                    onStatusChange={handleStatusChange}
+                    onOpenChat={(id) => {
+                      // Use contact chat for accepted, Q&A chat for others
+                      const type = opp.response_state === 'accepted' ? 'contact' : 'qa';
+                      handleOpenChat(id, type);
+                    }}
+                    onRequestRestore={
+                      opp.response_state === 'declined' && !pendingRestoreRequests.has(opp.id)
+                        ? handleRequestRestore
+                        : undefined
+                    }
+                    hasUnreadMessages={false} // TODO: Track unread messages
+                  />
                 ))}
               </div>
             )}
           </div>
         </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+          <div
+            className={`bg-white rounded-lg shadow-sm p-4 cursor-pointer transition-all ${
+              activeTab === 'new' ? 'ring-2 ring-red-500' : 'hover:shadow-md'
+            }`}
+            onClick={() => setActiveTab('new')}
+          >
+            <div className="text-2xl font-bold text-red-600">{counts.new}</div>
+            <div className="text-sm text-gray-600">New</div>
+          </div>
+          <div
+            className={`bg-white rounded-lg shadow-sm p-4 cursor-pointer transition-all ${
+              activeTab === 'interested' ? 'ring-2 ring-blue-500' : 'hover:shadow-md'
+            }`}
+            onClick={() => setActiveTab('interested')}
+          >
+            <div className="text-2xl font-bold text-blue-600">{counts.interested}</div>
+            <div className="text-sm text-gray-600">Interested</div>
+          </div>
+          <div
+            className={`bg-white rounded-lg shadow-sm p-4 cursor-pointer transition-all ${
+              activeTab === 'accepted' ? 'ring-2 ring-green-500' : 'hover:shadow-md'
+            }`}
+            onClick={() => setActiveTab('accepted')}
+          >
+            <div className="text-2xl font-bold text-green-600">{counts.accepted}</div>
+            <div className="text-sm text-gray-600">Accepted</div>
+          </div>
+          <div
+            className={`bg-white rounded-lg shadow-sm p-4 cursor-pointer transition-all ${
+              activeTab === 'declined' ? 'ring-2 ring-purple-500' : 'hover:shadow-md'
+            }`}
+            onClick={() => setActiveTab('declined')}
+          >
+            <div className="text-2xl font-bold text-purple-600">{counts.declined}</div>
+            <div className="text-sm text-gray-600">Declined</div>
+          </div>
+        </div>
       </div>
+
+      {/* Q&A Chat Panel */}
+      {chatOpen && chatType === 'qa' && chatOpportunityId && (
+        <QAChat
+          opportunityId={chatOpportunityId}
+          opportunityTitle={chatOpportunityTitle}
+          isOpen={chatOpen}
+          onClose={() => {
+            setChatOpen(false);
+            setChatOpportunityId(null);
+          }}
+        />
+      )}
+
+      {/* Contact AOPR Chat Panel */}
+      {chatOpen && chatType === 'contact' && chatOpportunityId && (
+        <ContactAOPRChat
+          opportunityId={chatOpportunityId}
+          opportunityTitle={chatOpportunityTitle}
+          isOpen={chatOpen}
+          onClose={() => {
+            setChatOpen(false);
+            setChatOpportunityId(null);
+          }}
+        />
+      )}
     </div>
   );
 }
