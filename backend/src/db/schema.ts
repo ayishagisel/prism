@@ -104,6 +104,34 @@ export const notificationStatusEnum = pgEnum('notification_status', [
   'bounced',
 ]);
 
+export const invitationStatusEnum = pgEnum('invitation_status', [
+  'pending',
+  'accepted',
+  'expired',
+  'revoked',
+]);
+
+export const invitationRoleEnum = pgEnum('invitation_role', [
+  'platform_admin',
+  'agency_admin',
+  'agency_member',
+  'client_owner',
+  'client_team',
+]);
+
+export const chatMessageTypeEnum = pgEnum('chat_message_type', [
+  'client_question',
+  'ai_response',
+  'aopr_response',
+  'system_message',
+]);
+
+export const restoreRequestStatusEnum = pgEnum('restore_request_status', [
+  'pending',
+  'approved',
+  'denied',
+]);
+
 // Tables
 
 export const agencies = pgTable(
@@ -435,5 +463,165 @@ export const zohoTokens = pgTable(
   (t) => ({
     agencyIdIdx: uniqueIndex('zoho_tokens_agency_id_idx').on(t.agency_id),
     expiresAtIdx: index('zoho_tokens_expires_at_idx').on(t.expires_at),
+  })
+);
+
+export const pendingOpportunities = pgTable(
+  'pending_opportunities',
+  {
+    id: text('id').primaryKey(),
+    agency_id: text('agency_id')
+      .notNull()
+      .references(() => agencies.id),
+    email_from: text('email_from').notNull(),
+    email_subject: text('email_subject').notNull(),
+    email_body: text('email_body').notNull(),
+    email_html: text('email_html'),
+    parsed_title: text('parsed_title'),
+    parsed_description: text('parsed_description'),
+    parsed_deadline: timestamp('parsed_deadline'),
+    parsed_media_type: text('parsed_media_type'),
+    parsed_outlet_name: text('parsed_outlet_name'),
+    source_email_id: text('source_email_id'), // Message ID from email server
+    status: text('status').notNull().default('pending_review'), // pending_review, assigned, discarded
+    assigned_client_ids: jsonb('assigned_client_ids').default('[]'), // array of client IDs
+    assigned_by_user_id: text('assigned_by_user_id').references(() => agencyUsers.id),
+    notes: text('notes'),
+    raw_email_data: jsonb('raw_email_data'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    agencyIdIdx: index('pending_opps_agency_id_idx').on(t.agency_id),
+    statusIdx: index('pending_opps_status_idx').on(t.status),
+    emailIdIdx: index('pending_opps_email_id_idx').on(t.source_email_id),
+  })
+);
+
+export const platformAdmins = pgTable(
+  'platform_admins',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    email: text('email').notNull().unique(),
+    password_hash: text('password_hash').notNull(),
+    status: userStatusEnum('status').default('active'),
+    last_login_at: timestamp('last_login_at'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    emailIdx: uniqueIndex('platform_admins_email_idx').on(t.email),
+  })
+);
+
+export const invitations = pgTable(
+  'invitations',
+  {
+    id: text('id').primaryKey(),
+    email: text('email').notNull(),
+    agency_id: text('agency_id').references(() => agencies.id), // null for platform admin invites
+    role: invitationRoleEnum('role').notNull(),
+    token: text('token').notNull().unique(),
+    invited_by_user_id: text('invited_by_user_id'), // platform_admin or agency_user id
+    invited_by_user_type: text('invited_by_user_type'), // 'platform_admin' or 'agency_user'
+    status: invitationStatusEnum('status').default('pending'),
+    expires_at: timestamp('expires_at').notNull(),
+    accepted_at: timestamp('accepted_at'),
+    metadata: jsonb('metadata'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    agencyIdIdx: index('invitations_agency_id_idx').on(t.agency_id),
+    tokenIdx: uniqueIndex('invitations_token_idx').on(t.token),
+    statusIdx: index('invitations_status_idx').on(t.status),
+    expiresAtIdx: index('invitations_expires_at_idx').on(t.expires_at),
+  })
+);
+
+export const opportunityChats = pgTable(
+  'opportunity_chats',
+  {
+    id: text('id').primaryKey(),
+    agency_id: text('agency_id')
+      .notNull()
+      .references(() => agencies.id),
+    opportunity_id: text('opportunity_id')
+      .notNull()
+      .references(() => opportunities.id),
+    client_id: text('client_id')
+      .notNull()
+      .references(() => clients.id),
+    client_user_id: text('client_user_id').references(() => clientUsers.id),
+    message_type: chatMessageTypeEnum('message_type').notNull(),
+    sender_type: text('sender_type').notNull(), // 'client', 'ai_bot', 'aopr_rep', 'system'
+    sender_id: text('sender_id'), // user_id if human, null if AI
+    message: text('message').notNull(),
+    is_escalated: boolean('is_escalated').default(false),
+    escalated_to_user_id: text('escalated_to_user_id').references(() => agencyUsers.id),
+    metadata: jsonb('metadata'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    agencyIdIdx: index('opp_chats_agency_id_idx').on(t.agency_id),
+    oppIdIdx: index('opp_chats_opp_id_idx').on(t.opportunity_id),
+    clientIdIdx: index('opp_chats_client_id_idx').on(t.client_id),
+    createdAtIdx: index('opp_chats_created_at_idx').on(t.created_at),
+  })
+);
+
+export const restoreRequests = pgTable(
+  'restore_requests',
+  {
+    id: text('id').primaryKey(),
+    agency_id: text('agency_id')
+      .notNull()
+      .references(() => agencies.id),
+    opportunity_id: text('opportunity_id')
+      .notNull()
+      .references(() => opportunities.id),
+    client_id: text('client_id')
+      .notNull()
+      .references(() => clients.id),
+    client_user_id: text('client_user_id')
+      .notNull()
+      .references(() => clientUsers.id),
+    status: restoreRequestStatusEnum('status').default('pending'),
+    reviewed_by_user_id: text('reviewed_by_user_id').references(() => agencyUsers.id),
+    reviewed_at: timestamp('reviewed_at'),
+    review_notes: text('review_notes'),
+    requested_at: timestamp('requested_at').defaultNow().notNull(),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    agencyIdIdx: index('restore_requests_agency_id_idx').on(t.agency_id),
+    oppIdIdx: index('restore_requests_opp_id_idx').on(t.opportunity_id),
+    clientIdIdx: index('restore_requests_client_id_idx').on(t.client_id),
+    statusIdx: index('restore_requests_status_idx').on(t.status),
+  })
+);
+
+export const notificationPreferences = pgTable(
+  'notification_preferences',
+  {
+    id: text('id').primaryKey(),
+    user_id: text('user_id').notNull(), // client_user or agency_user id
+    user_type: text('user_type').notNull(), // 'client_user' or 'agency_user'
+    agency_id: text('agency_id')
+      .notNull()
+      .references(() => agencies.id),
+    email_enabled: boolean('email_enabled').default(true),
+    push_enabled: boolean('push_enabled').default(true),
+    sms_enabled: boolean('sms_enabled').default(false),
+    phone_number: text('phone_number'),
+    push_subscription: jsonb('push_subscription'), // Web Push API subscription object
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    agencyIdIdx: index('notif_prefs_agency_id_idx').on(t.agency_id),
+    userIdx: uniqueIndex('notif_prefs_user_idx').on(t.user_id, t.user_type),
   })
 );

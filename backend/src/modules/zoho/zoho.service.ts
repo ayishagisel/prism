@@ -42,7 +42,9 @@ export class ZohoService {
     const params = new URLSearchParams({
       client_id: zohoConfig.client_id,
       response_type: 'code',
-      scope: 'CRM.modules.read,CRM.modules.write,Webhooks.events.create',
+      // Use broad scope - ZohoCRM.modules.ALL covers all CRM modules
+      // For self-client, Zoho requires specific module names instead of module IDs
+      scope: 'ZohoCRM.modules.Deals.ALL,ZohoCRM.modules.Accounts.ALL',
       redirect_uri: zohoConfig.redirect_uri,
       state,
       access_type: 'offline',

@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRISM Phase 2 Status Report - December 8, 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: white;
+            padding: 0;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            .page-break {
+                page-break-after: always;
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: white;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+            color: #1a1a1a;
+            border-bottom: 3px solid #0066cc;
+            padding-bottom: 0.5em;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin: 1.5em 0 0.5em 0;
+            color: #0066cc;
+            border-left: 4px solid #0066cc;
+            padding-left: 0.5em;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            margin: 1em 0 0.5em 0;
+            color: #333;
+        }
+
+        h4 {
+            font-size: 1.1em;
+            margin: 0.8em 0 0.4em 0;
+            color: #555;
+        }
+
+        p {
+            margin-bottom: 0.8em;
+            line-height: 1.7;
+        }
+
+        ul, ol {
+            margin-left: 2em;
+            margin-bottom: 1em;
+        }
+
+        li {
+            margin-bottom: 0.5em;
+            line-height: 1.6;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: #0066cc;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #0052a3;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        tr:last-child td {
+            border-bottom: 2px solid #0066cc;
+        }
+
+        .status-complete {
+            background: #d4edda;
+            color: #155724;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .status-inprogress {
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .status-pending {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .status-blocked {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .status-risk {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .header-meta {
+            background: #f0f0f0;
+            padding: 1em;
+            border-left: 4px solid #0066cc;
+            margin-bottom: 2em;
+            border-radius: 4px;
+        }
+
+        .section-divider {
+            border-top: 2px solid #ddd;
+            margin: 2em 0;
+            padding-top: 1.5em;
+        }
+
+        .blocker {
+            background: #fff5f5;
+            border-left: 4px solid #d32f2f;
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 4px;
+        }
+
+        .blocker h4 {
+            color: #d32f2f;
+            margin-top: 0;
+        }
+
+        .success {
+            background: #f1f8f4;
+            border-left: 4px solid #2e7d32;
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 4px;
+        }
+
+        .warning {
+            background: #fff9f0;
+            border-left: 4px solid #f57c00;
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 4px;
+        }
+
+        .checklist {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .checklist li:before {
+            content: "✓ ";
+            color: #2e7d32;
+            font-weight: bold;
+            margin-right: 0.5em;
+        }
+
+        .checklist li.pending:before {
+            content: "⏳ ";
+            color: #f57c00;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 2em;
+            padding-top: 1em;
+            border-top: 1px solid #ddd;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .evidence {
+            background: #f9f9f9;
+            padding: 1em;
+            margin: 0.5em 0;
+            border-radius: 4px;
+            border-left: 3px solid #999;
+        }
+
+        @media print {
+            body { font-size: 11pt; }
+            h1 { font-size: 2em; }
+            h2 { font-size: 1.5em; }
+            .container { padding: 0; }
+            table { page-break-inside: avoid; }
+            .blocker { page-break-inside: avoid; }
+            .success { page-break-inside: avoid; }
+            .warning { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PRISM Phase 2 Status Report</h1>
+        <div class="header-meta">
+            <strong>Date:</strong> December 8, 2025 (Updated after testing)<br>
+            <strong>Overall Status:</strong> 54% Complete (19/35 Features)<br>
+            <strong>Phase 2 Zoho Integration:</strong> 60% Complete - CRITICAL INFRASTRUCTURE ISSUES FOUND
+        </div>
+
+        <h2>Current Status Overview</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Phase</th>
+                    <th>Status</th>
+                    <th>Completion</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Phase 1: Real Authentication</td>
+                    <td><span class="status-complete">✅ COMPLETE</span></td>
+                    <td>100%</td>
+                    <td><span class="status-complete">Complete</span></td>
+                </tr>
+                <tr>
+                    <td>Phase 2: Zoho Integration Foundation</td>
+                    <td><span class="status-blocked">❌ BLOCKED</span></td>
+                    <td>60%</td>
+                    <td><span class="status-blocked">Critical Infrastructure Issues</span></td>
+                </tr>
+                <tr>
+                    <td>Phase 3: Client Portal</td>
+                    <td><span class="status-pending">⏳ PENDING</span></td>
+                    <td>0%</td>
+                    <td><span class="status-pending">Not Started</span></td>
+                </tr>
+                <tr>
+                    <td>Phase 4: Demo Data & Polish</td>
+                    <td><span class="status-pending">⏳ PENDING</span></td>
+                    <td>0%</td>
+                    <td><span class="status-pending">Not Started</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-divider"></div>
+
+        <h2>Phase 2 Zoho Integration: Detailed Status</h2>
+
+        <h3>✅ Completed Tasks</h3>
+        <ol class="checklist">
+            <li>Zoho OAuth app created in Developer Console</li>
+            <li>Client ID & Client Secret obtained</li>
+            <li>Database schema created (zoho_tokens, status fields on opportunities/clients)</li>
+            <li>Zoho service module implemented (OAuth flow, token management)</li>
+            <li>Zoho controller implemented (5 API endpoints)</li>
+            <li>Frontend OAuth UI built (Connect to Zoho button, callback handler)</li>
+            <li>Test data created in Zoho (6 Accounts, 12 Deals)</li>
+            <li>OAuth scope syntax resolved (<code>ZohoCRM.modules.Deals.ALL,ZohoCRM.modules.Accounts.ALL</code>)</li>
+            <li>Zoho authorization screen working (user can click "Accept")</li>
+        </ol>
+
+        <h3>🟡 In Progress</h3>
+        <ul>
+            <li><strong>OAuth Callback Completion:</strong> Authorization redirects back to dashboard but token not being persisted</li>
+            <li><strong>Database Table Registration:</strong> zoho_tokens table exists but not being recognized on every server restart</li>
+        </ul>
+
+        <h3>⏳ Not Started</h3>
+        <ul class="checklist pending">
+            <li class="pending">Sync endpoint testing</li>
+            <li class="pending">Data sync from Zoho to PRISM</li>
+            <li class="pending">Verification of synced data</li>
+            <li class="pending">Webhook event handling</li>
+        </ul>
+
+        <div class="section-divider"></div>
+
+        <h2>Root Cause Analysis: What Led to the Struggles</h2>
+
+        <h3>1. Zoho Scope Configuration Complexity ⚠️ MAJOR BLOCKER</h3>
+        <div class="blocker">
+            <h4>Problem</h4>
+            <p>OAuth scope validation kept failing with: <code>Invalid OAuth Scope - Scope does not exist</code></p>
+
+            <h4>Evidence</h4>
+            <div class="evidence">
+                <ul>
+                    <li>User reported: "Invalid OAuth Scope Scope does not exist" error when clicking "Connect to Zoho"</li>
+                    <li>Multiple scope format attempts: <code>CRM.modules.*</code>, <code>ZohoCRM.modules.*</code>, <code>ZohoCRM.modules.ALL</code>, etc.</li>
+                    <li>User confirmed via screenshot that Zoho Developer Console Settings tab has NO scope configuration UI</li>
+                    <li>Zoho's self-client app type doesn't expose a "Scopes" section in the API Console UI</li>
+                </ul>
+            </div>
+
+            <h4>Root Cause</h4>
+            <ul>
+                <li>Zoho's documentation doesn't clearly state that self-client apps require <code>.ALL</code> suffix instead of <code>.READ</code></li>
+                <li>The API Console UI doesn't show where scopes can be configured</li>
+                <li>No guidance on the difference between self-client OAuth and standard OAuth scope handling</li>
+            </ul>
+
+            <h4>Resolution</h4>
+            <p>Changed scope to <code>ZohoCRM.modules.Deals.ALL,ZohoCRM.modules.Accounts.ALL</code> (using <code>.ALL</code> instead of <code>.READ</code>)</p>
+            <p><strong>Lesson:</strong> Zoho self-client apps use different scope syntax than standard OAuth apps</p>
+
+            <h4 style="color: #d32f2f;">Time Lost: ~90 minutes</h4>
+        </div>
+
+        <h3>2. Database Migration Not Persisting Across Server Restarts ⚠️ CRITICAL INFRASTRUCTURE ISSUE</h3>
+        <div class="blocker">
+            <h4>Problem</h4>
+            <p>Even after running <code>npm run db:push</code>, the <code>zoho_tokens</code> table would disappear on server restart</p>
+
+            <h4>Evidence</h4>
+            <div class="evidence">
+                <ul>
+                    <li>Backend logs showed: <code>PostgresError: relation "zoho_tokens" does not exist</code> after server restart</li>
+                    <li>Migration ran successfully but changes weren't persistent</li>
+                    <li>Multiple server restarts all showed the same error</li>
+                </ul>
+            </div>
+
+            <h4>Root Cause</h4>
+            <ul>
+                <li>The backend was running with compiled code from <code>dist/</code> folder</li>
+                <li>When server restarted, new process had old compiled code without schema changes</li>
+                <li><code>npm run db:push</code> applied changes to database, but backend process was serving stale compiled JavaScript</li>
+                <li>TypeScript compilation (<code>npx tsc</code>) needed to regenerate <code>dist/</code> with new code</li>
+            </ul>
+
+            <h4>Resolution</h4>
+            <ol>
+                <li>Run <code>npx tsc</code> to rebuild TypeScript BEFORE restarting server</li>
+                <li>Restart backend with fresh compiled code that references the migrated schema</li>
+                <li>Proper server restart sequence: Rebuild → Migrate → Restart</li>
+            </ol>
+
+            <h4 style="color: #d32f2f;">Time Lost: ~45 minutes</h4>
+        </div>
+
+        <h3>3. Frontend OAuth Callback Not Handling Token Persistence ⚠️ WORKFLOW ISSUE</h3>
+        <div class="blocker">
+            <h4>Problem</h4>
+            <p>User was redirected back to dashboard after clicking "Accept" on Zoho auth screen, but:</p>
+            <ul>
+                <li>No visual confirmation that OAuth succeeded (button still showed "Connect to Zoho")</li>
+                <li>Token was not being persisted to database</li>
+                <li>No error messages to guide user on what failed</li>
+            </ul>
+
+            <h4>Evidence</h4>
+            <div class="evidence">
+                <ul>
+                    <li>User said: "I'm being redirected back to the dashboard" (positive)</li>
+                    <li>But then: "It's still showing the blue 'connect to zoho'" (negative result)</li>
+                    <li>Frontend callback page <code>/zoho/callback</code> redirects to dashboard after 2 seconds with no verification</li>
+                </ul>
+            </div>
+
+            <h4>Root Cause</h4>
+            <ul>
+                <li>The frontend callback page isn't responsible for saving tokens - it's the BACKEND <code>/api/zoho/callback</code> endpoint</li>
+                <li>The backend endpoint was trying to query the non-existent <code>zoho_tokens</code> table during token save</li>
+                <li>When the table didn't exist, the token save failed silently</li>
+                <li>User was redirected successfully but the token never made it to the database</li>
+                <li>Frontend had no way to detect that the backend operation failed</li>
+            </ul>
+
+            <h4 style="color: #d32f2f;">Time Lost: ~30 minutes</h4>
+        </div>
+
+        <h3>4. Zoho Developer Console UI Discrepancy ⚠️ UX/DOCUMENTATION ISSUE</h3>
+        <div class="warning">
+            <h4>Problem</h4>
+            <p>User couldn't find scope configuration anywhere in Zoho's Developer Console</p>
+
+            <h4>Evidence (from user screenshots)</h4>
+            <div class="evidence">
+                <ul>
+                    <li>Screenshot 1: API Console showing PRISM app with 3 tabs: Client Details, Client Secret, Settings</li>
+                    <li>Screenshot 2: Settings tab with only Multi-DC (EU, AU, IN, JP) toggles</li>
+                    <li>User statement: "Clicking on the PRISM app there only opens a panel to change Client Details, Client Secret and Settings. Nothing about scopes."</li>
+                </ul>
+            </div>
+
+            <h4>Root Cause</h4>
+            <ul>
+                <li>Zoho's self-client app type likely doesn't require (or allow) explicit scope configuration in the UI</li>
+                <li>The scopes are determined by the OAuth request itself</li>
+                <li>Unlike standard OAuth apps that have a "Scopes" UI, self-client apps trust the request</li>
+                <li>Documentation doesn't explain this difference clearly</li>
+            </ul>
+
+            <h4 style="color: #f57c00;">Time Lost: ~60 minutes</h4>
+        </div>
+
+        <h3>5. Node.js TSX Compatibility Issue ⚠️ TOOLING ISSUE</h3>
+        <div class="warning">
+            <h4>Problem</h4>
+            <p>Backend dev server kept crashing with: <code>Error: tsx must be loaded with --import instead of --loader</code></p>
+
+            <h4>Root Cause</h4>
+            <ul>
+                <li>Version mismatch between Node 18 and tsx package</li>
+                <li>The npm script uses <code>tsx watch</code> which has compatibility issues with Node 18</li>
+            </ul>
+
+            <h4>Resolution</h4>
+            <p>Started backend using compiled code: <code>node /path/to/dist/server.js</code> instead of <code>tsx watch src/server.ts</code></p>
+
+            <h4 style="color: #f57c00;">Time Lost: ~20 minutes</h4>
+        </div>
+
+        <h3>6. Database Schema Type Mismatch (agency_id UUID vs String) ⚠️ CRITICAL BLOCKER - DISCOVERED DURING TESTING</h3>
+        <div class="blocker">
+            <h4>Problem</h4>
+            <p>The <code>zoho_tokens</code> table schema defines <code>agency_id</code> as UUID type, but demo data uses string IDs like <code>"agency_aopr"</code></p>
+
+            <h4>Evidence</h4>
+            <div class="evidence">
+                <ul>
+                    <li>PostgreSQL error during OAuth callback: <code>invalid input syntax for type uuid: "agency_aopr"</code></li>
+                    <li>Error occurs when backend tries to query: <code>WHERE agency_id = 'agency_aopr'</code></li>
+                    <li>Error timestamp: 07:47:03.044Z in fresh backend logs</li>
+                    <li>Schema definition in code: <code>agency_id: uuid('agency_id')</code></li>
+                    <li>Demo seed data uses: <code>agency_id: 'agency_aopr'</code> (string)</li>
+                </ul>
+            </div>
+
+            <h4>Impact</h4>
+            <ul>
+                <li>OAuth token save fails when backend queries zoho_tokens table</li>
+                <li>User is redirected to dashboard (OAuth succeeds) but token never persists</li>
+                <li>Sync endpoint cannot function without stored token</li>
+                <li>Blocks entire Phase 2 verification</li>
+            </ul>
+
+            <h4>Root Cause</h4>
+            <ul>
+                <li>Schema design used UUID for all IDs but demo data wasn't updated accordingly</li>
+                <li>Type mismatch between schema (uuid) and seeded data (string)</li>
+                <li>Testing didn't catch this until live database operations</li>
+            </ul>
+
+            <h4>Resolution Options</h4>
+            <ol>
+                <li><strong>Option A:</strong> Change zoho_tokens schema to use TEXT for agency_id instead of UUID</li>
+                <li><strong>Option B:</strong> Convert all agency_id values in demo data to actual UUIDs</li>
+                <li><strong>Option C:</strong> Create conversion logic in ZohoService to handle both types</li>
+            </ol>
+
+            <h4 style="color: #d32f2f;">Blocking: YES - OAuth token persistence impossible</h4>
+        </div>
+
+        <h3>7. Missing refresh_tokens Table ⚠️ CRITICAL BLOCKER - DISCOVERED DURING TESTING</h3>
+        <div class="blocker">
+            <h4>Problem</h4>
+            <p>Authentication module tries to save refresh tokens to <code>refresh_tokens</code> table, but table doesn't exist in database</p>
+
+            <h4>Evidence</h4>
+            <div class="evidence">
+                <ul>
+                    <li>PostgreSQL error: <code>relation "refresh_tokens" does not exist</code></li>
+                    <li>Error occurs during login: DrizzleQueryError at AuthService.saveRefreshToken()</li>
+                    <li>Error timestamp: 07:47:03.044Z and 07:50:05.241Z in backend logs</li>
+                    <li>Schema defined in code at <code>backend/src/db/schema.ts</code></li>
+                    <li>Table creation script never executed</li>
+                </ul>
+            </div>
+
+            <h4>Impact</h4>
+            <ul>
+                <li>Demo login works initially but errors when saving refresh token</li>
+                <li>Token refresh will fail (24-hour expiry will break sessions)</li>
+                <li>Code has defensive try/catch that continues on error (allows login to succeed)</li>
+                <li>But token refresh will fail when user's session expires</li>
+            </ul>
+
+            <h4>Root Cause</h4>
+            <ul>
+                <li><code>drizzle-kit push:pg</code> completes without error but doesn't create all tables</li>
+                <li>Schema definition exists in code but table never materialized in database</li>
+                <li>Multiple tables may be affected (zoho_tokens had to be manually created)</li>
+                <li>Database migration system is not fully syncing schema</li>
+            </ul>
+
+            <h4>Resolution</h4>
+            <ol>
+                <li>Create refresh_tokens table manually (like we did for zoho_tokens)</li>
+                <li>Audit all other defined tables to verify they exist</li>
+                <li>Review drizzle-kit configuration and migration process</li>
+            </ol>
+
+            <h4 style="color: #d32f2f;">Blocking: YES - Auth token refresh will fail on 24h expiry</h4>
+        </div>
+
+        <h3>8. Database Setup Incomplete (System-Wide Infrastructure Issue) ⚠️ CRITICAL - DISCOVERED DURING TESTING</h3>
+        <div class="blocker">
+            <h4>Problem</h4>
+            <p>The <code>drizzle-kit push:pg</code> migration process completes without errors but doesn't actually create all defined tables</p>
+
+            <h4>Evidence</h4>
+            <div class="evidence">
+                <ul>
+                    <li>zoho_tokens: Defined in schema but didn't exist (had to manually create)</li>
+                    <li>refresh_tokens: Defined in schema but doesn't exist</li>
+                    <li>Command output: Success message but tables missing from database</li>
+                    <li>Affected scope: Unknown (all tables need verification)</li>
+                </ul>
+            </div>
+
+            <h4>Severity</h4>
+            <p>This is a <strong>system-wide infrastructure issue</strong> that could affect other tables beyond these two. Any new schema additions may not migrate properly.</p>
+
+            <h4>Impact</h4>
+            <ul>
+                <li>Cannot rely on drizzle-kit for schema synchronization</li>
+                <li>Manual table creation required as workaround</li>
+                <li>Database state unpredictable - schema in code doesn't match database</li>
+            </ul>
+
+            <h4 style="color: #d32f2f;">Requires: Full database audit and drizzle-kit investigation</h4>
+        </div>
+
+        <h3>9. Agency ID Data Type Inconsistency (Design Issue) ⚠️ HIGH PRIORITY</h3>
+        <div class="warning">
+            <h4>Problem</h4>
+            <p>Database schema uses UUID type for <code>agency_id</code> everywhere, but demo seeding and codebase use string IDs like <code>"agency_aopr"</code></p>
+
+            <h4>Impact</h4>
+            <ul>
+                <li>All queries with agency_id as UUID will fail when given string values</li>
+                <li>Affects not just zoho_tokens but potentially all multi-tenant queries</li>
+                <li>Architectural decision needs to be made: UUID vs string for IDs</li>
+            </ul>
+
+            <h4>Recommendation</h4>
+            <p>Either:</p>
+            <ol>
+                <li>Change all schemas from UUID to TEXT for consistency with current data</li>
+                <li>Update all demo data to use proper UUIDs and migrate schema accordingly</li>
+                <li>Ensure consistency across entire codebase (10+ tables affected)</li>
+            </ol>
+
+            <h4 style="color: #f57c00;">Blocks: Token persistence, possibly other queries</h4>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h2>Time Blocked by Issues</h2>
+
+        <h3>Where Development Stalled</h3>
+        <ul>
+            <li>Debugging Zoho scope validation — 90+ minutes</li>
+            <li>Database migration persistence issues — 45+ minutes</li>
+            <li>OAuth callback & feedback loop issues — 30+ minutes</li>
+            <li>Server startup/database table recognition — 20+ minutes</li>
+            <li>Database schema type mismatches and missing tables (discovered during testing) — 30+ minutes</li>
+        </ul>
+
+        <div class="warning">
+            <strong>Total Time Blocked: ~4.5 hours</strong> debugging infrastructure and platform integration issues
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h2>What's Actually Working Now</h2>
+
+        <h3>✅ Confirmed Working</h3>
+        <ol class="checklist">
+            <li>Zoho OAuth authorization screen displays correctly</li>
+            <li>User can click "Accept" and grant permissions</li>
+            <li>Frontend redirects back to dashboard successfully</li>
+            <li>Database migration runs without errors</li>
+            <li>Backend compiles without TypeScript errors</li>
+            <li>Both servers (frontend + backend) can run concurrently</li>
+        </ol>
+
+        <h3>❌ Still Not Verified</h3>
+        <ol class="checklist pending">
+            <li class="pending">OAuth token being saved to <code>zoho_tokens</code> table</li>
+            <li class="pending">Connection status indicator updating on dashboard</li>
+            <li class="pending">Sync endpoint pulling data from Zoho</li>
+            <li class="pending">Data persisting in PRISM database after sync</li>
+        </ol>
+
+        <div class="section-divider"></div>
+
+        <h2>Next Steps (When Ready to Resume)</h2>
+
+        <h3>1. Verify OAuth Token Persistence</h3>
+        <ul>
+            <li>Check backend logs when clicking "Connect to Zoho"</li>
+            <li>Verify token is being saved to <code>zoho_tokens</code> table</li>
+            <li>Check dashboard for "✓ Connected" status change</li>
+        </ul>
+
+        <h3>2. Test Sync Endpoint</h3>
+        <ul>
+            <li>Click "Sync from Zoho" button</li>
+            <li>Monitor backend logs for sync operations</li>
+            <li>Verify 6 clients and 12 opportunities appear in PRISM database</li>
+        </ul>
+
+        <h3>3. Verify UI Updates</h3>
+        <ul>
+            <li>Check that opportunities/clients display in dashboard</li>
+            <li>Verify Zoho IDs are mapped correctly</li>
+        </ul>
+
+        <h3>4. Mark Phase 2 Complete</h3>
+        <ul>
+            <li>Update feature list</li>
+            <li>Commit changes with completion details</li>
+        </ul>
+
+        <h3>5. Begin Phase 3</h3>
+        <ul>
+            <li>Start frontend portal development</li>
+            <li>Create client-facing pages and authentication</li>
+        </ul>
+
+        <div class="section-divider"></div>
+
+        <h2>Health Assessment</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Aspect</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Code Quality</td>
+                    <td><span class="status-complete">✅ Good</span></td>
+                    <td>0 TypeScript errors, clean architecture</td>
+                </tr>
+                <tr>
+                    <td>Architecture</td>
+                    <td><span class="status-complete">✅ Solid</span></td>
+                    <td>Service layer abstraction, proper OAuth flow</td>
+                </tr>
+                <tr>
+                    <td>Documentation</td>
+                    <td><span class="status-inprogress">🟡 Adequate</span></td>
+                    <td>Covered parts 1-6, still completing part 7</td>
+                </tr>
+                <tr>
+                    <td>Infrastructure</td>
+                    <td><span class="status-blocked">❌ Critical Issues</span></td>
+                    <td>Database migrations unreliable; schema not syncing properly; manual workarounds required</td>
+                </tr>
+                <tr>
+                    <td>Timeline</td>
+                    <td><span class="status-blocked">❌ Behind</span></td>
+                    <td>Phase 2 completion missed by 8 hours, Phase 3 at risk</td>
+                </tr>
+                <tr>
+                    <td>User Health</td>
+                    <td><span class="status-inprogress">🟡 Recovering</span></td>
+                    <td>Health-related absence during critical debugging</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-divider"></div>
+
+        <h2>Recommendations</h2>
+
+        <ol>
+            <li><strong>Automate schema migration checks:</strong> Create startup script that verifies tables exist</li>
+            <li><strong>Improve OAuth feedback:</strong> Add status endpoint that confirms token was saved</li>
+            <li><strong>Document Zoho integration:</strong> Create troubleshooting guide for future reference</li>
+            <li><strong>Review timeline:</strong> Phase 3 & 4 may need adjustment given infrastructure challenges</li>
+            <li><strong>Health first:</strong> Ensure full recovery before continuing intensive development</li>
+        </ol>
+
+        <div class="section-divider"></div>
+
+        <h2>Summary</h2>
+
+        <div class="blocker">
+            <p><strong>Phase 2 is 60% complete.</strong> Critical infrastructure issues discovered during testing:</p>
+
+            <h4>Critical Blockers Found:</h4>
+            <ol>
+                <li><strong>Database schema type mismatch</strong> (agency_id UUID vs string) — blocks token persistence</li>
+                <li><strong>Missing refresh_tokens table</strong> — drizzle-kit migration didn't create it</li>
+                <li><strong>Incomplete database migration system</strong> — multiple tables not created despite successful migration command</li>
+                <li><strong>Agency ID inconsistency</strong> — affects multi-tenant query reliability</li>
+            </ol>
+
+            <h4>What's Working:</h4>
+            <ul>
+                <li>✅ OAuth scope syntax (resolved)</li>
+                <li>✅ Database table creation (zoho_tokens manually created)</li>
+                <li>✅ OAuth authorization screen & user acceptance</li>
+                <li>✅ Frontend redirect after OAuth approval</li>
+            </ul>
+
+            <h4>What's Broken:</h4>
+            <ul>
+                <li>❌ OAuth token persistence (type mismatch errors)</li>
+                <li>❌ Token refresh mechanism (missing table)</li>
+                <li>❌ Database migration reliability (incomplete schema sync)</li>
+                <li>❌ Sync verification (can't happen without stored token)</li>
+            </ul>
+
+            <h4>Action Required Before Phase 2 Can Complete:</h4>
+            <ol>
+                <li>Resolve agency_id type issue (choose UUID or TEXT approach)</li>
+                <li>Create missing refresh_tokens table</li>
+                <li>Audit all other defined tables to verify existence</li>
+                <li>Re-test OAuth flow after fixes</li>
+                <li>Verify sync functionality works</li>
+            </ol>
+
+            <p><strong>Root Problem:</strong> Database migration tooling is not reliable — changes to schema don't consistently propagate to database despite successful command execution.</p>
+        </div>
+
+        <div class="timestamp">
+            <strong>Report Generated:</strong> December 8, 2025<br>
+            <strong>Status as of:</strong> Post-testing analysis<br>
+            <strong>Report Updated:</strong> To document infrastructure issues found during live testing<br>
+            <strong>Next Review:</strong> After critical blockers are resolved
+        </div>
+    </div>
+</body>
+</html>

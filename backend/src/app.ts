@@ -14,6 +14,7 @@ import { taskController } from './modules/followUpTask/task.controller';
 import { csvController } from './modules/csv/csv.controller';
 import { emailController } from './modules/email/email.controller';
 import { zohoController } from './modules/zoho/zoho.controller';
+import { emailIngestController } from './modules/email-ingest/email.controller';
 
 export const createApp = () => {
   const app = express();
@@ -133,6 +134,12 @@ export const createApp = () => {
 
   // Zoho Webhook (no auth required - Zoho has own verification)
   app.post('/api/webhooks/zoho', (req, res) => zohoController.handleWebhook(req, res));
+
+  // Email Ingestion Routes
+  app.get('/api/opportunities/pending-review', authMiddleware, (req, res) => emailIngestController.getPendingOpportunities(req, res));
+  app.post('/api/opportunities/pending-review/:id/assign', authMiddleware, (req, res) => emailIngestController.assignToClients(req, res));
+  app.post('/api/opportunities/pending-review/:id/discard', authMiddleware, (req, res) => emailIngestController.discardOpportunity(req, res));
+  app.post('/api/email-ingest/poll', authMiddleware, (req, res) => emailIngestController.pollEmails(req, res));
 
   // Error handling
   app.use((err: any, req: Request, res: Response, next: any) => {
