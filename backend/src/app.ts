@@ -117,6 +117,7 @@ export const createApp = () => {
   app.get('/api/tasks', authMiddleware, (req, res) => taskController.list(req, res));
   app.get('/api/tasks/:id', authMiddleware, (req, res) => taskController.getById(req, res));
   app.put('/api/tasks/:id', authMiddleware, (req, res) => taskController.update(req, res));
+  app.delete('/api/tasks/:id', authMiddleware, (req, res) => taskController.delete(req, res));
   app.get('/api/opportunities/:opportunityId/tasks', authMiddleware, (req, res) =>
     taskController.getByOpportunity(req, res)
   );

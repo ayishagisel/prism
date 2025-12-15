@@ -16,73 +16,44 @@ interface TabNavigationProps {
 }
 
 const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, counts }) => {
-  const tabs: { id: TabType; label: string; color: string; bgColor: string; borderColor: string }[] = [
-    {
-      id: 'new',
-      label: 'New',
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-500'
-    },
-    {
-      id: 'interested',
-      label: 'Interested',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-500'
-    },
-    {
-      id: 'accepted',
-      label: 'Accepted',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-500'
-    },
-    {
-      id: 'declined',
-      label: 'Declined',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-500'
-    },
+  const tabs: { id: TabType; label: string; badgeColor: string }[] = [
+    { id: 'new', label: 'New', badgeColor: 'bg-[#D32F2F] text-white' },
+    { id: 'interested', label: 'Interested', badgeColor: 'bg-blue-500 text-white' },
+    { id: 'accepted', label: 'Accepted', badgeColor: 'bg-[#3BB253] text-white' },
+    { id: 'declined', label: 'Declined', badgeColor: 'bg-gray-500 text-white' },
   ];
 
   return (
-    <div className="border-b border-gray-200">
-      <div className="flex space-x-8">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
+    <div className="w-full grid grid-cols-4 mb-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id;
+        const count = counts[tab.id];
+
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={`
+              relative flex items-center justify-center gap-2 py-4 text-sm font-medium transition-all duration-200
+              ${isActive
+                ? 'bg-gradient-to-r from-gray-50 to-white text-gray-900 border-b-2 border-[#D32F2F]'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }
+            `}
+          >
+            {tab.label}
+            <span
               className={`
-                relative pb-4 px-1 text-sm font-medium transition-colors
-                ${isActive
-                  ? `${tab.color} border-b-2 ${tab.borderColor}`
-                  : 'text-gray-500 hover:text-gray-700'
-                }
+                inline-flex items-center justify-center min-w-[20px] h-5 px-1.5
+                rounded-full text-xs font-bold
+                ${tab.badgeColor}
               `}
             >
-              <span className="flex items-center gap-2">
-                {tab.label}
-                <span
-                  className={`
-                    inline-flex items-center justify-center min-w-[24px] h-6 px-2
-                    rounded-full text-xs font-semibold
-                    ${isActive
-                      ? `${tab.bgColor} ${tab.color}`
-                      : 'bg-gray-100 text-gray-600'
-                    }
-                  `}
-                >
-                  {counts[tab.id]}
-                </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              {count}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 };

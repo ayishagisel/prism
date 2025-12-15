@@ -39,33 +39,6 @@ export function ClientResponsesSummary({
 }: ClientResponsesSummaryProps) {
   const responseCards = [
     {
-      status: 'pending',
-      label: 'Pending',
-      count: summary.pending,
-      icon: '⏳',
-      color: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
-      textColor: 'text-yellow-700',
-      badgeColor: 'bg-yellow-500',
-    },
-    {
-      status: 'interested',
-      label: 'Interested',
-      count: summary.interested,
-      icon: '💡',
-      color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
-      textColor: 'text-blue-700',
-      badgeColor: 'bg-blue-500',
-    },
-    {
-      status: 'accepted',
-      label: 'Accepted',
-      count: summary.accepted,
-      icon: '✅',
-      color: 'bg-green-50 border-green-200 hover:bg-green-100',
-      textColor: 'text-green-700',
-      badgeColor: 'bg-green-500',
-    },
-    {
       status: 'declined',
       label: 'Declined',
       count: summary.declined,
@@ -77,7 +50,7 @@ export function ClientResponsesSummary({
     {
       status: 'no_response',
       label: 'No Response',
-      count: summary.no_response,
+      count: summary.no_response + summary.pending,
       icon: '⚪',
       color: 'bg-gray-50 border-gray-200 hover:bg-gray-100',
       textColor: 'text-gray-700',
@@ -107,7 +80,7 @@ export function ClientResponsesSummary({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {responseCards.map((card) => (
           <button
             key={card.status}

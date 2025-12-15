@@ -118,6 +118,25 @@ export class TaskController {
       res.status(500).json({ success: false, error: 'Failed to get tasks' });
     }
   }
+
+  async delete(req: Request, res: Response) {
+    try {
+      if (!req.auth) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+
+      const deleted = await followUpTaskService.deleteTask(req.auth.agencyId, req.params.id);
+
+      if (!deleted) {
+        return res.status(404).json({ success: false, error: 'Task not found' });
+      }
+
+      res.json({ success: true, message: 'Task deleted' });
+    } catch (err) {
+      logger.error('Delete task error', err);
+      res.status(500).json({ success: false, error: 'Failed to delete task' });
+    }
+  }
 }
 
 export const taskController = new TaskController();

@@ -36,6 +36,7 @@ export interface Client {
   agency_id: string;
   name: string;
   industry?: string;
+  primary_contact_name?: string;
   primary_contact_email?: string;
   tags: string[];
   status: string;

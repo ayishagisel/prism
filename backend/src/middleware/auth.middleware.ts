@@ -33,6 +33,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
       agencyId: payload.agencyId,
       email: payload.email,
       role: payload.role,
+      client_id: payload.clientId, // Include client_id if present
     };
 
     next();
@@ -75,6 +76,7 @@ export const optionalAuthMiddleware = (req: Request, res: Response, next: NextFu
           agencyId: payload.agencyId,
           email: payload.email,
           role: payload.role,
+          client_id: payload.clientId, // Include client_id if present
         };
       }
     }

@@ -205,6 +205,24 @@ export class FollowUpTaskService {
       throw err;
     }
   }
+
+  async deleteTask(agencyId: string, taskId: string) {
+    try {
+      const deleted = await db
+        .delete(followUpTasks)
+        .where(and(eq(followUpTasks.agency_id, agencyId), eq(followUpTasks.id, taskId)))
+        .returning();
+
+      if (deleted.length > 0) {
+        logger.info('Task deleted', { taskId });
+        return true;
+      }
+      return false;
+    } catch (err) {
+      logger.error('Delete task error', err);
+      throw err;
+    }
+  }
 }
 
 export const followUpTaskService = new FollowUpTaskService();

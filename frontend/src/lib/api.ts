@@ -251,6 +251,11 @@ class ApiClient {
     return res.data;
   }
 
+  async deleteTask(id: string): Promise<ApiResponse<any>> {
+    const res = await this.client.delete(`/api/tasks/${id}`);
+    return res.data;
+  }
+
   async getTasksByOpportunity(opportunityId: string): Promise<ApiResponse<any[]>> {
     const res = await this.client.get(`/api/opportunities/${opportunityId}/tasks`);
     return res.data;

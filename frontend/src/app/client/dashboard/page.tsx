@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import TabNavigation from '@/components/client/TabNavigation';
 import { OpportunityCard } from '@/components/client/OpportunityCard';
-import { QAChat } from '@/components/client/QAChat';
+import { InlineQAChat } from '@/components/client/InlineQAChat';
 import { ContactAOPRChat } from '@/components/client/ContactAOPRChat';
 import { RestoreRequestButton } from '@/components/client/RestoreRequestButton';
 import { apiClient } from '@/lib/api';
@@ -26,16 +26,13 @@ export default function ClientDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string | null>(null);
 
-  // Chat state
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatOpportunityId, setChatOpportunityId] = useState<string | null>(null);
-  const [chatOpportunityTitle, setChatOpportunityTitle] = useState<string>('');
-  const [chatType, setChatType] = useState<'qa' | 'contact'>('qa');
+  // Inline chat state - track which opportunity has chat open
+  const [inlineChatOpportunityId, setInlineChatOpportunityId] = useState<string | null>(null);
 
-  // Restore request state
-  const [restoreModalOpen, setRestoreModalOpen] = useState(false);
-  const [restoreOpportunityId, setRestoreOpportunityId] = useState<string | null>(null);
-  const [pendingRestoreRequests, setPendingRestoreRequests] = useState<Set<string>>(new Set());
+  // Slide-out chat state (only for Contact AOPR on accepted)
+  const [contactChatOpen, setContactChatOpen] = useState(false);
+  const [contactChatOpportunityId, setContactChatOpportunityId] = useState<string | null>(null);
+  const [contactChatOpportunityTitle, setContactChatOpportunityTitle] = useState<string>('');
 
   // Fetch opportunities on mount
   useEffect(() => {
@@ -71,7 +68,7 @@ export default function ClientDashboard() {
     }
   };
 
-  // Handle status change (Accept/Decline/Interested)
+  // Handle status change (Accept/Decline)
   const handleStatusChange = async (
     opportunityId: string,
     newStatus: 'interested' | 'accepted' | 'declined'
@@ -92,12 +89,16 @@ export default function ClientDashboard() {
           )
         );
 
-        // If moving to interested, open chat
+        // If moving to interested, show inline chat and switch tab
         if (newStatus === 'interested') {
-          const opp = opportunities.find((o) => o.id === opportunityId);
-          if (opp) {
-            handleOpenChat(opportunityId, 'qa');
-          }
+          setInlineChatOpportunityId(opportunityId);
+          setActiveTab('interested');
+        }
+
+        // If accepted, switch to accepted tab
+        if (newStatus === 'accepted') {
+          setInlineChatOpportunityId(null);
+          setActiveTab('accepted');
         }
       } else {
         alert('Failed to update status: ' + (response.error || 'Unknown error'));
@@ -108,37 +109,22 @@ export default function ClientDashboard() {
     }
   };
 
-  // Handle opening chat
-  const handleOpenChat = (opportunityId: string, type: 'qa' | 'contact' = 'qa') => {
-    const opp = opportunities.find((o) => o.id === opportunityId);
-    if (opp) {
-      setChatOpportunityId(opportunityId);
-      setChatOpportunityTitle(opp.title);
-      setChatType(type);
-      setChatOpen(true);
-    }
+  // Handle "Ask Questions" click - always shows inline chat
+  const handleAskQuestions = (opportunityId: string) => {
+    // Toggle inline chat for this opportunity
+    setInlineChatOpportunityId(
+      inlineChatOpportunityId === opportunityId ? null : opportunityId
+    );
   };
 
-  // Handle restore request
-  const handleRequestRestore = async (opportunityId: string) => {
-    if (!clientId) return;
+  // Handle "Contact AOPR" click - opens slide-out for accepted opportunities
+  const handleContactAOPR = (opportunityId: string) => {
+    const opp = opportunities.find((o) => o.id === opportunityId);
+    if (!opp) return;
 
-    try {
-      const response = await apiClient.createRestoreRequest({
-        opportunity_id: opportunityId,
-        client_id: clientId,
-      });
-
-      if (response.success) {
-        setPendingRestoreRequests((prev) => new Set([...prev, opportunityId]));
-        alert('Restore request submitted! Your agency will review it shortly.');
-      } else {
-        alert('Failed to submit restore request: ' + (response.error || 'Unknown error'));
-      }
-    } catch (err: any) {
-      console.error('Error creating restore request:', err);
-      alert('Failed to submit restore request');
-    }
+    setContactChatOpportunityId(opportunityId);
+    setContactChatOpportunityTitle(opp.title);
+    setContactChatOpen(true);
   };
 
   // Filter opportunities by response state
@@ -166,75 +152,80 @@ export default function ClientDashboard() {
   const filteredOpportunities = getFilteredOpportunities(activeTab);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Media Opportunities</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Review and respond to media opportunities from your PR agency
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 pb-20 md:pb-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title with gradient text */}
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#D32F2F] to-[#C62828] bg-clip-text text-transparent">
+            Your Media Opportunities
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Notifications via email or PRISM app &bull; Use &quot;Accept&quot; or &quot;Ask Questions&quot; buttons
           </p>
         </div>
 
-        {/* Alert Banner for New Opportunities */}
+        {/* Notification Banner with glow effect */}
         {counts.new > 0 && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                  />
+          <div className="relative mb-6">
+            {/* Glow/blur effect layer */}
+            <div className="absolute inset-0 bg-[#D32F2F] rounded-xl blur-lg opacity-30 animate-pulse"></div>
+
+            {/* Content */}
+            <div className="relative bg-gradient-to-r from-[#D32F2F] to-[#C62828] text-white rounded-xl p-4 md:p-6 flex items-start gap-4 shadow-xl">
+              {/* Animated bell icon */}
+              <div className="p-2 bg-white/20 rounded-lg">
+                <svg className="w-6 h-6 animate-bounce" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
                 </svg>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-red-800">
-                  You have{' '}
-                  <span className="font-bold">{counts.new}</span> new{' '}
-                  {counts.new === 1 ? 'opportunity' : 'opportunities'} awaiting your response!
+              <div>
+                <h2 className="text-lg font-semibold">
+                  You have {counts.new} new {counts.new === 1 ? 'opportunity' : 'opportunities'}!
+                </h2>
+                <p className="text-red-100 text-sm mt-0.5">
+                  Review and respond before the deadlines to secure your placement.
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="px-6 pt-6">
-            <TabNavigation
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              counts={counts}
-            />
-          </div>
+        {/* Tab Navigation - Full width grid style */}
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} counts={counts} />
 
-          {/* Tab Content */}
-          <div className="px-6 py-8">
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        {/* Opportunities List */}
+        <div className="space-y-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D32F2F] mx-auto mb-3"></div>
+                <p className="text-gray-500">Loading opportunities...</p>
               </div>
-            ) : error ? (
-              <div className="text-center py-12">
-                <p className="text-red-600 mb-4">{error}</p>
-                <button
-                  onClick={fetchOpportunities}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Try Again
-                </button>
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-[#D32F2F]" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </div>
-            ) : filteredOpportunities.length === 0 ? (
-              <div className="text-center py-12">
+              <p className="text-[#D32F2F] mb-4 font-medium">{error}</p>
+              <button
+                onClick={fetchOpportunities}
+                className="px-6 py-2.5 bg-gradient-to-r from-[#D32F2F] to-[#C62828] text-white rounded-lg hover:from-[#C62828] hover:to-[#B71C1C] transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : filteredOpportunities.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
-                  className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                  className="w-8 h-8 text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -246,104 +237,52 @@ export default function ClientDashboard() {
                     d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
                   />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No {activeTab === 'new' ? 'new' : activeTab} opportunities
-                </h3>
-                <p className="text-gray-500">
-                  {activeTab === 'new'
-                    ? "You're all caught up! Check back later for new opportunities."
-                    : `You don't have any ${activeTab} opportunities at the moment.`}
-                </p>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredOpportunities.map((opp) => (
-                  <OpportunityCard
-                    key={opp.id}
-                    opportunity={opp}
-                    responseState={opp.response_state}
-                    onStatusChange={handleStatusChange}
-                    onOpenChat={(id) => {
-                      // Use contact chat for accepted, Q&A chat for others
-                      const type = opp.response_state === 'accepted' ? 'contact' : 'qa';
-                      handleOpenChat(id, type);
-                    }}
-                    onRequestRestore={
-                      opp.response_state === 'declined' && !pendingRestoreRequests.has(opp.id)
-                        ? handleRequestRestore
-                        : undefined
-                    }
-                    hasUnreadMessages={false} // TODO: Track unread messages
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-          <div
-            className={`bg-white rounded-lg shadow-sm p-4 cursor-pointer transition-all ${
-              activeTab === 'new' ? 'ring-2 ring-red-500' : 'hover:shadow-md'
-            }`}
-            onClick={() => setActiveTab('new')}
-          >
-            <div className="text-2xl font-bold text-red-600">{counts.new}</div>
-            <div className="text-sm text-gray-600">New</div>
-          </div>
-          <div
-            className={`bg-white rounded-lg shadow-sm p-4 cursor-pointer transition-all ${
-              activeTab === 'interested' ? 'ring-2 ring-blue-500' : 'hover:shadow-md'
-            }`}
-            onClick={() => setActiveTab('interested')}
-          >
-            <div className="text-2xl font-bold text-blue-600">{counts.interested}</div>
-            <div className="text-sm text-gray-600">Interested</div>
-          </div>
-          <div
-            className={`bg-white rounded-lg shadow-sm p-4 cursor-pointer transition-all ${
-              activeTab === 'accepted' ? 'ring-2 ring-green-500' : 'hover:shadow-md'
-            }`}
-            onClick={() => setActiveTab('accepted')}
-          >
-            <div className="text-2xl font-bold text-green-600">{counts.accepted}</div>
-            <div className="text-sm text-gray-600">Accepted</div>
-          </div>
-          <div
-            className={`bg-white rounded-lg shadow-sm p-4 cursor-pointer transition-all ${
-              activeTab === 'declined' ? 'ring-2 ring-purple-500' : 'hover:shadow-md'
-            }`}
-            onClick={() => setActiveTab('declined')}
-          >
-            <div className="text-2xl font-bold text-purple-600">{counts.declined}</div>
-            <div className="text-sm text-gray-600">Declined</div>
-          </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No {activeTab === 'new' ? 'new' : activeTab} opportunities
+              </h3>
+              <p className="text-gray-500 text-sm max-w-md mx-auto">
+                {activeTab === 'new'
+                  ? "You're all caught up! Check back later for new media opportunities."
+                  : `You don't have any ${activeTab} opportunities at the moment.`}
+              </p>
+            </div>
+          ) : (
+            filteredOpportunities.map((opp) => (
+              <OpportunityCard
+                key={opp.id}
+                opportunity={opp}
+                responseState={opp.response_state}
+                onStatusChange={handleStatusChange}
+                onAskQuestions={handleAskQuestions}
+                onContactAOPR={handleContactAOPR}
+                showInlineChat={inlineChatOpportunityId === opp.id}
+                chatComponent={
+                  inlineChatOpportunityId === opp.id ? (
+                    <InlineQAChat
+                      opportunityId={opp.id}
+                      opportunityTitle={opp.title}
+                      onClose={() => setInlineChatOpportunityId(null)}
+                    />
+                  ) : null
+                }
+                clientId={clientId || undefined}
+                onRestoreRequested={fetchOpportunities}
+              />
+            ))
+          )}
         </div>
       </div>
 
-      {/* Q&A Chat Panel */}
-      {chatOpen && chatType === 'qa' && chatOpportunityId && (
-        <QAChat
-          opportunityId={chatOpportunityId}
-          opportunityTitle={chatOpportunityTitle}
-          isOpen={chatOpen}
-          onClose={() => {
-            setChatOpen(false);
-            setChatOpportunityId(null);
-          }}
-        />
-      )}
-
-      {/* Contact AOPR Chat Panel */}
-      {chatOpen && chatType === 'contact' && chatOpportunityId && (
+      {/* Contact AOPR Chat Panel (slide-out for accepted state) */}
+      {contactChatOpen && contactChatOpportunityId && (
         <ContactAOPRChat
-          opportunityId={chatOpportunityId}
-          opportunityTitle={chatOpportunityTitle}
-          isOpen={chatOpen}
+          opportunityId={contactChatOpportunityId}
+          opportunityTitle={contactChatOpportunityTitle}
+          isOpen={contactChatOpen}
           onClose={() => {
-            setChatOpen(false);
-            setChatOpportunityId(null);
+            setContactChatOpen(false);
+            setContactChatOpportunityId(null);
           }}
         />
       )}

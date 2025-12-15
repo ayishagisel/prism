@@ -3,6 +3,7 @@ import {
   agencies,
   agencyUsers,
   clients,
+  clientUsers,
   opportunities,
   clientOpportunityStatus,
   followUpTasks,
@@ -134,6 +135,44 @@ async function seed() {
 
     logger.info('Clients created');
 
+    // Create client users (for demo login)
+    await db
+      .insert(clientUsers)
+      .values([
+        {
+          id: 'client_user_throne',
+          client_id: clientIds[0], // The Throne Society
+          agency_id: agencyId,
+          name: 'Demo Client User',
+          email: 'client@demo.com',
+          role: 'CLIENT_OWNER',
+          status: 'active',
+          metadata: {
+            title: 'Founder',
+            demo_user: true,
+          },
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          id: 'client_user_glow',
+          client_id: clientIds[2], // Glow Up
+          agency_id: agencyId,
+          name: 'Glow Up CEO',
+          email: 'ceo@glowup.com',
+          role: 'CLIENT_OWNER',
+          status: 'active',
+          metadata: {
+            title: 'CEO',
+          },
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      ])
+      .onConflictDoNothing();
+
+    logger.info('Client users created');
+
     // Create opportunities
     const opportunityIds = [
       'opp_forbes_founder',
@@ -213,7 +252,7 @@ async function seed() {
           topic_tags: JSON.stringify(['entrepreneurship', 'diversity']),
           industry_tags: JSON.stringify(['beauty', 'fashion', 'lifestyle']),
           deadline_at: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
-          status: 'active',
+          status: 'closed',
           visibility: 'shared_with_clients',
           ingestion_metadata: {
             ingested_via: 'manual_form',
@@ -239,8 +278,8 @@ async function seed() {
           category_tags: JSON.stringify(['sustainability', 'podcast']),
           topic_tags: JSON.stringify(['eco_friendly', 'fashion']),
           industry_tags: JSON.stringify(['beauty', 'sustainability']),
-          deadline_at: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
-          status: 'active',
+          deadline_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          status: 'expired',
           visibility: 'internal_only',
           ingestion_metadata: {
             ingested_via: 'manual_form',

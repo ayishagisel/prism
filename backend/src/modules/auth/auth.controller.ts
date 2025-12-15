@@ -28,6 +28,53 @@ export class AuthController {
       // In demo mode, allow passwordless login for ease of testing
       if (config.demoMode && !password) {
         logger.info('Demo login (passwordless)', { email });
+
+        // Check if this is a client user demo login
+        const clientUser = await db.query.clientUsers.findFirst({
+          where: eq(clientUsers.email, email.toLowerCase()),
+        });
+
+        if (clientUser) {
+          // Client user demo login
+          logger.info('Demo client login', { email, clientId: clientUser.client_id });
+
+          const { accessToken, refreshToken } = authService.createTokenPair({
+            userId: clientUser.id,
+            agencyId: clientUser.agency_id,
+            email,
+            role: clientUser.role as any, // CLIENT_OWNER or CLIENT_TEAM
+            clientId: clientUser.client_id, // Include client_id in token
+          });
+
+          // Save refresh token
+          try {
+            const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000;
+            const expiresAt = new Date(Date.now() + refreshExpiryMs);
+            await authService.saveRefreshToken(clientUser.agency_id, clientUser.id, refreshToken, expiresAt);
+          } catch (tokenErr) {
+            logger.warn('Could not save refresh token', tokenErr);
+          }
+
+          return res.json({
+            success: true,
+            data: {
+              accessToken,
+              refreshToken,
+              expiresIn: config.jwt.accessTokenExpiry,
+              refreshExpiresIn: config.jwt.refreshTokenExpiry,
+              user: {
+                id: clientUser.id,
+                email,
+                agencyId: clientUser.agency_id,
+                client_id: clientUser.client_id,
+                role: clientUser.role,
+                name: clientUser.name,
+              },
+            },
+          });
+        }
+
+        // Default: Agency admin demo login
         const demoUserId = 'user_amore';
         const demoAgencyId = 'agency_aopr';
 

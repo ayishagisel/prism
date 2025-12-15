@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 
+// Client roles that should go to client dashboard
+const CLIENT_ROLES = ['CLIENT_OWNER', 'CLIENT_TEAM'];
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('amore@applesandorangespr.com');
@@ -20,8 +23,13 @@ export default function LoginPage() {
         try {
           const res = await apiClient.getMe();
           if (res.success) {
-            // Token is valid, redirect to dashboard
-            router.push('/agency/dashboard');
+            // Token is valid, redirect based on role
+            const role = res.data?.role;
+            if (CLIENT_ROLES.includes(role)) {
+              router.push('/client/dashboard');
+            } else {
+              router.push('/agency/dashboard');
+            }
           } else {
             // Token is invalid, clear it and stay on login
             localStorage.removeItem('auth_token');
@@ -45,7 +53,13 @@ export default function LoginPage() {
     try {
       const res = await apiClient.login(email);
       if (res.success) {
-        router.push('/agency/dashboard');
+        // Redirect based on user role
+        const role = res.data?.user?.role;
+        if (CLIENT_ROLES.includes(role)) {
+          router.push('/client/dashboard');
+        } else {
+          router.push('/agency/dashboard');
+        }
       } else {
         setError(res.error || 'Login failed');
       }
@@ -102,11 +116,17 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded text-xs text-gray-600">
-            <p className="font-semibold text-gray-900 mb-1">Demo Mode</p>
-            <p>
-              Try logging in with any email address. Demo data is pre-loaded for{' '}
-              <code className="bg-white px-2 py-1 rounded">amore@applesandorangespr.com</code>.
-            </p>
+            <p className="font-semibold text-gray-900 mb-2">Demo Mode</p>
+            <div className="space-y-1">
+              <p>
+                <span className="font-medium">Agency Admin:</span>{' '}
+                <code className="bg-white px-1 py-0.5 rounded text-xs">amore@applesandorangespr.com</code>
+              </p>
+              <p>
+                <span className="font-medium">Client Portal:</span>{' '}
+                <code className="bg-white px-1 py-0.5 rounded text-xs">client@demo.com</code>
+              </p>
+            </div>
           </div>
         </div>
       </div>

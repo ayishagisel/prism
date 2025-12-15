@@ -4,7 +4,8 @@ export interface JWTPayload {
   userId: string;
   agencyId: string;
   email: string;
-  role: 'AGENCY_ADMIN' | 'AGENCY_MEMBER' | 'CLIENT_USER';
+  role: 'AGENCY_ADMIN' | 'AGENCY_MEMBER' | 'CLIENT_OWNER' | 'CLIENT_TEAM' | 'CLIENT_USER';
+  clientId?: string; // Only for client users
   iat?: number;
   exp?: number;
 }
@@ -14,6 +15,7 @@ export interface AuthContext {
   agencyId: string;
   email: string;
   role: string;
+  client_id?: string; // Only for client users
 }
 
 export interface ApiResponse<T = any> {

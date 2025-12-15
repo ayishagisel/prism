@@ -67,9 +67,15 @@ export function useOpportunities(refreshTrigger?: number) {
   const [opportunities, setOpportunities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [internalTrigger, setInternalTrigger] = useState(0);
+
+  const refetch = () => {
+    setInternalTrigger((prev) => prev + 1);
+  };
 
   useEffect(() => {
     const fetch = async () => {
+      setLoading(true);
       try {
         const res = await apiClient.getOpportunities();
         if (res.success) {
@@ -83,9 +89,9 @@ export function useOpportunities(refreshTrigger?: number) {
     };
 
     fetch();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, internalTrigger]);
 
-  return { opportunities, loading, error };
+  return { opportunities, loading, error, refetch };
 }
 
 export function useClients() {
