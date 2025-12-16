@@ -3,17 +3,20 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { StatusChip } from '@/components/common/StatusChip';
+import { getClientName } from '@/lib/utils';
 
 interface OpportunityTasksSectionProps {
   tasks: any[];
   onTaskAssign: (taskId: string, assigneeId: string | null) => Promise<void>;
   onRefresh: () => void;
+  clients: { id: string; name: string }[];
 }
 
 export default function OpportunityTasksSection({
   tasks,
   onTaskAssign,
   onRefresh,
+  clients,
 }: OpportunityTasksSectionProps) {
   const [reassigningId, setReassigningId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,7 +68,7 @@ export default function OpportunityTasksSection({
                   <p className="font-medium text-gray-900">{task.title}</p>
                 </td>
                 <td className="py-4 px-4 text-sm text-gray-600">
-                  {task.client?.name || 'Unknown Client'}
+                  {getClientName(task.client_id, clients)}
                 </td>
                 <td className="py-4 px-4 text-sm text-gray-600 capitalize">
                   {task.task_type?.replace('_', ' ') || 'General'}

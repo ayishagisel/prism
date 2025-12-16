@@ -10,6 +10,7 @@ import {
 } from './schema';
 import { v4 as uuid } from 'uuid';
 import { logger } from '../utils/logger';
+import bcryptjs from 'bcryptjs';
 
 async function seed() {
   try {
@@ -44,6 +45,7 @@ async function seed() {
 
     // Create agency user
     const userId = 'user_amore';
+    const passwordHash = await bcryptjs.hash('throne123', 10);
     await db
       .insert(agencyUsers)
       .values({
@@ -51,6 +53,7 @@ async function seed() {
         agency_id: agencyId,
         name: 'Amore Phillip',
         email: 'amore@applesandorangespr.com',
+        password_hash: passwordHash,
         role: 'AGENCY_ADMIN',
         status: 'active',
         metadata: {
@@ -60,7 +63,13 @@ async function seed() {
         created_at: new Date(),
         updated_at: new Date(),
       })
-      .onConflictDoNothing();
+      .onConflictDoUpdate({
+        target: agencyUsers.id,
+        set: {
+          password_hash: passwordHash,
+          updated_at: new Date(),
+        },
+      });
 
     logger.info('Agency user created');
 

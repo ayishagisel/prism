@@ -29,23 +29,7 @@ export function useAuth() {
     fetchUser();
   }, []);
 
-  const login = async (email: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await apiClient.login(email);
-      if (res.success) {
-        setUser(res.data.user);
-        return res.data;
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Login failed';
-      setError(errorMsg);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const logout = async () => {
     try {
@@ -60,7 +44,7 @@ export function useAuth() {
     }
   };
 
-  return { user, loading, error, login, logout };
+  return { user, loading, error, logout };
 }
 
 export function useOpportunities(refreshTrigger?: number) {

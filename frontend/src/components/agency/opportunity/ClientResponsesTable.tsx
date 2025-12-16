@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { StatusChip } from '@/components/common/StatusChip';
+import { getClientName } from '@/lib/utils';
 
 interface ClientResponsesTableProps {
   statuses: any[];
   opportunityId: string;
   onStatusChange: (clientId: string, newStatus: string, notes?: string) => Promise<void>;
   onRefresh: () => void;
+  clients: { id: string; name: string }[];
 }
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
@@ -24,6 +26,7 @@ export default function ClientResponsesTable({
   opportunityId,
   onStatusChange,
   onRefresh,
+  clients,
 }: ClientResponsesTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingStatus, setEditingStatus] = useState<string>('');
@@ -81,7 +84,7 @@ export default function ClientResponsesTable({
             {statuses.map((status) => (
               <tr key={status.id} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="py-4 px-4">
-                  <p className="font-medium text-gray-900">{status.client?.name || 'Unknown Client'}</p>
+                  <p className="font-medium text-gray-900">{getClientName(status.client_id, clients)}</p>
                 </td>
                 <td className="py-4 px-4">
                   {editingId === status.id ? (

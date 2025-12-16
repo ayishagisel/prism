@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useOpportunityDetail } from '@/lib/hooks';
+import { useOpportunityDetail, useClients } from '@/lib/hooks';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import OpportunityDetailHeader from '@/components/agency/opportunity/OpportunityDetailHeader';
 import OpportunityMetadata from '@/components/agency/opportunity/OpportunityMetadata';
@@ -18,6 +18,7 @@ export default function OpportunityDetailPage() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const { opportunity, summary, statuses, tasks, activities, loading, error } = useOpportunityDetail(opportunityId);
+  const { clients } = useClients();
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
@@ -132,6 +133,7 @@ export default function OpportunityDetailPage() {
           opportunityId={opportunityId}
           onStatusChange={handleStatusChange}
           onRefresh={handleRefresh}
+          clients={clients}
         />
       </div>
 
@@ -141,6 +143,7 @@ export default function OpportunityDetailPage() {
           tasks={tasks}
           onTaskAssign={handleTaskAssign}
           onRefresh={handleRefresh}
+          clients={clients}
         />
       </div>
 

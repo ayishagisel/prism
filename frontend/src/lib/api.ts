@@ -142,8 +142,8 @@ class ApiClient {
     }
   }
 
-  async login(email: string): Promise<ApiResponse<any>> {
-    const res = await this.client.post('/api/auth/login', { email });
+  async login(email: string, password: string): Promise<ApiResponse<any>> {
+    const res = await this.client.post('/api/auth/login', { email, password });
     if (res.data.success) {
       if (res.data.data?.accessToken && res.data.data?.refreshToken) {
         // New token pair format

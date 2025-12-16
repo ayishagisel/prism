@@ -11,6 +11,7 @@ const CLIENT_ROLES = ['CLIENT_OWNER', 'CLIENT_TEAM'];
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('amore@applesandorangespr.com');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +52,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const res = await apiClient.login(email);
+      const res = await apiClient.login(email, password);
       if (res.success) {
         // Redirect based on user role
         const role = res.data?.user?.role;
@@ -94,6 +95,21 @@ export default function LoginPage() {
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder="your@email.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                placeholder="enter your password"
               />
             </div>
 
