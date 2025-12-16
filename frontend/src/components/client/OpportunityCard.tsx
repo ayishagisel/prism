@@ -85,7 +85,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
               <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
             </svg>
           ),
-          text: "You've expressed interest in this opportunity. Ask questions or accept when ready.",
+          text: "You've expressed interest in this opportunity. You can now accept it or ask questions before deciding.",
         };
       case 'accepted':
         return {
@@ -197,7 +197,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           )}
         </div>
 
-        {/* Action buttons for pending state - CORRECT LABELS: Accept, Ask Questions, Decline */}
+        {/* Action buttons for pending state */}
         {responseState === 'pending' && (
           <div className="flex items-center gap-3 mt-6">
             <button

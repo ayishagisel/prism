@@ -60,15 +60,13 @@ export default function ClientResponsesTable({
   if (statuses.length === 0) {
     return (
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Client Responses</h3>
-        <p className="text-gray-500 text-center py-8">No client responses yet. This opportunity hasn't been assigned to clients.</p>
+        <p className="text-gray-500 text-center py-8">No client responses yet. Click "Assign Clients" to add clients to this opportunity.</p>
       </div>
     );
   }
 
   return (
     <div className="card">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Client Responses</h3>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { apiClient } from './api';
+import { useSocket, WebSocketEvent } from './socket';
 
 export function useAuth() {
   const [user, setUser] = useState<any>(null);
@@ -52,10 +53,32 @@ export function useOpportunities(refreshTrigger?: number) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [internalTrigger, setInternalTrigger] = useState(0);
+  const { subscribe, isConnected } = useSocket();
 
-  const refetch = () => {
+  const refetch = useCallback(() => {
     setInternalTrigger((prev) => prev + 1);
-  };
+  }, []);
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    if (!isConnected) return;
+
+    // Listen for status updates and data refresh events
+    const unsubStatus = subscribe('status:updated', () => {
+      refetch();
+    });
+
+    const unsubRefresh = subscribe('data:refresh', (data: any) => {
+      if (data.type === 'opportunity_status') {
+        refetch();
+      }
+    });
+
+    return () => {
+      unsubStatus();
+      unsubRefresh();
+    };
+  }, [isConnected, subscribe, refetch]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -136,9 +159,45 @@ export function useOpportunityDetail(opportunityId: string) {
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { subscribe, isConnected } = useSocket();
+
+  const refetch = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
+
+  // Subscribe to real-time updates for this opportunity
+  useEffect(() => {
+    if (!isConnected || !opportunityId) return;
+
+    // Listen for status updates related to this opportunity
+    const unsubStatus = subscribe('status:updated', (data: any) => {
+      if (data.opportunityId === opportunityId) {
+        refetch();
+      }
+    });
+
+    const unsubRefresh = subscribe('data:refresh', (data: any) => {
+      if (data.type === 'opportunity_status' && data.opportunityId === opportunityId) {
+        refetch();
+      }
+    });
+
+    const unsubTask = subscribe('task:updated', (data: any) => {
+      if (data.opportunityId === opportunityId) {
+        refetch();
+      }
+    });
+
+    return () => {
+      unsubStatus();
+      unsubRefresh();
+      unsubTask();
+    };
+  }, [isConnected, subscribe, refetch, opportunityId]);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -178,9 +237,9 @@ export function useOpportunityDetail(opportunityId: string) {
     };
 
     if (opportunityId) {
-      fetch();
+      fetchData();
     }
-  }, [opportunityId]);
+  }, [opportunityId, refreshTrigger]);
 
-  return { opportunity, summary, statuses, tasks, activities, loading, error };
+  return { opportunity, summary, statuses, tasks, activities, loading, error, refetch };
 }

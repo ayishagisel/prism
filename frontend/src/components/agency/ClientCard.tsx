@@ -86,6 +86,9 @@ export const ClientCard: React.FC<ClientCardProps> = ({
             </div>
             <div>
               <h3 className="font-semibold text-lg text-gray-900">{client.name}</h3>
+              {client.company_name && (
+                <p className="text-sm text-gray-700 font-medium">{client.company_name}</p>
+              )}
               <p className="text-sm text-gray-500">{client.industry || 'No industry specified'}</p>
             </div>
           </div>

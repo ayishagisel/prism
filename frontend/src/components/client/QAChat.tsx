@@ -5,13 +5,18 @@ import { apiClient } from '@/lib/api';
 
 interface ChatMessage {
   id: string;
-  messageType: 'client_question' | 'ai_response' | 'aopr_response' | 'system_message';
-  senderType: string;
-  senderId: string | null;
+  messageType?: 'client_question' | 'ai_response' | 'aopr_response' | 'system_message';
+  message_type?: 'client_question' | 'ai_response' | 'aopr_response' | 'system_message';
+  senderType?: string;
+  sender_type?: string;
+  senderId?: string | null;
+  sender_id?: string | null;
   message: string;
-  isEscalated: boolean;
+  isEscalated?: boolean;
+  is_escalated?: boolean;
   metadata: any;
-  createdAt: string;
+  createdAt?: string;
+  created_at?: string;
 }
 
 interface QAChatProps {
@@ -100,8 +105,10 @@ export const QAChat: React.FC<QAChatProps> = ({
     }
   };
 
-  const formatTimestamp = (timestamp: string) => {
+  const formatTimestamp = (timestamp: string | undefined) => {
+    if (!timestamp) return '';
     const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '';
     const now = new Date();
     const isToday = date.toDateString() === now.toDateString();
 
@@ -121,16 +128,33 @@ export const QAChat: React.FC<QAChatProps> = ({
   };
 
   const renderMessage = (msg: ChatMessage) => {
-    const isClient = msg.messageType === 'client_question';
-    const isAI = msg.messageType === 'ai_response';
-    const isAOPR = msg.messageType === 'aopr_response';
-    const isSystem = msg.messageType === 'system_message';
+    const messageType = msg.messageType || msg.message_type;
+    const isClient = messageType === 'client_question';
+    const isAI = messageType === 'ai_response';
+    const isAOPR = messageType === 'aopr_response';
+    const isSystem = messageType === 'system_message';
 
     if (isSystem) {
       return (
-        <div key={msg.id} className="flex justify-center my-4">
-          <div className="text-sm text-gray-500 italic text-center max-w-md">
-            {msg.message}
+        <div key={msg.id} className="flex items-start gap-3 mb-4">
+          {/* Avatar */}
+          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-amber-100 text-amber-600">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+
+          {/* Message bubble */}
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-medium text-gray-700">System</span>
+            </div>
+            <div className="px-4 py-2 rounded-lg max-w-md bg-amber-50 text-gray-900 border border-amber-200">
+              <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              {formatTimestamp(msg.createdAt || msg.created_at)}
+            </div>
           </div>
         </div>
       );
@@ -202,7 +226,7 @@ export const QAChat: React.FC<QAChatProps> = ({
 
           {/* Timestamp */}
           <div className={`text-xs text-gray-500 mt-1 ${isClient ? 'text-right' : ''}`}>
-            {formatTimestamp(msg.createdAt)}
+            {formatTimestamp(msg.createdAt || msg.created_at)}
           </div>
         </div>
       </div>

@@ -160,11 +160,21 @@ export class ClientService {
       // Create a map of opportunity data by ID for quick lookup
       const oppMap = new Map(opps.map((o) => [o.id, o]));
 
-      // Combine status records with opportunity data
-      return statusRecords.map((status) => ({
-        ...status,
-        opportunity: oppMap.get(status.opportunity_id),
-      }));
+      // Combine status records with opportunity data - flatten for frontend
+      return statusRecords.map((status) => {
+        const opp = oppMap.get(status.opportunity_id);
+        return {
+          // Spread opportunity data first (title, summary, deadline_at, etc.)
+          ...opp,
+          // Then override with status-specific fields
+          id: opp?.id || status.opportunity_id, // Use opportunity ID as the main ID
+          response_state: status.response_state,
+          notes_for_agency: status.notes_for_agency,
+          responded_at: status.responded_at,
+          client_id: status.client_id,
+          status_id: status.id, // Keep the status record ID as status_id
+        };
+      });
     } catch (err) {
       logger.error('Get client opportunities error', err);
       throw err;

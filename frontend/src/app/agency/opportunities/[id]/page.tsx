@@ -10,19 +10,19 @@ import ClientResponseSummary from '@/components/agency/opportunity/ClientRespons
 import ClientResponsesTable from '@/components/agency/opportunity/ClientResponsesTable';
 import OpportunityTasksSection from '@/components/agency/opportunity/OpportunityTasksSection';
 import ActivityLog from '@/components/agency/opportunity/ActivityLog';
+import AssignClientsModal from '@/components/agency/opportunity/AssignClientsModal';
 
 export default function OpportunityDetailPage() {
   const params = useParams();
   const router = useRouter();
   const opportunityId = params.id as string;
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [showAssignModal, setShowAssignModal] = useState(false);
 
-  const { opportunity, summary, statuses, tasks, activities, loading, error } = useOpportunityDetail(opportunityId);
+  const { opportunity, summary, statuses, tasks, activities, loading, error, refetch } = useOpportunityDetail(opportunityId);
   const { clients } = useClients();
 
-  const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
+  // Get list of already assigned client IDs
+  const assignedClientIds = statuses.map((s: any) => s.client_id);
 
   const handleStatusChange = async (clientId: string, newStatus: string, notes?: string) => {
     try {
@@ -40,7 +40,7 @@ export default function OpportunityDetailPage() {
       });
 
       if (response.ok) {
-        handleRefresh();
+        refetch();
         console.log('Status updated successfully');
       } else {
         console.error('Failed to update status');
@@ -64,7 +64,7 @@ export default function OpportunityDetailPage() {
       });
 
       if (response.ok) {
-        handleRefresh();
+        refetch();
         console.log('Task assigned successfully');
       } else {
         console.error('Failed to assign task');
@@ -128,21 +128,44 @@ export default function OpportunityDetailPage() {
 
       {/* Client Responses Table */}
       <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Client Responses</h3>
+          <button
+            onClick={() => setShowAssignModal(true)}
+            className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Assign Clients
+          </button>
+        </div>
         <ClientResponsesTable
           statuses={statuses}
           opportunityId={opportunityId}
           onStatusChange={handleStatusChange}
-          onRefresh={handleRefresh}
+          onRefresh={refetch}
           clients={clients}
         />
       </div>
+
+      {/* Assign Clients Modal */}
+      {showAssignModal && (
+        <AssignClientsModal
+          opportunityId={opportunityId}
+          clients={clients}
+          assignedClientIds={assignedClientIds}
+          onClose={() => setShowAssignModal(false)}
+          onSuccess={refetch}
+        />
+      )}
 
       {/* Tasks Section */}
       <div className="mb-8">
         <OpportunityTasksSection
           tasks={tasks}
           onTaskAssign={handleTaskAssign}
-          onRefresh={handleRefresh}
+          onRefresh={refetch}
           clients={clients}
         />
       </div>

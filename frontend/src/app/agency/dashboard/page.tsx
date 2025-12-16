@@ -258,9 +258,9 @@ export default function DashboardPage() {
 
   return (
     <div className="h-[calc(100vh-64px)] bg-gradient-to-br from-gray-50 via-white to-red-50/30 overflow-hidden">
-      <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col">
+      <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-col">
         {/* Header - Compact */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2">
           <div>
             <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-[#D32F2F] to-[#C62828] bg-clip-text text-transparent">
               PR Team Dashboard
@@ -293,11 +293,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Summary Stat Cards - 3 KPI Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-3 gap-3 mb-3">
           {/* Card 1 - Active Opportunities */}
           <button
             onClick={() => handleKpiCardClick('active')}
-            className={`bg-white rounded-xl border-2 p-5 hover:shadow-md transition-all text-left ${
+            className={`bg-white rounded-xl border-2 p-4 hover:shadow-md transition-all text-left ${
               selectedKpiFilter === 'active'
                 ? 'border-[#D32F2F] ring-2 ring-[#D32F2F]/20'
                 : 'border-gray-200 hover:border-gray-300'
@@ -328,7 +328,7 @@ export default function DashboardPage() {
           {/* Card 2 - Accepted */}
           <button
             onClick={() => handleKpiCardClick('accepted')}
-            className={`bg-white rounded-xl border-2 p-5 hover:shadow-md transition-all text-left ${
+            className={`bg-white rounded-xl border-2 p-4 hover:shadow-md transition-all text-left ${
               selectedKpiFilter === 'accepted'
                 ? 'border-[#3BB253] ring-2 ring-[#3BB253]/20'
                 : 'border-gray-200 hover:border-gray-300'
@@ -357,7 +357,7 @@ export default function DashboardPage() {
           {/* Card 3 - Interested */}
           <button
             onClick={() => handleKpiCardClick('interested')}
-            className={`bg-white rounded-xl border-2 p-5 hover:shadow-md transition-all text-left ${
+            className={`bg-white rounded-xl border-2 p-4 hover:shadow-md transition-all text-left ${
               selectedKpiFilter === 'interested'
                 ? 'border-purple-500 ring-2 ring-purple-500/20'
                 : 'border-gray-200 hover:border-gray-300'
@@ -385,7 +385,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Filters - Compact */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3 mb-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-2 mb-3">
           <div className="flex items-center gap-3">
             {/* Search */}
             <div className="relative flex-1 min-w-0">
@@ -467,7 +467,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Content Grid - Fill remaining space */}
-        <div className="flex-1 grid grid-cols-3 gap-4 min-h-0 overflow-auto">
+        <div className="flex-1 grid grid-cols-3 gap-3 min-h-0">
           {/* Recent Opportunities - 2 columns */}
           <div className="col-span-2 bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
             {/* Header */}
@@ -611,7 +611,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Performance & Operations Panel - Compact horizontal band */}
-        <div className="mt-4 bg-white rounded-lg border border-gray-200 shadow-sm flex-shrink-0">
+        <div className="mt-3 bg-white rounded-lg border border-gray-200 shadow-sm flex-shrink-0">
           {/* Single horizontal container with 3 zones */}
           <div className="flex divide-x divide-gray-200">
             {/* Zone 1: Client Engagement (Left) */}

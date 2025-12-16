@@ -11,6 +11,7 @@ interface AddClientModalProps {
 export const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
+    company_name: '',
     industry: '',
     primary_contact_email: '',
   });
@@ -30,7 +31,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSucce
     try {
       const res = await apiClient.createClient(formData);
       if (res.success) {
-        setFormData({ name: '', industry: '', primary_contact_email: '' });
+        setFormData({ name: '', company_name: '', industry: '', primary_contact_email: '' });
         onSuccess();
         onClose();
       } else {
@@ -79,6 +80,20 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSucce
               value={formData.name}
               onChange={handleChange}
               required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Company Name
+            </label>
+            <input
+              type="text"
+              name="company_name"
+              placeholder="e.g., Acme Inc."
+              value={formData.company_name}
+              onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>

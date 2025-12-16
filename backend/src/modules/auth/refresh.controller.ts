@@ -7,7 +7,7 @@ import ms from 'ms';
 export class RefreshController {
   /**
    * Refresh endpoint - Exchange refresh token for new access token
-   * Accepts refresh token in request body or Authorization header
+   * No access token required - only validates the refresh token
    */
   async refresh(req: Request, res: Response) {
     try {
@@ -20,26 +20,17 @@ export class RefreshController {
         });
       }
 
-      // Extract user context from auth middleware
-      // Note: This endpoint requires a valid (but possibly expired) access token
-      if (!req.auth) {
-        return res.status(401).json({
-          success: false,
-          error: 'Unauthorized - valid access token required',
-        });
-      }
+      // Look up user info from the refresh token (no access token needed)
+      const userInfo = await authService.findUserByRefreshToken(refreshToken);
 
-      const { userId, agencyId, email, role } = req.auth;
-
-      // Validate refresh token
-      const validation = await authService.validateRefreshToken(agencyId, userId, refreshToken);
-
-      if (!validation) {
+      if (!userInfo) {
         return res.status(401).json({
           success: false,
           error: 'Invalid or expired refresh token',
         });
       }
+
+      const { userId, agencyId, email, role, userType, clientId } = userInfo;
 
       // Generate new token pair
       const { accessToken, refreshToken: newRefreshToken } = authService.createTokenPair({
@@ -47,13 +38,14 @@ export class RefreshController {
         agencyId,
         email,
         role: role as 'AGENCY_ADMIN' | 'AGENCY_MEMBER' | 'CLIENT_USER',
+        clientId,
       });
 
       // Save new refresh token to database
       const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000; // 30 days fallback
       const expiresAt = new Date(Date.now() + refreshExpiryMs);
 
-      await authService.saveRefreshToken(agencyId, userId, newRefreshToken, expiresAt);
+      await authService.saveRefreshToken(agencyId, userId, newRefreshToken, expiresAt, userType);
 
       // Revoke old refresh token
       await authService.revokeRefreshToken(agencyId, userId, refreshToken);

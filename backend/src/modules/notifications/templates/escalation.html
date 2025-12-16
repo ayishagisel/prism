@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escalated Q&A Chat - Action Required</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+          <!-- Header with Escalation Badge -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%); padding: 30px 40px; text-align: center;">
+              <div style="display: inline-block; background-color: #fef2f2; color: #b91c1c; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 12px;">
+                🚨 ESCALATED
+              </div>
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">
+                Client Question Needs Attention
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Greeting -->
+          <tr>
+            <td style="padding: 30px 40px 20px 40px;">
+              <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.5;">
+                Hi <strong>{{agencyUserName}}</strong>,
+              </p>
+              <p style="margin: 0; font-size: 16px; color: #333333; line-height: 1.5;">
+                A client question has been escalated and requires your response:
+              </p>
+            </td>
+          </tr>
+
+          <!-- Escalation Details Card -->
+          <tr>
+            <td style="padding: 0 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef2f2; border-radius: 8px; border: 2px solid #fecaca;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <!-- Client & Opportunity Info -->
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
+                      <tr>
+                        <td width="100" style="padding: 6px 0; font-size: 14px; color: #6b7280; font-weight: 500;">
+                          Client:
+                        </td>
+                        <td style="padding: 6px 0; font-size: 14px; color: #111827; font-weight: 600;">
+                          {{clientName}}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td width="100" style="padding: 6px 0; font-size: 14px; color: #6b7280; font-weight: 500;">
+                          Opportunity:
+                        </td>
+                        <td style="padding: 6px 0; font-size: 14px; color: #111827;">
+                          {{opportunityTitle}}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td width="100" style="padding: 6px 0; font-size: 14px; color: #6b7280; font-weight: 500;">
+                          Escalated:
+                        </td>
+                        <td style="padding: 6px 0; font-size: 14px; color: #b91c1c; font-weight: 600;">
+                          {{escalatedAt}}
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Question Preview -->
+                    <div style="background-color: #ffffff; border-radius: 6px; border-left: 4px solid #b91c1c; padding: 16px;">
+                      <p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280; font-weight: 500;">
+                        Client's Question:
+                      </p>
+                      <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6; white-space: pre-wrap;">
+                        {{questionPreview}}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA Button -->
+          <tr>
+            <td style="padding: 30px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="{{deepLink}}"
+                       style="display: inline-block; background-color: #b91c1c; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-size: 16px; font-weight: 600; box-shadow: 0 2px 4px rgba(185, 28, 28, 0.2);">
+                      Respond Now
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Urgency Warning -->
+          <tr>
+            <td style="padding: 0 40px 30px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <p style="margin: 0; font-size: 13px; color: #92400e; line-height: 1.5;">
+                      <strong>⏰ Action Required:</strong> Escalated questions indicate the AI couldn't provide a satisfactory answer. Your timely response helps maintain client satisfaction.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding: 0 40px;">
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 0;">
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px 40px; text-align: center;">
+              <p style="margin: 0 0 10px 0; font-size: 13px; color: #6b7280; line-height: 1.5;">
+                Sent via <strong>PRISM</strong> - PR Intelligence & Signal Management
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+                You're receiving this email because a client question was escalated.
+                <br>
+                <a href="{{preferencesUrl}}" style="color: #dc2626; text-decoration: none;">Manage notification preferences</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

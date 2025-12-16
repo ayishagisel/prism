@@ -150,6 +150,32 @@ export class OpportunityService {
         offset: filters?.offset || 0,
       });
 
+      // Fetch client_statuses for all opportunities
+      if (result.length > 0) {
+        const oppIds = result.map(opp => opp.id);
+        const statuses = await db.query.clientOpportunityStatus.findMany({
+          where: and(
+            eq(clientOpportunityStatus.agency_id, agencyId),
+            inArray(clientOpportunityStatus.opportunity_id, oppIds)
+          ),
+        });
+
+        // Map statuses to opportunities
+        const statusesByOppId = statuses.reduce((acc, status) => {
+          if (!acc[status.opportunity_id]) {
+            acc[status.opportunity_id] = [];
+          }
+          acc[status.opportunity_id].push(status);
+          return acc;
+        }, {} as Record<string, typeof statuses>);
+
+        // Add client_statuses to each opportunity
+        return result.map(opp => ({
+          ...opp,
+          client_statuses: statusesByOppId[opp.id] || [],
+        }));
+      }
+
       return result;
     } catch (err) {
       logger.error('List opportunities error', err);

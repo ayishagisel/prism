@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRISM - Unified Q&A and Notification System Implementation Plan</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .summary-box {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 20px 30px;
+      margin: 30px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .summary-box h2 {
+      color: #92400e;
+      margin-bottom: 10px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stat-card .number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #dc2626;
+    }
+
+    .stat-card .label {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .phase {
+      margin-bottom: 40px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .phase-header {
+      background: #f3f4f6;
+      padding: 20px 25px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .phase-header h2 {
+      color: #1f2937;
+      font-size: 1.4rem;
+    }
+
+    .phase-badge {
+      background: #dc2626;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .phase-content {
+      padding: 25px;
+    }
+
+    .task {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    .task:last-child {
+      margin-bottom: 0;
+    }
+
+    .task h3 {
+      color: #374151;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .task h3::before {
+      content: "▸";
+      color: #dc2626;
+    }
+
+    .file-path {
+      background: #1f2937;
+      color: #10b981;
+      padding: 8px 15px;
+      border-radius: 6px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.85rem;
+      margin: 10px 0;
+      overflow-x: auto;
+    }
+
+    .code-block {
+      background: #1f2937;
+      color: #e5e7eb;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+
+    .code-block .keyword {
+      color: #f472b6;
+    }
+
+    .code-block .type {
+      color: #60a5fa;
+    }
+
+    .code-block .string {
+      color: #34d399;
+    }
+
+    .code-block .comment {
+      color: #6b7280;
+    }
+
+    .test-list {
+      list-style: none;
+      margin-top: 10px;
+    }
+
+    .test-list li {
+      padding: 8px 0;
+      padding-left: 25px;
+      position: relative;
+      border-bottom: 1px dashed #e5e7eb;
+    }
+
+    .test-list li:last-child {
+      border-bottom: none;
+    }
+
+    .test-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #10b981;
+      font-weight: bold;
+    }
+
+    .endpoints {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .method {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .method.get { background: #10b981; color: white; }
+    .method.post { background: #3b82f6; color: white; }
+    .method.put { background: #f59e0b; color: white; }
+
+    .timeline {
+      margin: 30px;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 25px;
+    }
+
+    .timeline h2 {
+      margin-bottom: 20px;
+      color: #1f2937;
+    }
+
+    .timeline-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .timeline-table th,
+    .timeline-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .timeline-table th {
+      background: #e5e7eb;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .timeline-table tr:hover {
+      background: #f3f4f6;
+    }
+
+    .dependency-tag {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    .files-section {
+      margin: 30px;
+    }
+
+    .files-section h2 {
+      margin-bottom: 20px;
+      color: #1f2937;
+    }
+
+    .files-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .files-card {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .files-card h3 {
+      color: #374151;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #dc2626;
+    }
+
+    .files-card ul {
+      list-style: none;
+    }
+
+    .files-card li {
+      padding: 6px 0;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.8rem;
+      color: #4b5563;
+    }
+
+    .files-card li::before {
+      content: "📄 ";
+    }
+
+    .files-card.create li::before {
+      content: "✨ ";
+    }
+
+    .files-card.test li::before {
+      content: "🧪 ";
+    }
+
+    .notification-flow {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 15px 0;
+    }
+
+    .flow-diagram {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    .flow-step {
+      background: white;
+      border: 2px solid #22c55e;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .flow-arrow {
+      color: #22c55e;
+      font-size: 1.5rem;
+    }
+
+    footer {
+      background: #1f2937;
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    footer p {
+      opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+
+      .phase-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+      }
+
+      .flow-diagram {
+        flex-direction: column;
+      }
+
+      .flow-arrow {
+        transform: rotate(90deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>PRISM Implementation Plan</h1>
+      <p>Unified Q&A and Notification System</p>
+    </header>
+
+    <div class="summary-box">
+      <h2>Project Overview</h2>
+      <p>Implement a unified action items queue, real-time WebSocket messaging, enhanced notification routing, and login redirect preservation with 100% test coverage.</p>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="number">8</div>
+          <div class="label">Phases</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">32</div>
+          <div class="label">Est. Hours</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">15+</div>
+          <div class="label">New Files</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">100%</div>
+          <div class="label">Test Coverage</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Phase 1 -->
+      <div class="phase">
+        <div class="phase-header">
+          <h2>Phase 1: Database Schema Updates</h2>
+          <span class="phase-badge">2 Hours</span>
+        </div>
+        <div class="phase-content">
+          <div class="task">
+            <h3>Update Schema File</h3>
+            <div class="file-path">/backend/src/db/schema.ts</div>
+            <p>Add presence tracking fields to user tables:</p>
+            <div class="code-block">
+<span class="comment">// Add to agencyUsers and clientUsers tables:</span>
+<span class="keyword">is_online</span>: <span class="type">boolean</span>(<span class="string">'is_online'</span>).<span class="keyword">default</span>(<span class="type">false</span>),
+<span class="keyword">last_seen_at</span>: <span class="type">timestamp</span>(<span class="string">'last_seen_at'</span>),
+<span class="keyword">socket_id</span>: <span class="type">text</span>(<span class="string">'socket_id'</span>),
+            </div>
+          </div>
+
+          <div class="task">
+            <h3>Create Migration</h3>
+            <div class="file-path">/backend/src/db/migrations/0001_add_presence_tracking.sql</div>
+          </div>
+
+          <div class="task">
+            <h3>Test Coverage</h3>
+            <div class="file-path">/backend/tests/schema-presence.test.ts</div>
+            <ul class="test-list">
+              <li>Test presence fields exist on user tables</li>
+              <li>Test default values (is_online = false)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="phase">
+        <div class="phase-header">
+          <h2>Phase 2: Unified Action Items Queue</h2>
+          <span class="phase-badge">4 Hours</span>
+        </div>
+        <div class="phase-content">
+          <div class="task">
+            <h3>Create Action Items Service</h3>
+            <div class="file-path">/backend/src/modules/action-items/action-items.service.ts</div>
+            <div class="code-block">
+<span class="keyword">interface</span> <span class="type">ActionItem</span> {
+  id: <span class="type">string</span>;
+  type: <span class="string">'escalated_chat'</span> | <span class="string">'restore_request'</span>;
+  created_at: <span class="type">Date</span>;
+  client_name: <span class="type">string</span>;
+  client_id: <span class="type">string</span>;
+  opportunity_id: <span class="type">string</span>;
+  opportunity_title: <span class="type">string</span>;
+  summary: <span class="type">string</span>;
+  metadata: <span class="type">Record&lt;string, any&gt;</span>;
+}
+
+<span class="keyword">class</span> <span class="type">ActionItemsService</span> {
+  getActionItems(agencyId): <span class="type">Promise&lt;ActionItem[]&gt;</span>
+  getActionItemsCount(agencyId): <span class="type">Promise&lt;{total, escalated_chats, restore_requests}&gt;</span>
+}
+            </div>
+          </div>
+
+          <div class="task">
+            <h3>Create Action Items Controller</h3>
+            <div class="file-path">/backend/src/modules/action-items/action-items.controller.ts</div>
+            <div class="endpoints">
+              <div class="endpoint">
+                <span class="method get">GET</span>
+                <code>/api/action-items</code> - Unified queue
+              </div>
+              <div class="endpoint">
+                <span class="method get">GET</span>
+                <code>/api/action-items/count</code> - Badge counts
+              </div>
+            </div>
+          </div>
+
+          <div class="task">
+            <h3>Test Coverage</h3>
+            <div class="file-path">/backend/tests/action-items.test.ts</div>
+            <ul class="test-list">
+              <li>Empty array when no items</li>
+              <li>Returns escalated chats as action items</li>
+              <li>Returns restore requests as action items</li>
+              <li>Merges and sorts by created_at desc</li>
+              <li>Filters by agency_id</li>
+              <li>Returns correct counts</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="phase">
+        <div class="phase-header">
+          <h2>Phase 3: WebSocket + Presence Tracking</h2>
+          <span class="phase-badge">6 Hours</span>
+        </div>
+        <div class="phase-content">
+          <div class="task">
+            <h3>Install Dependencies</h3>
+            <div class="code-block">
+cd backend && npm install socket.io @types/socket.io
+cd ../frontend && npm install socket.io-client
+            </div>
+          </div>
+
+          <div class="task">
+            <h3>Create Presence Service</h3>
+            <div class="file-path">/backend/src/modules/websocket/presence.service.ts</div>
+            <div class="code-block">
+<span class="keyword">class</span> <span class="type">PresenceService</span> {
+  setUserOnline(userId, userType, socketId): <span class="type">Promise&lt;void&gt;</span>
+  setUserOffline(userId, userType): <span class="type">Promise&lt;void&gt;</span>
+  isUserOnline(userId, userType): <span class="type">Promise&lt;boolean&gt;</span>
+  getUserSocketId(userId, userType): <span class="type">Promise&lt;string | null&gt;</span>
+  updateLastSeen(userId, userType): <span class="type">Promise&lt;void&gt;</span>
+}
+            </div>
+          </div>
+
+          <div class="task">
+            <h3>Create WebSocket Service</h3>
+            <div class="file-path">/backend/src/modules/websocket/websocket.service.ts</div>
+            <div class="code-block">
+<span class="keyword">class</span> <span class="type">WebSocketService</span> {
+  initialize(httpServer: <span class="type">HttpServer</span>): <span class="type">void</span>
+  handleConnection(socket: <span class="type">Socket</span>): <span class="type">void</span>
+  handleDisconnection(socket: <span class="type">Socket</span>): <span class="type">void</span>
+  emitToUser(userId, userType, event, data): <span class="type">void</span>
+  emitToRoom(room, event, data): <span class="type">void</span>
+}
+            </div>
+          </div>
+
+          <div class="task">
+            <h3>Create Frontend Socket Hook</h3>
+            <div class="file-path">/frontend/src/lib/socket.ts</div>
+          </div>
+
+          <div class="task">
+            <h3>Test Coverage</h3>
+            <div class="file-path">/backend/tests/presence.test.ts</div>
+            <div class="file-path">/backend/tests/websocket.test.ts</div>
+            <ul class="test-list">
+              <li>Set user online/offline</li>
+              <li>Return correct online status</li>
+              <li>Update last_seen_at</li>
+              <li>Establish connection with valid token</li>
+              <li>Reject connection without token</li>
+              <li>Emit to correct room</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 4 -->
+      <div class="phase">
+        <div class="phase-header">
+          <h2>Phase 4: Enhanced Notification Routing</h2>
+          <span class="phase-badge">4 Hours</span>
+        </div>
+        <div class="phase-content">
+          <div class="task">
+            <h3>Create Notification Router Service</h3>
+            <div class="file-path">/backend/src/modules/notifications/notification-router.service.ts</div>
+
+            <div class="notification-flow">
+              <strong>Routing Logic:</strong>
+              <div class="flow-diagram">
+                <div class="flow-step">Message Sent</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">User Online?<br><small>Yes → WebSocket</small></div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Has Push?<br><small>Yes → Push Notification</small></div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Queue Email<br><small>2.5min delay if push sent</small></div>
+              </div>
+            </div>
+
+            <div class="code-block">
+<span class="keyword">interface</span> <span class="type">NotificationPayload</span> {
+  recipientId: <span class="type">string</span>;
+  recipientType: <span class="string">'agency_user'</span> | <span class="string">'client_user'</span>;
+  title: <span class="type">string</span>;
+  body: <span class="type">string</span>;
+  type: <span class="string">'chat_message'</span> | <span class="string">'restore_response'</span> | <span class="string">'escalation'</span>;
+  data: { deepLink: <span class="type">string</span>; ... };
+}
+
+<span class="keyword">class</span> <span class="type">NotificationRouterService</span> {
+  <span class="keyword">async</span> routeNotification(payload): <span class="type">Promise&lt;{websocket, push, email}&gt;</span>
+}
+            </div>
+          </div>
+
+          <div class="task">
+            <h3>Test Coverage</h3>
+            <div class="file-path">/backend/tests/notification-router.test.ts</div>
+            <ul class="test-list">
+              <li>Send WebSocket when user online</li>
+              <li>Skip push when user online</li>
+              <li>Send push when user offline with subscription</li>
+              <li>Queue email with 2.5min delay when push sent</li>
+              <li>Queue email immediately when no push</li>
+              <li>Generate correct deep links</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 5 -->
+      <div class="phase">
+        <div class="phase-header">
+          <h2>Phase 5: Login Redirect Preservation</h2>
+          <span class="phase-badge">2 Hours</span>
+        </div>
+        <div class="phase-content">
+          <div class="task">
+            <h3>Update Login Page</h3>
+            <div class="file-path">/frontend/src/app/login/page.tsx</div>
+            <div class="code-block">
+<span class="keyword">import</span> { useSearchParams } <span class="keyword">from</span> <span class="string">'next/navigation'</span>;
+
+<span class="comment">// Get redirect param</span>
+<span class="keyword">const</span> searchParams = useSearchParams();
+<span class="keyword">const</span> redirect = searchParams.get(<span class="string">'redirect'</span>);
+
+<span class="comment">// Validate (must start with /, no ://)</span>
+<span class="keyword">const</span> isValidRedirect = (url) => url.startsWith(<span class="string">'/'</span>) && !url.includes(<span class="string">'://'</span>);
+
+<span class="comment">// After login success:</span>
+<span class="keyword">if</span> (redirect && isValidRedirect(redirect)) {
+  router.push(redirect);
+} <span class="keyword">else</span> {
+  <span class="comment">// existing role-based redirect</span>
+}
+            </div>
+          </div>
+
+          <div class="task">
+            <h3>Update API Client 401 Handler</h3>
+            <div class="file-path">/frontend/src/lib/api.ts</div>
+          </div>
+
+          <div class="task">
+            <h3>Update Layout Auth Checks</h3>
+            <div class="file-path">/frontend/src/app/agency/layout.tsx</div>
+            <div class="file-path">/frontend/src/app/client/layout.tsx</div>
+          </div>
+
+          <div class="task">
+            <h3>Test Coverage</h3>
+            <div class="file-path">/frontend/__tests__/login-redirect.test.tsx</div>
+            <ul class="test-list">
+              <li>Redirect to specified path after login</li>
+              <li>Redirect to default when no param</li>
+              <li>Reject external URLs</li>
+              <li>Handle malformed params</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 6 -->
+      <div class="phase">
+        <div class="phase-header">
+          <h2>Phase 6: Email Templates with Deep Links</h2>
+          <span class="phase-badge">2 Hours</span>
+        </div>
+        <div class="phase-content">
+          <div class="task">
+            <h3>Create Email Templates</h3>
+            <div class="file-path">/backend/src/modules/notifications/templates/</div>
+            <ul class="test-list">
+              <li>chat-message.html - New message notification</li>
+              <li>escalation.html - Chat escalated to agency</li>
+              <li>restore-response.html - Restore request approved/denied</li>
+            </ul>
+          </div>
+
+          <div class="task">
+            <h3>Update Email Service</h3>
+            <div class="file-path">/backend/src/modules/notifications/email.service.ts</div>
+            <div class="code-block">
+generateDeepLink(type, data): <span class="type">string</span> {
+  <span class="keyword">switch</span>(type) {
+    <span class="keyword">case</span> <span class="string">'chat_message'</span>:
+      <span class="keyword">return</span> <span class="string">`${baseUrl}/client/opportunities/${data.opportunityId}?chat=open`</span>;
+    <span class="keyword">case</span> <span class="string">'escalation'</span>:
+      <span class="keyword">return</span> <span class="string">`${baseUrl}/agency/action-items?highlight=${data.conversationId}`</span>;
+    <span class="keyword">case</span> <span class="string">'restore_response'</span>:
+      <span class="keyword">return</span> <span class="string">`${baseUrl}/client/opportunities/${data.opportunityId}`</span>;
+  }
+}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 7 -->
+      <div class="phase">
+        <div class="phase-header">
+          <h2>Phase 7: Unified Queue UI Component</h2>
+          <span class="phase-badge">4 Hours</span>
+        </div>
+        <div class="phase-content">
+          <div class="task">
+            <h3>Create ActionItemsQueue Component</h3>
+            <div class="file-path">/frontend/src/components/agency/ActionItemsQueue.tsx</div>
+            <p><strong>Features:</strong></p>
+            <ul class="test-list">
+              <li>Fetch from /api/action-items</li>
+              <li>Display both escalated chats and restore requests</li>
+              <li>Type-specific rendering (chat icon vs restore icon)</li>
+              <li>Inline chat response for escalated chats</li>
+              <li>Approve/deny buttons for restore requests</li>
+              <li>Real-time updates via WebSocket</li>
+              <li>Badge with total count</li>
+            </ul>
+          </div>
+
+          <div class="task">
+            <h3>Update Dashboard</h3>
+            <div class="file-path">/frontend/src/app/agency/dashboard/page.tsx</div>
+            <p>Replace separate EscalatedChatsQueue and RestoreRequestQueue with unified ActionItemsQueue component.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 8 -->
+      <div class="phase">
+        <div class="phase-header">
+          <h2>Phase 8: Test Suite Completion</h2>
+          <span class="phase-badge">8 Hours</span>
+        </div>
+        <div class="phase-content">
+          <div class="task">
+            <h3>Backend Test Files</h3>
+            <ul class="test-list">
+              <li>tests/action-items.test.ts - ActionItemsService</li>
+              <li>tests/websocket.test.ts - WebSocketService</li>
+              <li>tests/presence.test.ts - PresenceService</li>
+              <li>tests/notification-router.test.ts - NotificationRouterService</li>
+              <li>tests/chat.test.ts - ChatService</li>
+              <li>tests/email-templates.test.ts - Email generation</li>
+            </ul>
+          </div>
+
+          <div class="task">
+            <h3>Frontend Test Files</h3>
+            <ul class="test-list">
+              <li>__tests__/ActionItemsQueue.test.tsx - Unified queue component</li>
+              <li>__tests__/login-redirect.test.tsx - Login redirect flow</li>
+              <li>__tests__/socket-hook.test.tsx - WebSocket hook</li>
+            </ul>
+          </div>
+
+          <div class="task">
+            <h3>Jest Config Update</h3>
+            <div class="code-block">
+coverageThreshold: {
+  global: {
+    branches: <span class="type">100</span>,
+    functions: <span class="type">100</span>,
+    lines: <span class="type">100</span>,
+    statements: <span class="type">100</span>,
+  },
+},
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline">
+      <h2>Implementation Order</h2>
+      <table class="timeline-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Phase</th>
+            <th>Dependencies</th>
+            <th>Hours</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Phase 1: Schema Updates</td>
+            <td><span class="dependency-tag">None</span></td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Phase 5: Login Redirect</td>
+            <td><span class="dependency-tag">None</span></td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Phase 2: Action Items Queue</td>
+            <td><span class="dependency-tag">Phase 1</span></td>
+            <td>4</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Phase 3: WebSocket + Presence</td>
+            <td><span class="dependency-tag">Phase 1</span></td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>Phase 4: Notification Router</td>
+            <td><span class="dependency-tag">Phase 3</span></td>
+            <td>4</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Phase 6: Email Templates</td>
+            <td><span class="dependency-tag">Phase 4</span></td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>Phase 7: Unified Queue UI</td>
+            <td><span class="dependency-tag">Phase 2, 3, 4</span></td>
+            <td>4</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td>Phase 8: Test Suite</td>
+            <td><span class="dependency-tag">All</span></td>
+            <td>8</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Files Summary -->
+    <div class="files-section">
+      <h2>Critical Files Summary</h2>
+      <div class="files-grid">
+        <div class="files-card">
+          <h3>Backend (to modify)</h3>
+          <ul>
+            <li>/backend/src/db/schema.ts</li>
+            <li>/backend/src/server.ts</li>
+            <li>/backend/src/app.ts</li>
+            <li>/backend/src/modules/chat/chat.service.ts</li>
+            <li>/backend/src/modules/notifications/push.service.ts</li>
+          </ul>
+        </div>
+
+        <div class="files-card create">
+          <h3>Backend (to create)</h3>
+          <ul>
+            <li>action-items/action-items.service.ts</li>
+            <li>action-items/action-items.controller.ts</li>
+            <li>websocket/websocket.service.ts</li>
+            <li>websocket/presence.service.ts</li>
+            <li>notifications/notification-router.service.ts</li>
+          </ul>
+        </div>
+
+        <div class="files-card">
+          <h3>Frontend (to modify)</h3>
+          <ul>
+            <li>/frontend/src/app/login/page.tsx</li>
+            <li>/frontend/src/lib/api.ts</li>
+            <li>/frontend/src/app/agency/layout.tsx</li>
+            <li>/frontend/src/app/client/layout.tsx</li>
+            <li>/frontend/src/app/agency/dashboard/page.tsx</li>
+          </ul>
+        </div>
+
+        <div class="files-card create">
+          <h3>Frontend (to create)</h3>
+          <ul>
+            <li>/frontend/src/lib/socket.ts</li>
+            <li>/frontend/src/components/agency/ActionItemsQueue.tsx</li>
+          </ul>
+        </div>
+
+        <div class="files-card test">
+          <h3>Tests (to create)</h3>
+          <ul>
+            <li>tests/action-items.test.ts</li>
+            <li>tests/websocket.test.ts</li>
+            <li>tests/presence.test.ts</li>
+            <li>tests/notification-router.test.ts</li>
+            <li>tests/chat.test.ts</li>
+            <li>tests/email-templates.test.ts</li>
+            <li>__tests__/ActionItemsQueue.test.tsx</li>
+            <li>__tests__/login-redirect.test.tsx</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>PRISM - PR Intelligence & Signal Management</p>
+      <p style="margin-top: 10px; font-size: 0.9rem;">Implementation Plan v1.0 | Generated December 2025</p>
+    </footer>
+  </div>
+</body>
+</html>

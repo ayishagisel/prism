@@ -112,6 +112,31 @@ export class OpportunityController {
       res.status(500).json({ success: false, error: 'Failed to delete opportunity' });
     }
   }
+
+  async assignClients(req: Request, res: Response) {
+    try {
+      if (!req.auth) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+
+      const { client_ids } = req.body;
+
+      if (!client_ids || !Array.isArray(client_ids) || client_ids.length === 0) {
+        return res.status(400).json({ success: false, error: 'client_ids array is required' });
+      }
+
+      await opportunityService.assignOpportunityToClients(
+        req.auth.agencyId,
+        req.params.id,
+        client_ids
+      );
+
+      res.json({ success: true, data: { message: 'Clients assigned successfully' } });
+    } catch (err) {
+      logger.error('Assign clients error', err);
+      res.status(500).json({ success: false, error: 'Failed to assign clients' });
+    }
+  }
 }
 
 export const opportunityController = new OpportunityController();

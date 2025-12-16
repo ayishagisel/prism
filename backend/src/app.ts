@@ -20,6 +20,7 @@ import { dashboardController } from './modules/dashboard/dashboard.controller';
 import { ChatController } from './modules/chat/chat.controller';
 import { restoreController } from './modules/restore/restore.controller';
 import { ContactController } from './modules/contact/contact.controller';
+import { actionItemsController } from './modules/action-items/action-items.controller';
 
 const chatController = new ChatController();
 const contactController = new ContactController();
@@ -61,7 +62,7 @@ export const createApp = () => {
   app.post('/api/auth/verify-email', (req, res) => authController.verifyEmail(req, res));
   app.post('/api/auth/request-password-reset', (req, res) => authController.requestPasswordReset(req, res));
   app.post('/api/auth/reset-password', (req, res) => authController.resetPassword(req, res));
-  app.post('/api/auth/refresh', authMiddleware, (req, res) => refreshController.refresh(req, res));
+  app.post('/api/auth/refresh', (req, res) => refreshController.refresh(req, res));
   app.post('/api/auth/logout', authMiddleware, (req, res) => authController.logout(req, res));
   app.get('/api/auth/me', authMiddleware, (req, res) => authController.me(req, res));
 
@@ -86,6 +87,9 @@ export const createApp = () => {
   );
   app.delete('/api/opportunities/:id', authMiddleware, (req, res) =>
     opportunityController.delete(req, res)
+  );
+  app.post('/api/opportunities/:id/assign-clients', authMiddleware, (req, res) =>
+    opportunityController.assignClients(req, res)
   );
 
   // Client routes
@@ -180,6 +184,10 @@ export const createApp = () => {
   // Contact AOPR routes (for accepted opportunities)
   app.post('/api/contact/:opportunityId/message', authMiddleware, (req, res) => contactController.sendMessage(req, res));
   app.get('/api/contact/:opportunityId/messages', authMiddleware, (req, res) => contactController.getMessages(req, res));
+
+  // Action Items routes (unified queue for agency)
+  app.get('/api/action-items', authMiddleware, (req, res) => actionItemsController.getActionItems(req, res));
+  app.get('/api/action-items/count', authMiddleware, (req, res) => actionItemsController.getActionItemsCount(req, res));
 
   // Error handling
   app.use((err: any, req: Request, res: Response, next: any) => {

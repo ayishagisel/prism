@@ -35,6 +35,7 @@ export interface Client {
   id: string;
   agency_id: string;
   name: string;
+  company_name?: string;
   industry?: string;
   primary_contact_name?: string;
   primary_contact_email?: string;

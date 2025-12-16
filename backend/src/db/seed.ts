@@ -145,40 +145,61 @@ async function seed() {
     logger.info('Clients created');
 
     // Create client users (for demo login)
+    const clientPasswordHash = await bcryptjs.hash('throne123', 10);
+    const glowUpPasswordHash = await bcryptjs.hash('shine123', 10);
+
+    // Insert Throne Society client user
     await db
       .insert(clientUsers)
-      .values([
-        {
-          id: 'client_user_throne',
-          client_id: clientIds[0], // The Throne Society
-          agency_id: agencyId,
-          name: 'Demo Client User',
-          email: 'client@demo.com',
-          role: 'CLIENT_OWNER',
-          status: 'active',
-          metadata: {
-            title: 'Founder',
-            demo_user: true,
-          },
-          created_at: new Date(),
+      .values({
+        id: 'client_user_throne',
+        client_id: clientIds[0], // The Throne Society
+        agency_id: agencyId,
+        name: 'Demo Client User',
+        email: 'client@demo.com',
+        password_hash: clientPasswordHash,
+        role: 'CLIENT_OWNER',
+        status: 'active',
+        metadata: {
+          title: 'Founder',
+          demo_user: true,
+        },
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: clientUsers.id,
+        set: {
+          password_hash: clientPasswordHash,
           updated_at: new Date(),
         },
-        {
-          id: 'client_user_glow',
-          client_id: clientIds[2], // Glow Up
-          agency_id: agencyId,
-          name: 'Glow Up CEO',
-          email: 'ceo@glowup.com',
-          role: 'CLIENT_OWNER',
-          status: 'active',
-          metadata: {
-            title: 'CEO',
-          },
-          created_at: new Date(),
+      });
+
+    // Insert Glow Up client user
+    await db
+      .insert(clientUsers)
+      .values({
+        id: 'client_user_glow',
+        client_id: clientIds[2], // Glow Up
+        agency_id: agencyId,
+        name: 'Glow Up CEO',
+        email: 'ceo@glowup.com',
+        password_hash: glowUpPasswordHash,
+        role: 'CLIENT_OWNER',
+        status: 'active',
+        metadata: {
+          title: 'CEO',
+        },
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: clientUsers.id,
+        set: {
+          password_hash: glowUpPasswordHash,
           updated_at: new Date(),
         },
-      ])
-      .onConflictDoNothing();
+      });
 
     logger.info('Client users created');
 

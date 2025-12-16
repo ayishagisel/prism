@@ -5,13 +5,18 @@ import { apiClient } from '@/lib/api';
 
 interface ChatMessage {
   id: string;
-  messageType: 'client_question' | 'ai_response' | 'aopr_response' | 'system_message';
-  senderType: string;
-  senderId: string | null;
+  messageType?: 'client_question' | 'ai_response' | 'aopr_response' | 'system_message';
+  message_type?: 'client_question' | 'ai_response' | 'aopr_response' | 'system_message';
+  senderType?: string;
+  sender_type?: string;
+  senderId?: string | null;
+  sender_id?: string | null;
   message: string;
-  isEscalated: boolean;
+  isEscalated?: boolean;
+  is_escalated?: boolean;
   metadata: any;
-  createdAt: string;
+  createdAt?: string;
+  created_at?: string;
 }
 
 interface InlineQAChatProps {
@@ -92,7 +97,9 @@ export const InlineQAChat: React.FC<InlineQAChatProps> = ({
   };
 
   const formatTimestamp = (timestamp: string) => {
+    if (!timestamp) return '';
     const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '';
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -101,14 +108,32 @@ export const InlineQAChat: React.FC<InlineQAChatProps> = ({
   };
 
   const renderMessage = (msg: ChatMessage) => {
-    const isClient = msg.messageType === 'client_question';
-    const isAI = msg.messageType === 'ai_response';
-    const isSystem = msg.messageType === 'system_message';
+    const messageType = msg.messageType || msg.message_type;
+    const isClient = messageType === 'client_question';
+    const isAI = messageType === 'ai_response';
+    const isSystem = messageType === 'system_message';
 
     if (isSystem) {
       return (
-        <div key={msg.id} className="flex justify-center my-3">
-          <div className="text-xs text-gray-500 italic">{msg.message}</div>
+        <div key={msg.id} className="flex justify-start mb-4">
+          <div className="flex items-end gap-2 max-w-[80%]">
+            {/* Avatar */}
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-amber-100 text-amber-600">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+
+            <div className="flex flex-col items-start">
+              {/* Message bubble */}
+              <div className="px-4 py-2.5 rounded-2xl bg-amber-50 text-gray-900 border border-amber-200 rounded-bl-md">
+                <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+              </div>
+
+              {/* Timestamp */}
+              <span className="text-xs text-gray-400 mt-1">{formatTimestamp(msg.createdAt || msg.created_at || '')}</span>
+            </div>
+          </div>
         </div>
       );
     }
@@ -160,7 +185,7 @@ export const InlineQAChat: React.FC<InlineQAChatProps> = ({
             </div>
 
             {/* Timestamp */}
-            <span className="text-xs text-gray-400 mt-1">{formatTimestamp(msg.createdAt)}</span>
+            <span className="text-xs text-gray-400 mt-1">{formatTimestamp(msg.createdAt || msg.created_at || '')}</span>
           </div>
         </div>
       </div>

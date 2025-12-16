@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restore Request Response</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, {{statusColor}} 0%, {{statusColorDark}} 100%); padding: 30px 40px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">
+                {{statusIcon}} Restore Request {{statusText}}
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Greeting -->
+          <tr>
+            <td style="padding: 30px 40px 20px 40px;">
+              <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.5;">
+                Hi <strong>{{clientName}}</strong>,
+              </p>
+              <p style="margin: 0; font-size: 16px; color: #333333; line-height: 1.5;">
+                Your request to restore a declined opportunity has been <strong>{{statusTextLower}}</strong>:
+              </p>
+            </td>
+          </tr>
+
+          <!-- Opportunity Details Card -->
+          <tr>
+            <td style="padding: 0 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <!-- Title -->
+                    <h2 style="margin: 0 0 16px 0; font-size: 20px; color: #111827; font-weight: 600; line-height: 1.3;">
+                      {{opportunityTitle}}
+                    </h2>
+
+                    <!-- Status Badge -->
+                    <div style="margin-bottom: 16px;">
+                      <span style="display: inline-block; background-color: {{statusBadgeBg}}; color: {{statusBadgeColor}}; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600;">
+                        {{statusIcon}} {{statusText}}
+                      </span>
+                    </div>
+
+                    <!-- Review Notes (if any) -->
+                    {{#reviewNotes}}
+                    <div style="background-color: #ffffff; border-radius: 6px; border-left: 4px solid {{statusColor}}; padding: 16px;">
+                      <p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280; font-weight: 500;">
+                        Agency Notes:
+                      </p>
+                      <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        {{reviewNotes}}
+                      </p>
+                    </div>
+                    {{/reviewNotes}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA Button (only if approved) -->
+          {{#isApproved}}
+          <tr>
+            <td style="padding: 30px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="{{deepLink}}"
+                       style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-size: 16px; font-weight: 600; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);">
+                      View Restored Opportunity
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          {{/isApproved}}
+
+          <!-- Info Box -->
+          <tr>
+            <td style="padding: {{#isApproved}}0{{/isApproved}}{{^isApproved}}30px{{/isApproved}} 40px 30px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: {{infoBgColor}}; border-radius: 6px; border-left: 4px solid {{infoBorderColor}};">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <p style="margin: 0; font-size: 13px; color: {{infoTextColor}}; line-height: 1.5;">
+                      {{infoMessage}}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding: 0 40px;">
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 0;">
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px 40px; text-align: center;">
+              <p style="margin: 0 0 10px 0; font-size: 13px; color: #6b7280; line-height: 1.5;">
+                Sent via <strong>PRISM</strong> - PR Intelligence & Signal Management
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+                You're receiving this email because you submitted a restore request.
+                <br>
+                <a href="{{preferencesUrl}}" style="color: #dc2626; text-decoration: none;">Manage notification preferences</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,15 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 
 // Client roles that should go to client dashboard
 const CLIENT_ROLES = ['CLIENT_OWNER', 'CLIENT_TEAM'];
 
-export default function LoginPage() {
+// Validate redirect URL is internal (security measure to prevent open redirects)
+const isValidRedirect = (url: string | null): url is string => {
+  if (!url) return false;
+  // Must start with / and not contain :// (prevents external redirects)
+  return url.startsWith('/') && !url.includes('://');
+};
+
+// Get default redirect based on user role
+const getDefaultRedirect = (role: string): string => {
+  return CLIENT_ROLES.includes(role) ? '/client/dashboard' : '/agency/dashboard';
+};
+
+// Inner component that uses useSearchParams (must be wrapped in Suspense)
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get('redirect');
+
   const [email, setEmail] = useState('amore@applesandorangespr.com');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,13 +40,12 @@ export default function LoginPage() {
         try {
           const res = await apiClient.getMe();
           if (res.success) {
-            // Token is valid, redirect based on role
+            // Token is valid, redirect to intended destination or default
             const role = res.data?.role;
-            if (CLIENT_ROLES.includes(role)) {
-              router.push('/client/dashboard');
-            } else {
-              router.push('/agency/dashboard');
-            }
+            const destination = isValidRedirect(redirectParam)
+              ? redirectParam
+              : getDefaultRedirect(role);
+            router.push(destination);
           } else {
             // Token is invalid, clear it and stay on login
             localStorage.removeItem('auth_token');
@@ -44,7 +59,7 @@ export default function LoginPage() {
       };
       verifyToken();
     }
-  }, [router]);
+  }, [router, redirectParam]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,13 +69,12 @@ export default function LoginPage() {
     try {
       const res = await apiClient.login(email, password);
       if (res.success) {
-        // Redirect based on user role
+        // Redirect to intended destination or default based on role
         const role = res.data?.user?.role;
-        if (CLIENT_ROLES.includes(role)) {
-          router.push('/client/dashboard');
-        } else {
-          router.push('/agency/dashboard');
-        }
+        const destination = isValidRedirect(redirectParam)
+          ? redirectParam
+          : getDefaultRedirect(role);
+        router.push(destination);
       } else {
         setError(res.error || 'Login failed');
       }
@@ -147,5 +161,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main page component with Suspense boundary for useSearchParams
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-red-50 to-gray-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

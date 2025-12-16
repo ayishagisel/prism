@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Client } from '@/lib/types';
 import { apiClient } from '@/lib/api';
 import { StatusChip } from '../common/StatusChip';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ClientDetailModalProps {
   client: Client;
@@ -14,9 +15,11 @@ interface ClientDetailModalProps {
 
 export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }) => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'details' | 'opportunities'>('details');
+  const [activeTab, setActiveTab] = useState<'opportunities' | 'details' | 'tasks'>('opportunities');
   const [opportunities, setOpportunities] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
   const [loadingOpps, setLoadingOpps] = useState(false);
+  const [loadingTasks, setLoadingTasks] = useState(false);
 
   useEffect(() => {
     const fetchOpportunities = async () => {
@@ -33,14 +36,35 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
       }
     };
 
+    const fetchTasks = async () => {
+      setLoadingTasks(true);
+      try {
+        const res = await apiClient.getClientTasks(client.id);
+        if (res.success) {
+          setTasks(res.data || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tasks:', err);
+      } finally {
+        setLoadingTasks(false);
+      }
+    };
+
     if (activeTab === 'opportunities') {
       fetchOpportunities();
+    } else if (activeTab === 'tasks') {
+      fetchTasks();
     }
   }, [activeTab, client.id]);
 
   const handleOpportunityClick = (opportunityId: string) => {
     onClose();
     router.push(`/agency/opportunities/${opportunityId}`);
+  };
+
+  const handleTaskClick = () => {
+    onClose();
+    router.push('/agency/tasks');
   };
 
   // Parse tags if they come as a string
@@ -66,6 +90,9 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
         <div className="sticky top-0 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 p-6 flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{client.name}</h2>
+            {client.company_name && (
+              <p className="text-gray-700 font-medium mt-0.5">{client.company_name}</p>
+            )}
             <p className="text-gray-500 text-sm mt-1">{client.industry || 'No industry specified'}</p>
           </div>
           <button
@@ -82,16 +109,6 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
         <div className="border-b border-gray-200 px-6 bg-white">
           <div className="flex gap-6">
             <button
-              onClick={() => setActiveTab('details')}
-              className={`py-3 px-1 font-medium text-sm border-b-2 transition-colors ${
-                activeTab === 'details'
-                  ? 'border-[#D32F2F] text-[#D32F2F]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Details
-            </button>
-            <button
               onClick={() => setActiveTab('opportunities')}
               className={`py-3 px-1 font-medium text-sm border-b-2 transition-colors flex items-center gap-2 ${
                 activeTab === 'opportunities'
@@ -103,6 +120,31 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
               {opportunities.length > 0 && (
                 <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
                   {opportunities.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`py-3 px-1 font-medium text-sm border-b-2 transition-colors ${
+                activeTab === 'details'
+                  ? 'border-[#D32F2F] text-[#D32F2F]'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Details
+            </button>
+            <button
+              onClick={() => setActiveTab('tasks')}
+              className={`py-3 px-1 font-medium text-sm border-b-2 transition-colors flex items-center gap-2 ${
+                activeTab === 'tasks'
+                  ? 'border-[#D32F2F] text-[#D32F2F]'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Tasks
+              {tasks.length > 0 && (
+                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                  {tasks.length}
                 </span>
               )}
             </button>
@@ -195,40 +237,103 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
                   <p className="text-gray-500 text-sm">No opportunities assigned yet</p>
                 </div>
               ) : (
-                opportunities.map((status) => (
+                opportunities.map((opp) => (
                   <button
-                    key={status.id}
-                    onClick={() => status.opportunity?.id && handleOpportunityClick(status.opportunity.id)}
+                    key={opp.status_id || opp.id}
+                    onClick={() => opp.id && handleOpportunityClick(opp.id)}
                     className="w-full text-left p-4 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200 group"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-gray-900 group-hover:text-[#D32F2F] transition-colors flex items-center gap-2">
-                          {status.opportunity?.title || 'Opportunity'}
+                          {opp.title || 'Opportunity'}
                           <svg className="w-4 h-4 text-gray-400 group-hover:text-[#D32F2F] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                           </svg>
                         </h4>
                         <p className="text-xs text-gray-500 mt-1">
-                          {status.opportunity?.outlet_name && `${status.opportunity.outlet_name} • `}
-                          {status.opportunity?.media_type?.replace(/_/g, ' ') || 'PR'}
+                          {opp.outlet_name && `${opp.outlet_name} • `}
+                          {opp.media_type?.replace(/_/g, ' ') || 'PR'}
                         </p>
                       </div>
-                      <StatusChip status={status.response_state || 'pending'} />
+                      <StatusChip status={opp.response_state || 'pending'} />
                     </div>
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                       <span className="flex items-center gap-1">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        Added {new Date(status.created_at).toLocaleDateString()}
+                        Added {new Date(opp.created_at).toLocaleDateString()}
                       </span>
-                      {status.responded_at && (
+                      {opp.responded_at && (
                         <span className="flex items-center gap-1">
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          Responded {new Date(status.responded_at).toLocaleDateString()}
+                          Responded {new Date(opp.responded_at).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
+          {activeTab === 'tasks' && (
+            <div className="space-y-3">
+              {loadingTasks ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D32F2F]"></div>
+                </div>
+              ) : tasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500 text-sm">No tasks for this client</p>
+                </div>
+              ) : (
+                tasks.map((task) => (
+                  <button
+                    key={task.id}
+                    onClick={handleTaskClick}
+                    className="w-full text-left p-4 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200 group"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-gray-900 group-hover:text-[#D32F2F] transition-colors flex items-center gap-2">
+                          {task.title}
+                          <svg className="w-4 h-4 text-gray-400 group-hover:text-[#D32F2F] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </h4>
+                        {task.description && (
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{task.description}</p>
+                        )}
+                      </div>
+                      <StatusChip status={task.status || 'pending'} />
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      {task.due_at ? (
+                        <span className="flex items-center gap-1">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Due {formatDistanceToNow(new Date(task.due_at), { addSuffix: true })}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">No due date</span>
+                      )}
+                      {task.priority && (
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                          task.priority === 'low' ? 'bg-gray-100 text-gray-600' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {task.priority.toUpperCase()}
                         </span>
                       )}
                     </div>

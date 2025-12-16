@@ -13,6 +13,7 @@ interface EditClientModalProps {
 export const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: client.name,
+    company_name: client.company_name || '',
     industry: client.industry || '',
     primary_contact_email: client.primary_contact_email || '',
   });
@@ -33,6 +34,7 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClos
       // Build update payload - only include fields that changed or are required
       const updateData = {
         name: formData.name,
+        company_name: formData.company_name,
         industry: formData.industry,
         primary_contact_email: formData.primary_contact_email,
       };
@@ -86,6 +88,20 @@ export const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClos
               value={formData.name}
               onChange={handleChange}
               required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Company Name
+            </label>
+            <input
+              type="text"
+              name="company_name"
+              placeholder="e.g., Acme Inc."
+              value={formData.company_name}
+              onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>

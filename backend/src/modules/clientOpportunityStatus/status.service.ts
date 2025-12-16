@@ -11,10 +11,11 @@ import { logger } from '../../utils/logger';
 import { UpdateClientOpportunityStatusInput } from '../../types';
 import { followUpTaskService } from '../followUpTask/task.service';
 import { notificationService } from '../notification/notification.service';
+import { websocketService } from '../websocket/websocket.service';
 
 // Valid state transitions for client responses
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  pending: ['interested', 'declined', 'no_response'],
+  pending: ['interested', 'accepted', 'declined', 'no_response'],
   interested: ['accepted', 'declined'],
   accepted: [],
   declined: [],
@@ -133,6 +134,22 @@ export class ClientOpportunityStatusService {
           opportunityId,
           input.response_state
         );
+
+        // Emit real-time update to all agency users
+        websocketService.emitToAgency(agencyId, 'status:updated', {
+          clientId,
+          opportunityId,
+          previousState,
+          newState: newStatus.response_state,
+          statusId: newStatus.id,
+        });
+
+        // Also emit a generic data refresh event for dashboard updates
+        websocketService.emitToAgency(agencyId, 'data:refresh', {
+          type: 'opportunity_status',
+          opportunityId,
+          clientId,
+        });
       }
 
       logger.info('Status updated', {

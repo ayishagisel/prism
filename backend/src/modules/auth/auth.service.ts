@@ -103,7 +103,8 @@ export class AuthService {
     agencyId: string,
     userId: string,
     refreshToken: string,
-    expiresAt: Date
+    expiresAt: Date,
+    userType: 'agency_user' | 'client_user' = 'agency_user'
   ): Promise<void> {
     try {
       const tokenHash = this.hashRefreshToken(refreshToken);
@@ -111,6 +112,7 @@ export class AuthService {
         id: `rt_${crypto.randomUUID()}`,
         agency_id: agencyId,
         user_id: userId,
+        user_type: userType,
         token_hash: tokenHash,
         expires_at: expiresAt,
         created_at: new Date(),
@@ -201,6 +203,88 @@ export class AuthService {
     } catch (err) {
       logger.error('Revoke all refresh tokens error', err);
       throw err;
+    }
+  }
+
+  /**
+   * Find user info by refresh token (without needing access token)
+   * This is used for token refresh when the access token has expired
+   */
+  async findUserByRefreshToken(refreshToken: string): Promise<{
+    userId: string;
+    agencyId: string;
+    userType: 'agency_user' | 'client_user';
+    email: string;
+    role: string;
+    clientId?: string;
+  } | null> {
+    try {
+      const tokenHash = this.hashRefreshToken(refreshToken);
+
+      // Find the token in database
+      const storedToken = await db.query.refreshTokens.findFirst({
+        where: eq(refreshTokens.token_hash, tokenHash),
+      });
+
+      if (!storedToken) {
+        logger.warn('Refresh token not found in database');
+        return null;
+      }
+
+      // Check if token is revoked
+      if (storedToken.revoked_at) {
+        logger.warn('Refresh token has been revoked');
+        return null;
+      }
+
+      // Check if token is expired
+      if (storedToken.expires_at < new Date()) {
+        logger.warn('Refresh token has expired');
+        return null;
+      }
+
+      // Get user info based on user type
+      const userType = storedToken.user_type as 'agency_user' | 'client_user';
+
+      if (userType === 'client_user') {
+        const clientUser = await db.query.clientUsers.findFirst({
+          where: eq(clientUsers.id, storedToken.user_id),
+        });
+
+        if (!clientUser) {
+          logger.warn('Client user not found for refresh token');
+          return null;
+        }
+
+        return {
+          userId: clientUser.id,
+          agencyId: storedToken.agency_id,
+          userType,
+          email: clientUser.email,
+          role: clientUser.role || 'CLIENT_OWNER',
+          clientId: clientUser.client_id,
+        };
+      } else {
+        const agencyUser = await db.query.agencyUsers.findFirst({
+          where: eq(agencyUsers.id, storedToken.user_id),
+        });
+
+        if (!agencyUser) {
+          logger.warn('Agency user not found for refresh token');
+          return null;
+        }
+
+        return {
+          userId: agencyUser.id,
+          agencyId: storedToken.agency_id,
+          userType,
+          email: agencyUser.email,
+          role: agencyUser.role || 'AGENCY_MEMBER',
+        };
+      }
+    } catch (err) {
+      logger.error('Find user by refresh token error', err);
+      return null;
     }
   }
 

@@ -68,7 +68,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               </div>
 
               {/* Settings */}
-              <button className="p-2 text-gray-500 hover:text-gray-700 transition-colors">
+              <Link
+                href="/client/settings"
+                className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+              >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -83,7 +86,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-              </button>
+              </Link>
             </div>
           </div>
         </div>

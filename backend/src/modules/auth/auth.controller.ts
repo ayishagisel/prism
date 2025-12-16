@@ -50,9 +50,9 @@ export class AuthController {
           try {
             const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000;
             const expiresAt = new Date(Date.now() + refreshExpiryMs);
-            await authService.saveRefreshToken(clientUser.agency_id, clientUser.id, refreshToken, expiresAt);
+            await authService.saveRefreshToken(clientUser.agency_id, clientUser.id, refreshToken, expiresAt, 'client_user');
           } catch (tokenErr) {
-            logger.warn('Could not save refresh token', tokenErr);
+            logger.warn('Could not save refresh token (table may not exist)', tokenErr);
           }
 
           return res.json({
@@ -120,65 +120,114 @@ export class AuthController {
         });
       }
 
-      // Look up user by email
-      const users = await db.query.agencyUsers.findMany({
+      // First, try to find an agency user
+      const agencyUserResult = await db.query.agencyUsers.findFirst({
         where: eq(agencyUsers.email, email.toLowerCase()),
-        limit: 1,
       });
 
-      const user = users[0];
-      if (!user || !user.password_hash) {
-        logger.warn('Login attempt for non-existent user', { email });
-        return res.status(401).json({
-          success: false,
-          error: 'Invalid email or password',
+      if (agencyUserResult && agencyUserResult.password_hash) {
+        // Agency user login
+        const passwordMatch = await authService.comparePassword(password, agencyUserResult.password_hash);
+        if (!passwordMatch) {
+          logger.warn('Login failed - password mismatch', { email });
+          return res.status(401).json({
+            success: false,
+            error: 'Invalid email or password',
+          });
+        }
+
+        logger.info('Agency user login', { email, userId: agencyUserResult.id });
+
+        const { accessToken, refreshToken } = authService.createTokenPair({
+          userId: agencyUserResult.id,
+          agencyId: agencyUserResult.agency_id,
+          email: agencyUserResult.email,
+          role: agencyUserResult.role as 'AGENCY_ADMIN' | 'AGENCY_MEMBER',
         });
-      }
 
-      // Compare password with hash
-      const passwordMatch = await authService.comparePassword(password, user.password_hash);
-      if (!passwordMatch) {
-        logger.warn('Login failed - password mismatch', { email });
-        return res.status(401).json({
-          success: false,
-          error: 'Invalid email or password',
-        });
-      }
+        try {
+          const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000;
+          const expiresAt = new Date(Date.now() + refreshExpiryMs);
+          await authService.saveRefreshToken(agencyUserResult.agency_id, agencyUserResult.id, refreshToken, expiresAt);
+        } catch (tokenErr) {
+          logger.warn('Could not save refresh token (table may not exist)', tokenErr);
+        }
 
-      // Password is correct - create token pair
-      logger.info('User login', { email, userId: user.id });
-
-      const { accessToken, refreshToken } = authService.createTokenPair({
-        userId: user.id,
-        agencyId: user.agency_id,
-        email: user.email,
-        role: user.role as 'AGENCY_ADMIN' | 'AGENCY_MEMBER' | 'CLIENT_USER',
-      });
-
-      // Save refresh token to database (optional - continue if table doesn't exist)
-      try {
-        const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000; // 30 days fallback
-        const expiresAt = new Date(Date.now() + refreshExpiryMs);
-        await authService.saveRefreshToken(user.agency_id, user.id, refreshToken, expiresAt);
-      } catch (tokenErr) {
-        logger.warn('Could not save refresh token (table may not exist)', tokenErr);
-        // Continue with login - token refresh may not work but login succeeds
-      }
-
-      res.json({
-        success: true,
-        data: {
-          accessToken,
-          refreshToken,
-          expiresIn: config.jwt.accessTokenExpiry,
-          refreshExpiresIn: config.jwt.refreshTokenExpiry,
-          user: {
-            id: user.id,
-            email: user.email,
-            agencyId: user.agency_id,
-            role: user.role,
+        return res.json({
+          success: true,
+          data: {
+            accessToken,
+            refreshToken,
+            expiresIn: config.jwt.accessTokenExpiry,
+            refreshExpiresIn: config.jwt.refreshTokenExpiry,
+            user: {
+              id: agencyUserResult.id,
+              email: agencyUserResult.email,
+              agencyId: agencyUserResult.agency_id,
+              role: agencyUserResult.role,
+            },
           },
-        },
+        });
+      }
+
+      // Next, try to find a client user
+      const clientUserResult = await db.query.clientUsers.findFirst({
+        where: eq(clientUsers.email, email.toLowerCase()),
+      });
+
+      if (clientUserResult && clientUserResult.password_hash) {
+        // Client user login
+        const passwordMatch = await authService.comparePassword(password, clientUserResult.password_hash);
+        if (!passwordMatch) {
+          logger.warn('Login failed - password mismatch', { email });
+          return res.status(401).json({
+            success: false,
+            error: 'Invalid email or password',
+          });
+        }
+
+        logger.info('Client user login', { email, userId: clientUserResult.id, clientId: clientUserResult.client_id });
+
+        const { accessToken, refreshToken } = authService.createTokenPair({
+          userId: clientUserResult.id,
+          agencyId: clientUserResult.agency_id,
+          email: clientUserResult.email,
+          role: clientUserResult.role as 'CLIENT_OWNER' | 'CLIENT_TEAM',
+          clientId: clientUserResult.client_id,
+        });
+
+        try {
+          const refreshExpiryMs = (ms as any)(config.jwt.refreshTokenExpiry) || 2592000000;
+          const expiresAt = new Date(Date.now() + refreshExpiryMs);
+          await authService.saveRefreshToken(clientUserResult.agency_id, clientUserResult.id, refreshToken, expiresAt, 'client_user');
+        } catch (tokenErr) {
+          logger.warn('Could not save refresh token (table may not exist)', tokenErr);
+        }
+
+        return res.json({
+          success: true,
+          data: {
+            accessToken,
+            refreshToken,
+            expiresIn: config.jwt.accessTokenExpiry,
+            refreshExpiresIn: config.jwt.refreshTokenExpiry,
+            user: {
+              id: clientUserResult.id,
+              email: clientUserResult.email,
+              agencyId: clientUserResult.agency_id,
+              client_id: clientUserResult.client_id,
+              role: clientUserResult.role,
+              name: clientUserResult.name,
+            },
+          },
+        });
+      }
+
+      // No user found with that email
+      logger.warn('Login attempt for non-existent user', { email });
+      res.status(401).json({
+        success: false,
+        error: 'Invalid email or password',
       });
     } catch (err) {
       logger.error('Login error', err);

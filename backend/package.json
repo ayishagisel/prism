@@ -16,6 +16,7 @@
     "test": "jest --detectOpenHandles"
   },
   "dependencies": {
+    "@types/socket.io": "^3.0.1",
     "@types/web-push": "^3.6.4",
     "bcryptjs": "^2.4.3",
     "csv-parse": "^5.5.0",
@@ -26,6 +27,7 @@
     "jsonwebtoken": "9.0.2",
     "mailparser": "^3.9.0",
     "postgres": "^3.3.5",
+    "socket.io": "^4.8.1",
     "uuid": "^9.0.0",
     "web-push": "^3.6.7"
   },

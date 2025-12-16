@@ -15,6 +15,7 @@ class ApiClient {
   private refreshToken: string | null = null;
   private isRefreshing = false;
   private refreshPromise: Promise<void> | null = null;
+  private refreshSucceeded = false;
 
   constructor() {
     this.client = axios.create({
@@ -78,15 +79,19 @@ class ApiClient {
     // If already refreshing, wait for that promise
     if (this.isRefreshing && this.refreshPromise) {
       await this.refreshPromise;
-      return !!this.accessToken;
+      return this.refreshSucceeded;
     }
 
     this.isRefreshing = true;
+    this.refreshSucceeded = false;
+
     this.refreshPromise = new Promise<void>(async (resolve) => {
       try {
         const refreshToken = this.refreshToken || (typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null);
 
         if (!refreshToken) {
+          // No refresh token available, clear tokens and fail
+          this.clearToken();
           resolve();
           return;
         }
@@ -95,16 +100,21 @@ class ApiClient {
         const response = await axios.post(`${API_URL}/api/auth/refresh`, { refreshToken }, {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.accessToken}`,
           },
         });
 
         if (response.data.success && response.data.data?.accessToken) {
           const { accessToken, refreshToken: newRefreshToken } = response.data.data;
           this.setTokens(accessToken, newRefreshToken);
+          this.refreshSucceeded = true;
+        } else {
+          // Refresh failed, clear tokens
+          this.clearToken();
         }
       } catch (err) {
         console.error('Token refresh failed:', err);
+        // Refresh failed, clear tokens
+        this.clearToken();
       } finally {
         this.isRefreshing = false;
         this.refreshPromise = null;
@@ -113,7 +123,7 @@ class ApiClient {
     });
 
     await this.refreshPromise;
-    return !!this.accessToken;
+    return this.refreshSucceeded;
   }
 
   setTokens(accessToken: string, refreshToken: string) {
@@ -157,9 +167,17 @@ class ApiClient {
   }
 
   async logout(): Promise<ApiResponse> {
-    const res = await this.client.post('/api/auth/logout');
-    this.clearToken();
-    return res.data;
+    try {
+      const res = await this.client.post('/api/auth/logout');
+      return res.data;
+    } catch (err) {
+      // Even if backend logout fails (e.g., token expired), we still want to clear local tokens
+      console.warn('Backend logout failed (clearing local tokens anyway)', err);
+      return { success: true };
+    } finally {
+      // Always clear tokens regardless of backend response
+      this.clearToken();
+    }
   }
 
   async getMe(): Promise<ApiResponse<any>> {
@@ -197,6 +215,13 @@ class ApiClient {
     return res.data;
   }
 
+  async assignClientsToOpportunity(opportunityId: string, clientIds: string[]): Promise<ApiResponse<any>> {
+    const res = await this.client.post(`/api/opportunities/${opportunityId}/assign-clients`, {
+      client_ids: clientIds,
+    });
+    return res.data;
+  }
+
   async getClients(): Promise<ApiResponse<any[]>> {
     const res = await this.client.get('/api/clients');
     return res.data;
@@ -224,6 +249,11 @@ class ApiClient {
 
   async getClientOpportunities(clientId: string): Promise<ApiResponse<any[]>> {
     const res = await this.client.get(`/api/clients/${clientId}/opportunities`);
+    return res.data;
+  }
+
+  async getClientTasks(clientId: string): Promise<ApiResponse<any[]>> {
+    const res = await this.client.get(`/api/clients/${clientId}/tasks`);
     return res.data;
   }
 
@@ -368,6 +398,19 @@ class ApiClient {
 
   async denyRestoreRequest(requestId: string, data?: { review_notes?: string }): Promise<any> {
     const res = await this.client.put(`/api/restore/requests/${requestId}/deny`, data || {});
+    return res.data;
+  }
+
+  /**
+   * Action Items Methods (Unified Queue)
+   */
+  async getActionItems(): Promise<ApiResponse<any>> {
+    const res = await this.client.get('/api/action-items');
+    return res.data;
+  }
+
+  async getActionItemsCount(): Promise<ApiResponse<{ total: number; escalated_chats: number; restore_requests: number }>> {
+    const res = await this.client.get('/api/action-items/count');
     return res.data;
   }
 

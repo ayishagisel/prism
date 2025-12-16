@@ -132,6 +132,44 @@ export const restoreRequestStatusEnum = pgEnum('restore_request_status', [
   'denied',
 ]);
 
+// Email ingestion enums
+export const emailSourceTypeEnum = pgEnum('email_source_type', [
+  'SOS',           // Source of Sources - structured multi-query
+  'TMX_DIGEST',    // TMX Messenger digest - semi-structured multi-query
+  'TMX_SINGLE',    // TMX Messenger single query - free-form
+  'MANUAL',        // Manually entered
+  'ZOHO_CRM',      // From Zoho CRM sync
+  'OTHER',         // Unknown/other source
+]);
+
+export const ingestionJobStatusEnum = pgEnum('ingestion_job_status', [
+  'received',      // Email received, not yet processed
+  'parsing',       // Currently being parsed
+  'parsed',        // Successfully parsed
+  'needs_review',  // Parsed but needs human review (low confidence)
+  'failed',        // Parsing failed
+  'completed',     // Fully processed and opportunities created
+]);
+
+export const requestTypeEnum = pgEnum('request_type', [
+  'QUOTE',              // Written quote for article
+  'EMAILED_QA',         // Answer questions via email
+  'PHONE_INTERVIEW',    // Phone call interview
+  'LIVE_VIRTUAL',       // Live virtual interview (Zoom, etc.)
+  'IN_STUDIO',          // In-person studio appearance
+  'RECORDED',           // Pre-recorded interview
+  'CONTACT_REQUEST',    // Just seeking contact info
+  'BACKGROUND',         // Background/off-record conversation
+  'OTHER',
+]);
+
+export const dedupeActionEnum = pgEnum('dedupe_action', [
+  'none',              // No duplicate detected
+  'auto_merged',       // Automatically merged (exact match)
+  'merge_suggested',   // Suggested merge (strong fingerprint match)
+  'possible_duplicate', // Possible duplicate (similarity match)
+]);
+
 // Tables
 
 export const agencies = pgTable(
@@ -167,6 +205,10 @@ export const agencyUsers = pgTable(
     status: userStatusEnum('status').default('active'),
     avatar_url: text('avatar_url'),
     last_login_at: timestamp('last_login_at'),
+    // Presence tracking for real-time features
+    is_online: boolean('is_online').default(false),
+    last_seen_at: timestamp('last_seen_at'),
+    socket_id: text('socket_id'),
     metadata: jsonb('metadata'),
     created_at: timestamp('created_at').defaultNow().notNull(),
     updated_at: timestamp('updated_at').defaultNow().notNull(),
@@ -174,6 +216,7 @@ export const agencyUsers = pgTable(
   (t) => ({
     agencyIdIdx: index('agency_users_agency_id_idx').on(t.agency_id),
     emailIdx: uniqueIndex('agency_users_email_agency_id_idx').on(t.email, t.agency_id),
+    isOnlineIdx: index('agency_users_is_online_idx').on(t.is_online),
   })
 );
 
@@ -184,9 +227,8 @@ export const refreshTokens = pgTable(
     agency_id: text('agency_id')
       .notNull()
       .references(() => agencies.id),
-    user_id: text('user_id')
-      .notNull()
-      .references(() => agencyUsers.id),
+    user_id: text('user_id').notNull(),
+    user_type: text('user_type').notNull().default('agency_user'), // 'agency_user' or 'client_user'
     token_hash: text('token_hash').notNull(),
     expires_at: timestamp('expires_at').notNull(),
     revoked_at: timestamp('revoked_at'),
@@ -209,6 +251,7 @@ export const clients = pgTable(
       .references(() => agencies.id),
     zoho_id: text('zoho_id'), // Zoho Account ID for sync tracking
     name: text('name').notNull(),
+    company_name: text('company_name'),
     industry: text('industry'),
     primary_contact_name: text('primary_contact_name'),
     primary_contact_email: text('primary_contact_email'),
@@ -240,7 +283,12 @@ export const clientUsers = pgTable(
     password_hash: text('password_hash'),
     role: clientUserRoleEnum('role').notNull(),
     status: userStatusEnum('status').default('active'),
+    avatar_url: text('avatar_url'),
     last_login_at: timestamp('last_login_at'),
+    // Presence tracking for real-time features
+    is_online: boolean('is_online').default(false),
+    last_seen_at: timestamp('last_seen_at'),
+    socket_id: text('socket_id'),
     metadata: jsonb('metadata'),
     created_at: timestamp('created_at').defaultNow().notNull(),
     updated_at: timestamp('updated_at').defaultNow().notNull(),
@@ -249,6 +297,7 @@ export const clientUsers = pgTable(
     agencyIdIdx: index('client_users_agency_id_idx').on(t.agency_id),
     clientIdIdx: index('client_users_client_id_idx').on(t.client_id),
     emailIdx: uniqueIndex('client_users_email_client_id_idx').on(t.email, t.client_id),
+    isOnlineIdx: index('client_users_is_online_idx').on(t.is_online),
   })
 );
 
@@ -466,6 +515,162 @@ export const zohoTokens = pgTable(
   })
 );
 
+// ============================================
+// EMAIL INGESTION TABLES
+// ============================================
+
+// Ingestion Jobs - tracks processing of incoming emails
+export const ingestionJobs = pgTable(
+  'ingestion_jobs',
+  {
+    id: text('id').primaryKey(),
+    agency_id: text('agency_id')
+      .notNull()
+      .references(() => agencies.id),
+    // Email metadata
+    email_message_id: text('email_message_id'), // Unique message ID from email server
+    email_from: text('email_from').notNull(),
+    email_to: text('email_to'),
+    email_subject: text('email_subject').notNull(),
+    email_body_text: text('email_body_text').notNull(),
+    email_body_html: text('email_body_html'),
+    email_received_at: timestamp('email_received_at'),
+    email_has_attachments: boolean('email_has_attachments').default(false),
+    // Zoho-specific metadata
+    zoho_folder_id: text('zoho_folder_id'),
+    zoho_thread_id: text('zoho_thread_id'),
+    // Source detection
+    source_type: emailSourceTypeEnum('source_type'), // SOS, TMX_DIGEST, TMX_SINGLE, OTHER
+    // Processing status
+    status: ingestionJobStatusEnum('status').default('received'),
+    parsed_query_count: text('parsed_query_count').default('0'), // How many queries extracted
+    processing_started_at: timestamp('processing_started_at'),
+    processing_completed_at: timestamp('processing_completed_at'),
+    processing_error: text('processing_error'),
+    processing_error_details: jsonb('processing_error_details'),
+    // Raw storage
+    raw_webhook_payload: jsonb('raw_webhook_payload'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    agencyIdIdx: index('ingestion_jobs_agency_id_idx').on(t.agency_id),
+    statusIdx: index('ingestion_jobs_status_idx').on(t.status),
+    emailMessageIdIdx: uniqueIndex('ingestion_jobs_email_message_id_idx').on(t.email_message_id),
+    sourceTypeIdx: index('ingestion_jobs_source_type_idx').on(t.source_type),
+    receivedAtIdx: index('ingestion_jobs_received_at_idx').on(t.email_received_at),
+  })
+);
+
+// Parsed Queries - individual opportunities extracted from emails
+// One email (ingestionJob) can contain multiple queries (SOS has 5-10 per email)
+export const parsedQueries = pgTable(
+  'parsed_queries',
+  {
+    id: text('id').primaryKey(),
+    agency_id: text('agency_id')
+      .notNull()
+      .references(() => agencies.id),
+    ingestion_job_id: text('ingestion_job_id')
+      .notNull()
+      .references(() => ingestionJobs.id),
+    // Position in source email (for multi-query emails)
+    query_index: text('query_index').default('0'), // 0, 1, 2, ... position in email
+    // Parsed fields - CLIENT-SAFE (what clients can see)
+    headline: text('headline'), // e.g., "Here's the Minimum Net Worth to Be Considered Upper Class by 2027"
+    summary: text('summary'),
+    category: text('category'), // e.g., "Business and Finance"
+    vertical: text('vertical'), // Industry vertical
+    // Request details
+    request_type: requestTypeEnum('request_type'), // QUOTE, EMAILED_QA, LIVE_VIRTUAL, etc.
+    query_text: text('query_text'), // Full original query/request text
+    expert_roles: jsonb('expert_roles').default('[]'), // ["CFP", "Finance Expert"]
+    expert_constraints: jsonb('expert_constraints').default('[]'), // ["US-based only"]
+    questions: jsonb('questions').default('[]'), // Array of questions to answer
+    deliverable_instructions: jsonb('deliverable_instructions').default('[]'),
+    // Deadline
+    deadline_date: text('deadline_date'), // "2025-12-17"
+    deadline_time: text('deadline_time'), // "12:00 pm"
+    deadline_timezone: text('deadline_timezone'), // "Eastern Standard Time"
+    deadline_at: timestamp('deadline_at'), // Computed full timestamp
+    is_hard_deadline: boolean('is_hard_deadline').default(true),
+    // Broadcast/Interview scheduling (for live appearances)
+    broadcast_scheduled_at: timestamp('broadcast_scheduled_at'),
+    broadcast_duration_minutes: text('broadcast_duration_minutes'),
+    broadcast_format: text('broadcast_format'), // LIVE_VIRTUAL, IN_STUDIO, RECORDED
+    broadcast_notes: text('broadcast_notes'),
+    // Geography
+    locations_mentioned: jsonb('locations_mentioned').default('[]'),
+    // Tags
+    topic_tags: jsonb('topic_tags').default('[]'),
+    // AGENCY-ONLY fields (never exposed to clients)
+    journalist_name: text('journalist_name'),
+    journalist_title: text('journalist_title'),
+    journalist_email: text('journalist_email'),
+    journalist_reply_alias: text('journalist_reply_alias'), // TMX send+xxx@tmxmessenger.com
+    journalist_muckrack_url: text('journalist_muckrack_url'),
+    outlet_name: text('outlet_name'),
+    outlet_website: text('outlet_website'),
+    // Dedupe
+    dedupe_fingerprint: text('dedupe_fingerprint'), // Hash for near-duplicate detection
+    dedupe_action: dedupeActionEnum('dedupe_action').default('none'),
+    duplicate_of_query_id: text('duplicate_of_query_id'), // If duplicate, points to original
+    similar_query_ids: jsonb('similar_query_ids').default('[]'), // IDs of similar (not duplicate) queries
+    // Parse quality
+    parse_confidence: decimal('parse_confidence', { precision: 3, scale: 2 }), // 0.00-1.00
+    parse_method: text('parse_method'), // "regex", "llm", "hybrid"
+    // Review status
+    status: text('status').default('pending_review'), // pending_review, approved, assigned, discarded
+    reviewed_by_user_id: text('reviewed_by_user_id').references(() => agencyUsers.id),
+    reviewed_at: timestamp('reviewed_at'),
+    review_notes: text('review_notes'),
+    // Assignment
+    assigned_client_ids: jsonb('assigned_client_ids').default('[]'),
+    assigned_by_user_id: text('assigned_by_user_id').references(() => agencyUsers.id),
+    assigned_at: timestamp('assigned_at'),
+    // Link to created opportunity (after approval)
+    published_opportunity_id: text('published_opportunity_id').references(() => opportunities.id),
+    published_at: timestamp('published_at'),
+    // Metadata
+    metadata: jsonb('metadata'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    agencyIdIdx: index('parsed_queries_agency_id_idx').on(t.agency_id),
+    ingestionJobIdIdx: index('parsed_queries_ingestion_job_id_idx').on(t.ingestion_job_id),
+    statusIdx: index('parsed_queries_status_idx').on(t.status),
+    deadlineIdx: index('parsed_queries_deadline_at_idx').on(t.deadline_at),
+    dedupeIdx: index('parsed_queries_dedupe_fingerprint_idx').on(t.dedupe_fingerprint),
+    publishedOppIdx: index('parsed_queries_published_opp_idx').on(t.published_opportunity_id),
+  })
+);
+
+// Parse Evidence - anti-hallucination tracking
+// Links extracted fields to exact text spans in source email
+export const parseEvidence = pgTable(
+  'parse_evidence',
+  {
+    id: text('id').primaryKey(),
+    parsed_query_id: text('parsed_query_id')
+      .notNull()
+      .references(() => parsedQueries.id),
+    field_name: text('field_name').notNull(), // e.g., "deadline_date", "journalist_email"
+    field_value: text('field_value'), // The extracted value
+    excerpt: text('excerpt').notNull(), // The source text that supports this extraction
+    start_char: text('start_char'), // Character offset in source
+    end_char: text('end_char'),
+    confidence: decimal('confidence', { precision: 3, scale: 2 }), // 0.00-1.00
+    created_at: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => ({
+    parsedQueryIdIdx: index('parse_evidence_parsed_query_id_idx').on(t.parsed_query_id),
+    fieldNameIdx: index('parse_evidence_field_name_idx').on(t.field_name),
+  })
+);
+
+// Keep legacy table for backward compatibility but mark as deprecated
+// TODO: Migrate any existing data and remove this table
 export const pendingOpportunities = pgTable(
   'pending_opportunities',
   {
