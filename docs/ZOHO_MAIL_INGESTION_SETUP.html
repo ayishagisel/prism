@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRISM Email Ingestion: Zoho Flow Setup Guide</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #fff;
+    }
+
+    h1 {
+      color: #1a1a2e;
+      border-bottom: 3px solid #4361ee;
+      padding-bottom: 15px;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      color: #1a1a2e;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    h3 {
+      color: #4361ee;
+      margin-top: 25px;
+    }
+
+    pre {
+      background: #f4f4f8;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 15px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+
+    code {
+      background: #f4f4f8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    th {
+      background: #4361ee;
+      color: white;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background: #f9f9fb;
+    }
+
+    .diagram {
+      background: #1a1a2e;
+      color: #4ade80;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.4;
+    }
+
+    .step-number {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      background: #4361ee;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .info {
+      background: #e7f1ff;
+      border-left: 4px solid #4361ee;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .success {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+
+    .checklist li {
+      padding: 8px 0;
+      padding-left: 30px;
+      position: relative;
+    }
+
+    .checklist li::before {
+      content: "☐";
+      position: absolute;
+      left: 0;
+      color: #4361ee;
+      font-size: 18px;
+    }
+
+    .toc {
+      background: #f9f9fb;
+      padding: 20px 30px;
+      border-radius: 8px;
+      margin: 30px 0;
+    }
+
+    .toc h3 {
+      margin-top: 0;
+      color: #1a1a2e;
+    }
+
+    .toc ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .toc li {
+      padding: 5px 0;
+    }
+
+    .toc a {
+      color: #4361ee;
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      text-decoration: underline;
+    }
+
+    @media print {
+      body {
+        padding: 20px;
+        font-size: 11pt;
+      }
+
+      h2 {
+        page-break-before: auto;
+      }
+
+      pre, .diagram {
+        font-size: 9pt;
+      }
+
+      table {
+        font-size: 10pt;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>PRISM Email Ingestion<br><small style="font-weight: normal; color: #666;">Zoho Flow Setup Guide</small></h1>
+
+<p><strong>Version:</strong> 1.0 | <strong>Last Updated:</strong> December 2025</p>
+
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ul>
+    <li><a href="#overview">1. Overview</a></li>
+    <li><a href="#prerequisites">2. Prerequisites</a></li>
+    <li><a href="#step1">3. Step 1: Create a Zoho Flow</a></li>
+    <li><a href="#step2">4. Step 2: Configure the Trigger</a></li>
+    <li><a href="#step3">5. Step 3: Add Webhook Action</a></li>
+    <li><a href="#step4">6. Step 4: Set Up Security</a></li>
+    <li><a href="#step5">7. Step 5: Test the Flow</a></li>
+    <li><a href="#step6">8. Step 6: Activate the Flow</a></li>
+    <li><a href="#payload">9. Webhook Payload Reference</a></li>
+    <li><a href="#sources">10. Supported Email Sources</a></li>
+    <li><a href="#env">11. Environment Variables</a></li>
+    <li><a href="#endpoints">12. API Endpoints</a></li>
+    <li><a href="#troubleshooting">13. Troubleshooting</a></li>
+  </ul>
+</div>
+
+<h2 id="overview">1. Overview</h2>
+
+<p>This guide explains how to configure Zoho Flow to automatically send emails from Amore's media query folder to PRISM for parsing and processing.</p>
+
+<div class="diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                      ZOHO MAIL                                       │
+│         (Media Queries Folder - SOS, TMX, etc.)                     │
+└─────────────────────┬───────────────────────────────────────────────┘
+                      │ Trigger: New Email Arrives
+                      ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      ZOHO FLOW                                       │
+│                 (Automation Workflow)                                │
+└─────────────────────┬───────────────────────────────────────────────┘
+                      │ Action: HTTP POST
+                      ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                 PRISM WEBHOOK                                        │
+│           POST /api/ingest/webhook                                  │
+└─────────────────────┬───────────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│              PRISM PARSES & STORES                                   │
+│         → ingestion_jobs table (raw email)                          │
+│         → parsed_queries table (extracted opportunities)            │
+│         → parse_evidence table (citations)                          │
+└─────────────────────────────────────────────────────────────────────┘
+</div>
+
+<h2 id="prerequisites">2. Prerequisites</h2>
+
+<ul class="checklist">
+  <li><strong>Zoho Account</strong> with access to Zoho Mail and Zoho Flow</li>
+  <li><strong>PRISM Backend</strong> deployed and accessible via public URL (or ngrok for testing)</li>
+  <li><strong>Email folder</strong> in Zoho Mail where media queries are filtered</li>
+</ul>
+
+<h2 id="step1">3. Step 1: Create a Zoho Flow</h2>
+
+<ol>
+  <li>Go to <a href="https://flow.zoho.com">https://flow.zoho.com</a></li>
+  <li>Click <strong>Create Flow</strong> → <strong>Start from scratch</strong></li>
+  <li>Name it: <code>PRISM Media Query Ingestion</code></li>
+</ol>
+
+<h2 id="step2">4. Step 2: Configure the Trigger</h2>
+
+<ol>
+  <li><strong>App:</strong> Select <strong>Zoho Mail</strong></li>
+  <li><strong>Trigger:</strong> Select <strong>New Email</strong></li>
+  <li><strong>Configure:</strong>
+    <ul>
+      <li><strong>Account:</strong> Select your Zoho Mail account</li>
+      <li><strong>Folder:</strong> Select the folder where media queries are filtered (e.g., <code>Media Queries</code> or <code>Opportunities</code>)</li>
+      <li><strong>Include:</strong> Email content (body text and HTML)</li>
+    </ul>
+  </li>
+</ol>
+
+<h2 id="step3">5. Step 3: Add Webhook Action</h2>
+
+<ol>
+  <li>Click <strong>+</strong> to add an action</li>
+  <li><strong>App:</strong> Select <strong>Webhooks</strong></li>
+  <li><strong>Action:</strong> Select <strong>POST</strong></li>
+</ol>
+
+<h3>URL Configuration</h3>
+
+<pre><code>https://your-prism-domain.com/api/ingest/webhook</code></pre>
+
+<p>For local testing with ngrok:</p>
+<pre><code>https://abc123.ngrok.io/api/ingest/webhook</code></pre>
+
+<h3>Headers</h3>
+
+<pre><code>{
+  "Content-Type": "application/json"
+}</code></pre>
+
+<h3>Body (JSON)</h3>
+
+<pre><code>{
+  "from": "${trigger.from_email}",
+  "to": "${trigger.to_email}",
+  "subject": "${trigger.subject}",
+  "body_text": "${trigger.content}",
+  "body_html": "${trigger.html_content}",
+  "received_at": "${trigger.received_time}",
+  "message_id": "${trigger.message_id}",
+  "folder_id": "${trigger.folder_id}",
+  "has_attachments": "${trigger.has_attachment}",
+  "api_key": "YOUR_SECRET_API_KEY"
+}</code></pre>
+
+<h2 id="step4">6. Step 4: Set Up Security</h2>
+
+<h3>Option A: API Key (Recommended)</h3>
+
+<p><span class="step-number">1</span> Generate a secure random string:</p>
+
+<pre><code>openssl rand -hex 32</code></pre>
+
+<p>Output: <code>a1b2c3d4e5f6...</code> (64 characters)</p>
+
+<p><span class="step-number">2</span> Add to your PRISM <code>.env</code> file:</p>
+
+<pre><code>INGEST_WEBHOOK_API_KEY=a1b2c3d4e5f6...
+DEFAULT_AGENCY_ID=agency_aopr</code></pre>
+
+<p><span class="step-number">3</span> Use the same key in the Zoho Flow webhook body</p>
+
+<h3>Option B: IP Whitelist (Additional security)</h3>
+
+<p>Zoho Flow requests come from these IP ranges:</p>
+<ul>
+  <li><code>136.143.184.0/22</code></li>
+  <li><code>52.204.134.0/24</code></li>
+</ul>
+
+<h2 id="step5">7. Step 5: Test the Flow</h2>
+
+<h3>Using Zoho Flow Test</h3>
+
+<ol>
+  <li>Click <strong>Test</strong> in Zoho Flow</li>
+  <li>Select a sample email from your folder</li>
+  <li>Check the webhook response</li>
+</ol>
+
+<h3>Using PRISM Test Endpoint</h3>
+
+<p>Test parsing without saving to the database:</p>
+
+<pre><code>curl -X POST https://your-prism-domain.com/api/ingest/test \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "peter@shankman.com",
+    "subject": "[SOS] Monday Afternoon Media Queries",
+    "body_text": "1) SUMMARY: Test Query\nCATEGORY: Business\n..."
+  }'</code></pre>
+
+<h2 id="step6">8. Step 6: Activate the Flow</h2>
+
+<ol>
+  <li>Review all settings</li>
+  <li>Click <strong>Turn ON</strong> in Zoho Flow</li>
+  <li>The flow will now automatically process new emails</li>
+</ol>
+
+<div class="success">
+  <strong>Success!</strong> Once activated, all new emails arriving in your media queries folder will be automatically sent to PRISM for parsing.
+</div>
+
+<h2 id="payload">9. Webhook Payload Reference</h2>
+
+<h3>Request Format</h3>
+
+<table>
+  <tr>
+    <th>Field</th>
+    <th>Type</th>
+    <th>Required</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>from</code></td>
+    <td>string</td>
+    <td>Yes</td>
+    <td>Sender email address</td>
+  </tr>
+  <tr>
+    <td><code>to</code></td>
+    <td>string</td>
+    <td>No</td>
+    <td>Recipient email address</td>
+  </tr>
+  <tr>
+    <td><code>subject</code></td>
+    <td>string</td>
+    <td>Yes</td>
+    <td>Email subject line</td>
+  </tr>
+  <tr>
+    <td><code>body_text</code></td>
+    <td>string</td>
+    <td>Yes</td>
+    <td>Plain text body</td>
+  </tr>
+  <tr>
+    <td><code>body_html</code></td>
+    <td>string</td>
+    <td>No</td>
+    <td>HTML body (if available)</td>
+  </tr>
+  <tr>
+    <td><code>received_at</code></td>
+    <td>string</td>
+    <td>No</td>
+    <td>ISO 8601 timestamp</td>
+  </tr>
+  <tr>
+    <td><code>message_id</code></td>
+    <td>string</td>
+    <td>No</td>
+    <td>Unique email ID (for dedupe)</td>
+  </tr>
+  <tr>
+    <td><code>folder_id</code></td>
+    <td>string</td>
+    <td>No</td>
+    <td>Zoho folder ID</td>
+  </tr>
+  <tr>
+    <td><code>has_attachments</code></td>
+    <td>boolean</td>
+    <td>No</td>
+    <td>Whether email has attachments</td>
+  </tr>
+  <tr>
+    <td><code>api_key</code></td>
+    <td>string</td>
+    <td>No</td>
+    <td>Security key (if configured)</td>
+  </tr>
+</table>
+
+<h3>Response Format</h3>
+
+<p><strong>Success (200)</strong></p>
+<pre><code>{
+  "success": true,
+  "data": {
+    "ingestionJobId": "abc123...",
+    "sourceType": "SOS",
+    "queriesCreated": 7
+  }
+}</code></pre>
+
+<p><strong>Duplicate (200)</strong></p>
+<pre><code>{
+  "success": false,
+  "error": "Duplicate email - already processed",
+  "data": {
+    "ingestionJobId": "existing-job-id"
+  }
+}</code></pre>
+
+<h2 id="sources">10. Supported Email Sources</h2>
+
+<p>PRISM automatically detects and parses these email formats:</p>
+
+<table>
+  <tr>
+    <th>Source</th>
+    <th>Detection</th>
+    <th>Parser</th>
+    <th>Confidence</th>
+  </tr>
+  <tr>
+    <td><strong>SOS (Source of Sources)</strong></td>
+    <td>Subject contains <code>[SOS]</code></td>
+    <td>Regex-based</td>
+    <td>95%</td>
+  </tr>
+  <tr>
+    <td><strong>TMX Messenger Digest</strong></td>
+    <td>Subject contains <code>TMX</code> + <code>Newsroom</code></td>
+    <td>Regex + Structure</td>
+    <td>85%</td>
+  </tr>
+  <tr>
+    <td><strong>TMX Messenger Single</strong></td>
+    <td>From TMX or TMX reply email</td>
+    <td>Regex + Optional LLM</td>
+    <td>70-90%</td>
+  </tr>
+  <tr>
+    <td><strong>Other/Unknown</strong></td>
+    <td>Fallback</td>
+    <td>TMX Single + LLM</td>
+    <td>Variable</td>
+  </tr>
+</table>
+
+<h3>SOS Fields Extracted</h3>
+<ul>
+  <li>Summary, Category</li>
+  <li>Journalist Name, Email, MuckRack URL</li>
+  <li>Media Outlet, Website</li>
+  <li>Deadline Date, Time, Timezone</li>
+  <li>Full query text</li>
+</ul>
+
+<h3>TMX Digest Fields Extracted</h3>
+<ul>
+  <li>Category, Title, Synopsis</li>
+  <li>Outlet name</li>
+  <li>Reply email alias</li>
+</ul>
+
+<h3>TMX Single Fields Extracted</h3>
+<ul>
+  <li>Outlet, Journalist title</li>
+  <li>Story topic, Expert types</li>
+  <li>Questions, Deadline</li>
+</ul>
+
+<h2 id="env">11. Environment Variables</h2>
+
+<p>Add these to your PRISM backend <code>.env</code> file:</p>
+
+<pre><code># Email Ingestion
+INGEST_WEBHOOK_API_KEY=your-secure-random-key
+DEFAULT_AGENCY_ID=agency_aopr
+
+# Optional: LLM for enhanced parsing
+OPENAI_API_KEY=sk-...
+# OR
+ANTHROPIC_API_KEY=sk-ant-...</code></pre>
+
+<h2 id="endpoints">12. API Endpoints</h2>
+
+<table>
+  <tr>
+    <th>Endpoint</th>
+    <th>Method</th>
+    <th>Auth</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>/api/ingest/webhook</code></td>
+    <td>POST</td>
+    <td>API Key</td>
+    <td>Receive emails from Zoho Flow</td>
+  </tr>
+  <tr>
+    <td><code>/api/ingest/test</code></td>
+    <td>POST</td>
+    <td>None</td>
+    <td>Test parsing without saving</td>
+  </tr>
+  <tr>
+    <td><code>/api/ingest/pending</code></td>
+    <td>GET</td>
+    <td>JWT</td>
+    <td>Get pending queries</td>
+  </tr>
+  <tr>
+    <td><code>/api/ingest/jobs</code></td>
+    <td>GET</td>
+    <td>JWT</td>
+    <td>View job history</td>
+  </tr>
+  <tr>
+    <td><code>/api/ingest/queries/:id</code></td>
+    <td>GET</td>
+    <td>JWT</td>
+    <td>Get query with evidence</td>
+  </tr>
+  <tr>
+    <td><code>/api/ingest/queries/:id/approve</code></td>
+    <td>POST</td>
+    <td>JWT</td>
+    <td>Approve a query</td>
+  </tr>
+  <tr>
+    <td><code>/api/ingest/queries/:id/discard</code></td>
+    <td>POST</td>
+    <td>JWT</td>
+    <td>Discard a query</td>
+  </tr>
+  <tr>
+    <td><code>/api/ingest/queries/:id/assign</code></td>
+    <td>POST</td>
+    <td>JWT</td>
+    <td>Assign to clients</td>
+  </tr>
+</table>
+
+<h2 id="troubleshooting">13. Troubleshooting</h2>
+
+<h3>Emails not being processed</h3>
+<ol>
+  <li>Check Zoho Flow execution history</li>
+  <li>Verify webhook URL is accessible</li>
+  <li>Check PRISM logs: <code>docker logs prism-backend</code></li>
+  <li>Test webhook manually with curl</li>
+</ol>
+
+<h3>Duplicate detection not working</h3>
+<ul>
+  <li>Ensure <code>message_id</code> is included in webhook payload</li>
+  <li>Check <code>email_message_id</code> column in <code>ingestion_jobs</code> table</li>
+</ul>
+
+<h3>Parser not detecting source type</h3>
+<ul>
+  <li>Test with <code>/api/ingest/test</code> endpoint</li>
+  <li>Check source detection indicators in response</li>
+  <li>Verify email format matches expected patterns</li>
+</ul>
+
+<h3>Low parse confidence</h3>
+<ul>
+  <li>For TMX Single queries, configure LLM API keys</li>
+  <li>Review parse evidence in query detail view</li>
+</ul>
+
+<div class="info">
+  <strong>Need Help?</strong> Contact the development team for assistance with setup or troubleshooting.
+</div>
+
+<hr style="margin-top: 50px;">
+
+<p style="text-align: center; color: #666; font-size: 12px;">
+  PRISM Email Ingestion Setup Guide | AOPR LLC | December 2025
+</p>
+
+</body>
+</html>

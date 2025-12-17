@@ -345,6 +345,11 @@ class ApiClient {
     return res.data;
   }
 
+  async getChatMessagesForAgency(opportunityId: string, clientId: string): Promise<ApiResponse<any>> {
+    const res = await this.client.get(`/api/chat/${opportunityId}/messages/${clientId}`);
+    return res.data;
+  }
+
   async escalateChatToAOPR(opportunityId: string): Promise<ApiResponse<any>> {
     const res = await this.client.post(`/api/chat/${opportunityId}/escalate`);
     return res.data;
@@ -357,6 +362,11 @@ class ApiClient {
 
   async sendAOPRResponse(opportunityId: string, clientId: string, message: string): Promise<ApiResponse<any>> {
     const res = await this.client.post(`/api/chat/${opportunityId}/aopr-response`, { clientId, message });
+    return res.data;
+  }
+
+  async getUnreadChatCounts(): Promise<ApiResponse<Record<string, number>>> {
+    const res = await this.client.get('/api/chat/unread-counts');
     return res.data;
   }
 

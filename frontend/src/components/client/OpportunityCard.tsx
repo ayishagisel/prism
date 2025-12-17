@@ -20,6 +20,7 @@ interface OpportunityCardProps {
   clientId?: string;
   existingRestoreRequest?: RestoreRequestInfo | null;
   onRestoreRequested?: () => void;
+  unreadCount?: number;
 }
 
 export const OpportunityCard: React.FC<OpportunityCardProps> = ({
@@ -34,6 +35,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
   clientId,
   existingRestoreRequest,
   onRestoreRequested,
+  unreadCount = 0,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -129,8 +131,19 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
       {/* Card header with gradient */}
       <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
-        {/* Title */}
-        <h3 className="text-xl font-semibold text-gray-900">{displayTitle}</h3>
+        {/* Title with unread badge */}
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-semibold text-gray-900 flex-1">{displayTitle}</h3>
+          {unreadCount > 0 && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500 text-white text-xs font-semibold rounded-full animate-pulse">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+              </svg>
+              <span>{unreadCount} new</span>
+            </div>
+          )}
+        </div>
 
         {/* Tags row */}
         <div className="flex items-center gap-2 mt-2">
@@ -239,15 +252,30 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           </div>
 
           {responseState === 'interested' && (
-            <button
-              onClick={() => onStatusChange(opportunity.id, 'accepted')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#3BB253] to-[#339944] hover:from-[#339944] hover:to-[#2d8a3c] text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              Accept Now
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => onAskQuestions(opportunity.id)}
+                className={`inline-flex items-center gap-2 px-4 py-2 ${
+                  showInlineChat
+                    ? 'bg-gray-200 text-gray-700'
+                    : 'bg-gradient-to-r from-[#D32F2F] to-[#C62828] hover:from-[#C62828] hover:to-[#B71C1C] text-white shadow-sm hover:shadow-md'
+                } text-sm font-medium rounded-lg transition-all duration-200`}
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                </svg>
+                {showInlineChat ? 'Hide Chat' : unreadCount > 0 ? `View Chat (${unreadCount} new)` : 'View Chat'}
+              </button>
+              <button
+                onClick={() => onStatusChange(opportunity.id, 'accepted')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#3BB253] to-[#339944] hover:from-[#339944] hover:to-[#2d8a3c] text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Accept Now
+              </button>
+            </div>
           )}
 
           {responseState === 'accepted' && (

@@ -17,6 +17,9 @@
  * - Falls back to regex if LLM fails
  */
 
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { ParsedQuery, ParseEvidence, RequestType } from './types';
 
 export interface TMXSingleQuery {
@@ -271,24 +274,36 @@ async function parseWithLLM(bodyText: string): Promise<TMXSingleParseResult | nu
 
 /**
  * Get available LLM provider
+ * Note: LLM packages (openai, @anthropic-ai/sdk) are optional dependencies.
+ * If not installed, LLM parsing will be skipped.
  */
 function getLLMProvider(): LLMProvider | null {
   if (process.env.OPENAI_API_KEY) {
     return {
       name: 'openai',
       async extract(prompt: string): Promise<string> {
-        // Dynamic import to avoid loading if not needed
-        const { OpenAI } = await import('openai');
-        const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        try {
+          // Dynamic require to avoid loading if not installed
+          // @ts-ignore - openai is an optional dependency
+          const OpenAI = require('openai').OpenAI;
+          const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-        const response = await client.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }],
-          response_format: { type: 'json_object' },
-          temperature: 0,
-        });
+          const response = await client.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0,
+          });
 
-        return response.choices[0]?.message?.content || '{}';
+          return response.choices[0]?.message?.content || '{}';
+        } catch (err: any) {
+          if (err.code === 'MODULE_NOT_FOUND') {
+            console.warn('OpenAI package not installed. Run: npm install openai');
+          } else {
+            console.warn('OpenAI extraction failed:', err.message);
+          }
+          return '{}';
+        }
       },
     };
   }
@@ -297,22 +312,33 @@ function getLLMProvider(): LLMProvider | null {
     return {
       name: 'anthropic',
       async extract(prompt: string): Promise<string> {
-        const Anthropic = (await import('@anthropic-ai/sdk')).default;
-        const client = new Anthropic({
-          apiKey: process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY,
-        });
+        try {
+          // Dynamic require to avoid loading if not installed
+          // @ts-ignore - @anthropic-ai/sdk is an optional dependency
+          const Anthropic = require('@anthropic-ai/sdk').default;
+          const client = new Anthropic({
+            apiKey: process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY,
+          });
 
-        const response = await client.messages.create({
-          model: 'claude-3-haiku-20240307',
-          max_tokens: 1024,
-          messages: [{ role: 'user', content: prompt }],
-        });
+          const response = await client.messages.create({
+            model: 'claude-3-haiku-20240307',
+            max_tokens: 1024,
+            messages: [{ role: 'user', content: prompt }],
+          });
 
-        const content = response.content[0];
-        if (content.type === 'text') {
-          return content.text;
+          const content = response.content[0];
+          if (content.type === 'text') {
+            return content.text;
+          }
+          return '{}';
+        } catch (err: any) {
+          if (err.code === 'MODULE_NOT_FOUND') {
+            console.warn('Anthropic package not installed. Run: npm install @anthropic-ai/sdk');
+          } else {
+            console.warn('Anthropic extraction failed:', err.message);
+          }
+          return '{}';
         }
-        return '{}';
       },
     };
   }

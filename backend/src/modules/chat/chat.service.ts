@@ -1,7 +1,8 @@
 import { db } from '../../config/db';
-import { opportunityChats, opportunities, clients } from '../../db/schema';
+import { opportunityChats, opportunities, clients, clientUsers } from '../../db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import { websocketService } from '../websocket/websocket.service';
 
 interface SendMessageParams {
   agencyId: string;
@@ -79,6 +80,20 @@ export class ChatService {
 
       // Mark conversation as escalated
       await this.markAsEscalated(opportunityId, clientId);
+
+      // Get client and opportunity info for notification
+      const [client] = await db.select().from(clients).where(eq(clients.id, clientId)).limit(1);
+      const [opportunity] = await db.select().from(opportunities).where(eq(opportunities.id, opportunityId)).limit(1);
+
+      // Notify agency of escalated chat via WebSocket
+      websocketService.emitToAgency(agencyId, 'chat:escalated', {
+        opportunityId,
+        clientId,
+        clientName: client?.name || 'Unknown Client',
+        opportunityTitle: opportunity?.title || 'Unknown Opportunity',
+        message: clientMessage,
+        escalationReason: botResponse.escalationReason,
+      });
 
       aiMessage = systemMsg as any;
     } else {
@@ -362,6 +377,61 @@ export class ChatService {
   }
 
   /**
+   * Get unread message counts for a client across their opportunities
+   * Returns a map of opportunityId -> unread count (AOPR responses not seen by client)
+   */
+  async getUnreadCounts(agencyId: string, clientId: string): Promise<Record<string, number>> {
+    // Get all AOPR responses for this client that are newer than the last client message
+    const messages = await db
+      .select({
+        opportunityId: opportunityChats.opportunity_id,
+        messageType: opportunityChats.message_type,
+        createdAt: opportunityChats.created_at,
+      })
+      .from(opportunityChats)
+      .where(
+        and(
+          eq(opportunityChats.agency_id, agencyId),
+          eq(opportunityChats.client_id, clientId)
+        )
+      )
+      .orderBy(opportunityChats.created_at);
+
+    // Group by opportunity and count unread AOPR responses
+    const unreadCounts: Record<string, number> = {};
+    const lastClientMessageTime: Record<string, Date> = {};
+
+    for (const msg of messages) {
+      const oppId = msg.opportunityId;
+
+      // Track last client message time per opportunity
+      if (msg.messageType === 'client_question') {
+        lastClientMessageTime[oppId] = msg.createdAt;
+        // Reset unread count when client sends a message (they're active in chat)
+        unreadCounts[oppId] = 0;
+      }
+
+      // Count AOPR responses after the last client message
+      if (msg.messageType === 'aopr_response') {
+        const lastTime = lastClientMessageTime[oppId];
+        if (!lastTime || msg.createdAt > lastTime) {
+          unreadCounts[oppId] = (unreadCounts[oppId] || 0) + 1;
+        }
+      }
+    }
+
+    return unreadCounts;
+  }
+
+  /**
+   * Check if there are any unread messages for a specific opportunity
+   */
+  async hasUnreadMessages(agencyId: string, clientId: string, opportunityId: string): Promise<boolean> {
+    const counts = await this.getUnreadCounts(agencyId, clientId);
+    return (counts[opportunityId] || 0) > 0;
+  }
+
+  /**
    * AOPR sends a response to an escalated chat
    */
   async sendAOPRResponse(
@@ -389,6 +459,22 @@ export class ChatService {
         metadata: {},
       })
       .returning();
+
+    // Get opportunity info for context
+    const [opportunity] = await db.select().from(opportunities).where(eq(opportunities.id, opportunityId)).limit(1);
+
+    // Find all client users for this client and notify them
+    const clientUserList = await db.select().from(clientUsers).where(eq(clientUsers.client_id, clientId));
+
+    for (const clientUser of clientUserList) {
+      // Emit to each client user individually
+      await websocketService.emitToUser(clientUser.id, 'client_user', 'chat:message', {
+        opportunityId,
+        clientId,
+        opportunityTitle: opportunity?.title || 'Unknown Opportunity',
+        message: aoprMessage,
+      });
+    }
 
     return aoprMessage as any;
   }

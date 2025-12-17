@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import TabNavigation from '@/components/client/TabNavigation';
 import { OpportunityCard } from '@/components/client/OpportunityCard';
@@ -9,6 +9,7 @@ import { ContactAOPRChat } from '@/components/client/ContactAOPRChat';
 import { RestoreRequestButton } from '@/components/client/RestoreRequestButton';
 import { apiClient } from '@/lib/api';
 import { Opportunity } from '@/lib/types';
+import { useSocket } from '@/lib/socket';
 
 type TabType = 'new' | 'interested' | 'accepted' | 'declined';
 
@@ -25,6 +26,8 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const { subscribe, isConnected } = useSocket();
 
   // Inline chat state - track which opportunity has chat open
   const [inlineChatOpportunityId, setInlineChatOpportunityId] = useState<string | null>(null);
@@ -34,10 +37,42 @@ export default function ClientDashboard() {
   const [contactChatOpportunityId, setContactChatOpportunityId] = useState<string | null>(null);
   const [contactChatOpportunityTitle, setContactChatOpportunityTitle] = useState<string>('');
 
-  // Fetch opportunities on mount
+  // Fetch unread counts
+  const fetchUnreadCounts = useCallback(async () => {
+    try {
+      const response = await apiClient.getUnreadChatCounts();
+      if (response.success && response.data) {
+        setUnreadCounts(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching unread counts:', err);
+    }
+  }, []);
+
+  // Handle incoming WebSocket messages - update unread counts
+  const handleIncomingMessage = useCallback((data: any) => {
+    if (data.opportunityId && data.message?.messageType === 'aopr_response') {
+      // Increment unread count for this opportunity
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [data.opportunityId]: (prev[data.opportunityId] || 0) + 1,
+      }));
+    }
+  }, []);
+
+  // Subscribe to WebSocket for real-time unread updates
+  useEffect(() => {
+    const unsubscribe = subscribe('chat:message', handleIncomingMessage);
+    return () => {
+      unsubscribe();
+    };
+  }, [subscribe, handleIncomingMessage]);
+
+  // Fetch opportunities and unread counts on mount
   useEffect(() => {
     fetchOpportunities();
-  }, []);
+    fetchUnreadCounts();
+  }, [fetchUnreadCounts]);
 
   const fetchOpportunities = async () => {
     try {
@@ -111,6 +146,13 @@ export default function ClientDashboard() {
 
   // Handle "Ask Questions" click - always shows inline chat
   const handleAskQuestions = (opportunityId: string) => {
+    // If opening chat, clear unread count for this opportunity
+    if (inlineChatOpportunityId !== opportunityId) {
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [opportunityId]: 0,
+      }));
+    }
     // Toggle inline chat for this opportunity
     setInlineChatOpportunityId(
       inlineChatOpportunityId === opportunityId ? null : opportunityId
@@ -268,6 +310,7 @@ export default function ClientDashboard() {
                 }
                 clientId={clientId || undefined}
                 onRestoreRequested={fetchOpportunities}
+                unreadCount={unreadCounts[opp.id] || 0}
               />
             ))
           )}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { apiClient } from '@/lib/api';
-import { useSocket, WebSocketEvent } from '@/lib/socket';
+import { useSocket } from '@/lib/socket';
 
 interface ChatMessage {
   id: string;
@@ -20,16 +20,20 @@ interface ChatMessage {
   created_at?: string;
 }
 
-interface QAChatProps {
+interface AgencyChatModalProps {
   opportunityId: string;
   opportunityTitle: string;
+  clientId: string;
+  clientName: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const QAChat: React.FC<QAChatProps> = ({
+export const AgencyChatModal: React.FC<AgencyChatModalProps> = ({
   opportunityId,
   opportunityTitle,
+  clientId,
+  clientName,
   isOpen,
   onClose,
 }) => {
@@ -42,10 +46,8 @@ export const QAChat: React.FC<QAChatProps> = ({
 
   // Handle incoming WebSocket messages
   const handleIncomingMessage = useCallback((data: any) => {
-    // Only add message if it's for this opportunity
     if (data.opportunityId === opportunityId && data.message) {
       setMessages((prev) => {
-        // Check if message already exists to avoid duplicates
         const exists = prev.some((msg) => msg.id === data.message.id);
         if (exists) return prev;
         return [...prev, data.message];
@@ -57,6 +59,7 @@ export const QAChat: React.FC<QAChatProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
+    // Listen for new client messages on this chat
     const unsubscribe = subscribe('chat:message', handleIncomingMessage);
     return () => {
       unsubscribe();
@@ -82,8 +85,8 @@ export const QAChat: React.FC<QAChatProps> = ({
   const fetchMessages = async () => {
     try {
       setIsLoading(true);
-      const response = await apiClient.getChatMessages(opportunityId);
-      // Response is the direct backend response: { messages: [...] }
+      // Use the agency-specific endpoint that accepts clientId
+      const response = await apiClient.getChatMessagesForAgency(opportunityId, clientId);
       if (response && (response as any).messages) {
         setMessages((response as any).messages);
       }
@@ -102,21 +105,16 @@ export const QAChat: React.FC<QAChatProps> = ({
     setIsSending(true);
 
     try {
-      const response = await apiClient.sendChatMessage(opportunityId, messageText);
+      const response = await apiClient.sendAOPRResponse(opportunityId, clientId, messageText);
 
-      // Response is the direct backend response: { clientMessage: {...}, aiResponse?: {...} }
-      // Add client message
-      if (response && (response as any).clientMessage) {
-        setMessages((prev) => [...prev, (response as any).clientMessage]);
-      }
-
-      // Add AI response if present
-      if (response && (response as any).aiResponse) {
-        setMessages((prev) => [...prev, (response as any).aiResponse]);
+      if (response.success && (response as any).data) {
+        setMessages((prev) => [...prev, (response as any).data]);
+      } else if ((response as any).message) {
+        // Direct message object returned
+        setMessages((prev) => [...prev, (response as any).message]);
       }
     } catch (error) {
       console.error('Failed to send message:', error);
-      // Restore message on error
       setInputMessage(messageText);
     } finally {
       setIsSending(false);
@@ -159,24 +157,14 @@ export const QAChat: React.FC<QAChatProps> = ({
     const isAOPR = messageType === 'aopr_response';
     const isSystem = messageType === 'system_message';
 
+    // For agency view: Agency/AI messages on LEFT, Client messages on RIGHT
+    const isAgencySide = isAOPR || isAI;
+
     if (isSystem) {
       return (
-        <div key={msg.id} className="flex items-start gap-3 mb-4">
-          {/* Avatar */}
-          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-amber-100 text-amber-600">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-
-          {/* Message bubble */}
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium text-gray-700">System</span>
-            </div>
-            <div className="px-4 py-2 rounded-lg max-w-md bg-amber-50 text-gray-900 border border-amber-200">
-              <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
-            </div>
+        <div key={msg.id} className="flex justify-center mb-4">
+          <div className="px-4 py-2 rounded-lg bg-amber-50 text-gray-700 border border-amber-200 text-sm max-w-md text-center">
+            {msg.message}
             <div className="text-xs text-gray-500 mt-1">
               {formatTimestamp(msg.createdAt || msg.created_at)}
             </div>
@@ -195,31 +183,27 @@ export const QAChat: React.FC<QAChatProps> = ({
           className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
             isClient
               ? 'bg-blue-100 text-blue-600'
-              : isAI
-              ? 'bg-red-100 text-red-600'
-              : 'bg-gray-100 text-gray-600'
+              : isAOPR
+              ? 'bg-red-600 text-white'
+              : 'bg-purple-100 text-purple-600'
           }`}
         >
           {isClient ? (
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
                 d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
                 clipRule="evenodd"
               />
             </svg>
-          ) : isAI ? (
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          ) : isAOPR ? (
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
               <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
             </svg>
           ) : (
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                clipRule="evenodd"
-              />
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
             </svg>
           )}
         </div>
@@ -229,10 +213,10 @@ export const QAChat: React.FC<QAChatProps> = ({
           {/* Sender name and badge */}
           <div className={`flex items-center gap-2 mb-1 ${isClient ? 'flex-row-reverse' : ''}`}>
             <span className="text-xs font-medium text-gray-700">
-              {isClient ? 'You' : isAI ? 'AI Assistant' : 'AOPR Team'}
+              {isClient ? clientName : isAOPR ? 'You' : 'AI Assistant'}
             </span>
             {isAI && (
-              <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">
+              <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full font-medium">
                 AI-Assisted
               </span>
             )}
@@ -240,10 +224,12 @@ export const QAChat: React.FC<QAChatProps> = ({
 
           {/* Message content */}
           <div
-            className={`px-4 py-2 rounded-lg max-w-md ${
+            className={`px-4 py-2.5 rounded-2xl max-w-md ${
               isClient
-                ? 'bg-red-600 text-white'
-                : 'bg-white text-gray-900 border border-gray-200'
+                ? 'bg-blue-100 text-gray-900 rounded-br-md'
+                : isAOPR
+                ? 'bg-red-600 text-white rounded-bl-md'
+                : 'bg-purple-50 text-gray-900 border border-purple-200 rounded-bl-md'
             }`}
           >
             <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
@@ -268,28 +254,25 @@ export const QAChat: React.FC<QAChatProps> = ({
         onClick={onClose}
       />
 
-      {/* Chat panel sliding from right */}
-      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
-        {/* Header */}
-        <div className="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
-          <div className="flex-1 pr-4">
-            <h2 className="text-lg font-semibold truncate">{opportunityTitle}</h2>
+      {/* Chat panel - positioned above the floating button */}
+      <div className="fixed right-6 bottom-24 w-96 h-[450px] bg-white shadow-2xl z-50 flex flex-col rounded-lg overflow-hidden">
+        {/* Header - compact */}
+        <div className="bg-[#D32F2F] text-white px-4 py-3 flex items-center justify-between flex-shrink-0">
+          <div className="flex-1 pr-3 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-sm text-red-100">Ask questions about this opportunity</p>
+              <h2 className="text-sm font-semibold truncate">{clientName}</h2>
               {isConnected && (
-                <span className="flex items-center gap-1 text-xs text-green-200">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                  Live
-                </span>
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0"></span>
               )}
             </div>
+            <p className="text-xs text-red-100 truncate mt-0.5">Re: {opportunityTitle}</p>
           </div>
           <button
             onClick={onClose}
             className="text-white hover:text-red-100 transition-colors flex-shrink-0"
             aria-label="Close chat"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -300,8 +283,8 @@ export const QAChat: React.FC<QAChatProps> = ({
           </button>
         </div>
 
-        {/* Messages area */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50">
+        {/* Messages area - scrollable */}
+        <div className="flex-1 overflow-y-auto px-4 py-3 bg-gray-50 min-h-0">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -320,7 +303,7 @@ export const QAChat: React.FC<QAChatProps> = ({
                 </div>
                 <h3 className="text-sm font-medium text-gray-900 mb-1">No messages yet</h3>
                 <p className="text-xs text-gray-500">
-                  Ask a question about this opportunity and our AI assistant will help you!
+                  Start the conversation with {clientName}
                 </p>
               </div>
             </div>
@@ -332,34 +315,29 @@ export const QAChat: React.FC<QAChatProps> = ({
           )}
         </div>
 
-        {/* Input area */}
-        <div className="border-t border-gray-200 bg-white px-6 py-4">
-          <div className="flex items-end gap-3">
-            <div className="flex-1">
-              <textarea
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your question here..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-                rows={3}
-                disabled={isSending}
-                maxLength={2000}
-              />
-              <div className="text-xs text-gray-500 mt-1 text-right">
-                {inputMessage.length}/2000
-              </div>
-            </div>
+        {/* Input area - compact */}
+        <div className="border-t border-gray-200 bg-white px-4 py-3 flex-shrink-0">
+          <div className="flex items-end gap-2">
+            <textarea
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type your response..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-sm"
+              rows={2}
+              disabled={isSending}
+              maxLength={2000}
+            />
             <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isSending}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center h-10 w-10"
+              className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center h-10 w-10 flex-shrink-0"
               aria-label="Send message"
             >
               {isSending ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               ) : (
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                 </svg>
               )}
@@ -370,3 +348,5 @@ export const QAChat: React.FC<QAChatProps> = ({
     </>
   );
 };
+
+export default AgencyChatModal;

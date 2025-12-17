@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { apiClient } from '@/lib/api';
+import { useSocket } from '@/lib/socket';
 
 interface ChatMessage {
   id: string;
@@ -35,6 +36,26 @@ export const InlineQAChat: React.FC<InlineQAChatProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { subscribe, isConnected } = useSocket();
+
+  // Handle incoming WebSocket messages
+  const handleIncomingMessage = useCallback((data: any) => {
+    if (data.opportunityId === opportunityId && data.message) {
+      setMessages((prev) => {
+        const exists = prev.some((msg) => msg.id === data.message.id);
+        if (exists) return prev;
+        return [...prev, data.message];
+      });
+    }
+  }, [opportunityId]);
+
+  // Subscribe to WebSocket events
+  useEffect(() => {
+    const unsubscribe = subscribe('chat:message', handleIncomingMessage);
+    return () => {
+      unsubscribe();
+    };
+  }, [subscribe, handleIncomingMessage]);
 
   // Fetch messages on mount
   useEffect(() => {
@@ -202,7 +223,15 @@ export const InlineQAChat: React.FC<InlineQAChatProps> = ({
             <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
           </svg>
           <div>
-            <h3 className="font-medium text-sm">Q&A Chat</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-sm">Q&A Chat</h3>
+              {isConnected && (
+                <span className="flex items-center gap-1 text-xs text-green-200">
+                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                  Live
+                </span>
+              )}
+            </div>
             <p className="text-xs text-red-100 truncate max-w-[200px]">{opportunityTitle}</p>
           </div>
         </div>

@@ -15,6 +15,7 @@ import { csvController } from './modules/csv/csv.controller';
 import { emailController } from './modules/email/email.controller';
 import { zohoController } from './modules/zoho/zoho.controller';
 import { emailIngestController } from './modules/email-ingest/email.controller';
+import { ingestController } from './modules/email-ingest/ingest.controller';
 import { notificationController } from './modules/notifications/notification.controller';
 import { dashboardController } from './modules/dashboard/dashboard.controller';
 import { ChatController } from './modules/chat/chat.controller';
@@ -148,11 +149,29 @@ export const createApp = () => {
   // Zoho Webhook (no auth required - Zoho has own verification)
   app.post('/api/webhooks/zoho', (req, res) => zohoController.handleWebhook(req, res));
 
-  // Email Ingestion Routes
+  // Email Ingestion Routes (Legacy - using pendingOpportunities table)
   app.get('/api/opportunities/pending-review', authMiddleware, (req, res) => emailIngestController.getPendingOpportunities(req, res));
   app.post('/api/opportunities/pending-review/:id/assign', authMiddleware, (req, res) => emailIngestController.assignToClients(req, res));
   app.post('/api/opportunities/pending-review/:id/discard', authMiddleware, (req, res) => emailIngestController.discardOpportunity(req, res));
   app.post('/api/email-ingest/poll', authMiddleware, (req, res) => emailIngestController.pollEmails(req, res));
+
+  // New Email Ingestion Routes (using parsedQueries table)
+  // Webhook endpoint - receives emails from Zoho Flow (no auth - uses API key)
+  app.post('/api/ingest/webhook', (req, res) => ingestController.receiveWebhook(req, res));
+  // Test endpoint - parse email without saving
+  app.post('/api/ingest/test', (req, res) => ingestController.testParse(req, res));
+  // Get pending parsed queries
+  app.get('/api/ingest/pending', authMiddleware, (req, res) => ingestController.getPendingQueries(req, res));
+  // Get ingestion jobs
+  app.get('/api/ingest/jobs', authMiddleware, (req, res) => ingestController.getIngestionJobs(req, res));
+  // Get specific query with evidence
+  app.get('/api/ingest/queries/:id', authMiddleware, (req, res) => ingestController.getQueryDetail(req, res));
+  // Approve a query
+  app.post('/api/ingest/queries/:id/approve', authMiddleware, (req, res) => ingestController.approveQuery(req, res));
+  // Discard a query
+  app.post('/api/ingest/queries/:id/discard', authMiddleware, (req, res) => ingestController.discardQuery(req, res));
+  // Assign query to clients
+  app.post('/api/ingest/queries/:id/assign', authMiddleware, (req, res) => ingestController.assignToClients(req, res));
 
   // Notification routes
   app.post('/api/notifications/subscribe', authMiddleware, (req, res) => notificationController.subscribe(req, res));
@@ -164,7 +183,9 @@ export const createApp = () => {
 
   // Chat routes
   app.post('/api/chat/:opportunityId/message', authMiddleware, (req, res) => chatController.sendMessage(req, res));
+  app.get('/api/chat/unread-counts', authMiddleware, (req, res) => chatController.getUnreadCounts(req, res));
   app.get('/api/chat/:opportunityId/messages', authMiddleware, (req, res) => chatController.getMessages(req, res));
+  app.get('/api/chat/:opportunityId/messages/:clientId', authMiddleware, (req, res) => chatController.getMessagesForAgency(req, res));
   app.post('/api/chat/:opportunityId/escalate', authMiddleware, (req, res) => chatController.escalateToAOPR(req, res));
   app.get('/api/chat/escalated', authMiddleware, (req, res) => chatController.getEscalatedChats(req, res));
   app.post('/api/chat/:opportunityId/aopr-response', authMiddleware, (req, res) => chatController.sendAOPRResponse(req, res));

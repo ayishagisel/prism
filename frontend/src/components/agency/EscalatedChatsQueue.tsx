@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/lib/api';
+import { useSocket } from '@/lib/socket';
 
 interface EscalatedChat {
   chat_id: string;
@@ -25,6 +26,21 @@ export const EscalatedChatsQueue: React.FC<EscalatedChatsQueueProps> = ({
   const [chats, setChats] = useState<EscalatedChat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { subscribe, isConnected } = useSocket();
+
+  // Handle incoming escalated chat notification via WebSocket
+  const handleEscalatedChat = useCallback((data: any) => {
+    // Refetch the full list to get the updated escalated chats
+    fetchEscalatedChats();
+  }, []);
+
+  // Subscribe to chat:escalated WebSocket events
+  useEffect(() => {
+    const unsubscribe = subscribe('chat:escalated', handleEscalatedChat);
+    return () => {
+      unsubscribe();
+    };
+  }, [subscribe, handleEscalatedChat]);
 
   useEffect(() => {
     fetchEscalatedChats();
@@ -107,6 +123,12 @@ export const EscalatedChatsQueue: React.FC<EscalatedChatsQueueProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-bold text-gray-900">Escalated Q&A</h3>
+            {isConnected && (
+              <span className="flex items-center gap-1 text-xs text-green-600">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                Live
+              </span>
+            )}
             {chats.length > 0 && (
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>

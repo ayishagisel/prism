@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/lib/api';
 import { useSocket } from '@/lib/socket';
+import { AgencyChatModal } from './AgencyChatModal';
 
 /**
  * Action item types from the unified queue
@@ -34,6 +35,8 @@ interface ActionItemsQueueProps {
   maxItems?: number;
   showHeader?: boolean;
   className?: string;
+  /** Compact mode hides inline response UI and opens modal directly on click */
+  compactMode?: boolean;
 }
 
 /**
@@ -46,12 +49,14 @@ export function ActionItemsQueue({
   maxItems = 10,
   showHeader = true,
   className = '',
+  compactMode = false,
 }: ActionItemsQueueProps) {
   const [items, setItems] = useState<ActionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [responseText, setResponseText] = useState<{ [key: string]: string }>({});
+  const [selectedChat, setSelectedChat] = useState<ActionItem | null>(null);
 
   const { subscribe, isConnected } = useSocket();
 
@@ -299,35 +304,49 @@ export function ActionItemsQueue({
               {/* Summary/Message preview */}
               <p className="text-sm text-gray-600 mb-3 line-clamp-2">{item.summary}</p>
 
-              {/* Actions based on type */}
+              {/* Actions based on type and mode */}
               {item.type === 'escalated_chat' ? (
-                <div className="space-y-2">
-                  <textarea
-                    value={responseText[item.id] || ''}
-                    onChange={(e) =>
-                      setResponseText((prev) => ({ ...prev, [item.id]: e.target.value }))
-                    }
-                    placeholder="Type your response..."
-                    className="w-full p-2 text-sm border rounded-lg resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    rows={2}
-                    disabled={processingId === item.id}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleSendResponse(item)}
-                      disabled={!responseText[item.id]?.trim() || processingId === item.id}
-                      className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {processingId === item.id ? 'Sending...' : 'Send Response'}
-                    </button>
-                    <button
-                      onClick={() => onItemSelect?.(item)}
-                      className="px-3 py-1.5 border border-gray-300 text-sm rounded-lg hover:bg-gray-50"
-                    >
-                      View Full Chat
-                    </button>
+                compactMode ? (
+                  /* Compact mode: single button to open modal */
+                  <button
+                    onClick={() => setSelectedChat(item)}
+                    className="w-full px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
+                  >
+                    <span>Respond to Chat</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </button>
+                ) : (
+                  /* Full mode: inline textarea + buttons */
+                  <div className="space-y-2">
+                    <textarea
+                      value={responseText[item.id] || ''}
+                      onChange={(e) =>
+                        setResponseText((prev) => ({ ...prev, [item.id]: e.target.value }))
+                      }
+                      placeholder="Type your response..."
+                      className="w-full p-2 text-sm border rounded-lg resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      rows={2}
+                      disabled={processingId === item.id}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleSendResponse(item)}
+                        disabled={!responseText[item.id]?.trim() || processingId === item.id}
+                        className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {processingId === item.id ? 'Sending...' : 'Send Response'}
+                      </button>
+                      <button
+                        onClick={() => setSelectedChat(item)}
+                        className="px-3 py-1.5 border border-gray-300 text-sm rounded-lg hover:bg-gray-50"
+                      >
+                        View Full Chat
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )
               ) : (
                 <div className="flex gap-2">
                   <button
@@ -355,6 +374,21 @@ export function ActionItemsQueue({
             </div>
           ))}
         </div>
+      )}
+
+      {/* Agency Chat Modal */}
+      {selectedChat && selectedChat.type === 'escalated_chat' && (
+        <AgencyChatModal
+          opportunityId={selectedChat.opportunity_id}
+          opportunityTitle={selectedChat.opportunity_title}
+          clientId={selectedChat.client_id}
+          clientName={selectedChat.client_name}
+          isOpen={true}
+          onClose={() => {
+            setSelectedChat(null);
+            fetchItems(); // Refresh items after closing chat
+          }}
+        />
       )}
     </div>
   );

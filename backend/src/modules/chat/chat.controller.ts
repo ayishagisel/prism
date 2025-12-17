@@ -203,10 +203,74 @@ export class ChatController {
 
       const aoprMessage = await chatService.sendAOPRResponse(agencyId, opportunityId, clientId, aoprUserId, message);
 
-      res.status(200).json({ aoprMessage });
+      // Return in format expected by frontend
+      res.status(200).json({ success: true, message: aoprMessage });
     } catch (error) {
       console.error('Error sending AOPR response:', error);
       res.status(500).json({ error: 'Failed to send AOPR response' });
+    }
+  }
+
+  /**
+   * GET /api/chat/unread-counts
+   * Get unread message counts for all opportunities (for client users)
+   */
+  async getUnreadCounts(req: Request, res: Response): Promise<void> {
+    try {
+      const agencyId = req.auth?.agencyId;
+      const userId = req.auth?.userId;
+
+      if (!agencyId || !userId) {
+        res.status(401).json({ error: 'Unauthorized - Client authentication required' });
+        return;
+      }
+
+      // Get client user info to retrieve clientId
+      const clientUser = await db.query.clientUsers.findFirst({
+        where: eq(clientUsers.id, userId),
+      });
+
+      if (!clientUser) {
+        res.status(401).json({ error: 'Client user not found' });
+        return;
+      }
+
+      const clientId = clientUser.client_id;
+      const unreadCounts = await chatService.getUnreadCounts(agencyId, clientId);
+
+      res.status(200).json({ success: true, data: unreadCounts });
+    } catch (error) {
+      console.error('Error fetching unread counts:', error);
+      res.status(500).json({ error: 'Failed to fetch unread counts' });
+    }
+  }
+
+  /**
+   * GET /api/chat/:opportunityId/messages/:clientId
+   * Get all messages for an opportunity chat (for AOPR/Agency users)
+   */
+  async getMessagesForAgency(req: Request, res: Response): Promise<void> {
+    try {
+      const { opportunityId, clientId } = req.params;
+      const agencyId = req.auth?.agencyId;
+      const role = req.auth?.role;
+
+      if (!agencyId || (role !== 'AGENCY_ADMIN' && role !== 'AGENCY_MEMBER')) {
+        res.status(401).json({ error: 'Unauthorized - AOPR authentication required' });
+        return;
+      }
+
+      if (!clientId) {
+        res.status(400).json({ error: 'Client ID is required' });
+        return;
+      }
+
+      const messages = await chatService.getMessages(agencyId, opportunityId, clientId);
+
+      res.status(200).json({ messages });
+    } catch (error) {
+      console.error('Error fetching messages for agency:', error);
+      res.status(500).json({ error: 'Failed to fetch messages' });
     }
   }
 }

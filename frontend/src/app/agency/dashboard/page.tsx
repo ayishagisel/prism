@@ -6,6 +6,7 @@ import { useOpportunities, useTasks, useClients } from '@/lib/hooks';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Clock } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { ActionItemsQueue } from '@/components/agency/ActionItemsQueue';
 
 // Tooltip component for KPI info icons
 const InfoTooltip: React.FC<{ content: string }> = ({ content }) => {
@@ -53,6 +54,9 @@ export default function DashboardPage() {
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedResponse, setSelectedResponse] = useState('');
   const [selectedKpiFilter, setSelectedKpiFilter] = useState<'active' | 'accepted' | 'interested' | null>(null);
+
+  // Chat panel state
+  const [isChatPanelOpen, setIsChatPanelOpen] = useState(false);
 
   // Handle KPI card click - toggle filter
   const handleKpiCardClick = (filter: 'active' | 'accepted' | 'interested') => {
@@ -545,67 +549,62 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Tasks - 1 column */}
+          {/* Right Column - Tasks */}
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-gray-900">Tasks</h2>
-                <span className="px-1.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
-                  {tasks.filter((t: any) => t.status === 'pending').length}
-                </span>
-              </div>
-              <Link
-                href="/agency/tasks"
-                className="text-xs text-[#D32F2F] hover:text-[#C62828] font-medium"
-              >
-                View All
-              </Link>
-            </div>
-
-            {/* Tasks List */}
-            <div className="flex-1 overflow-auto divide-y divide-gray-100">
-              {recentTasks.length === 0 ? (
-                <div className="p-4 text-center">
-                  <p className="text-gray-500 text-sm">No tasks yet</p>
+              {/* Header */}
+              <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-bold text-gray-900">Tasks</h2>
+                  <span className="px-1.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
+                    {tasks.filter((t: any) => t.status === 'pending').length}
+                  </span>
                 </div>
-              ) : (
-                recentTasks.map((task: any) => (
-                  <div key={task.id} className="px-4 py-3 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-start gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                          task.priority === 'high'
-                            ? 'bg-red-500'
-                            : task.priority === 'medium'
-                            ? 'bg-yellow-500'
-                            : 'bg-green-500'
-                        }`}
-                      ></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 text-sm truncate">{task.title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${
-                            task.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : task.status === 'in_progress'
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-green-100 text-green-700'
-                          }`}>
-                            {task.status === 'in_progress' ? 'In Progress' : task.status}
-                          </span>
-                          {task.due_at && (
-                            <span className="text-xs text-gray-500">
-                              {new Date(task.due_at).toLocaleDateString()}
+                <Link
+                  href="/agency/tasks"
+                  className="text-xs text-[#D32F2F] hover:text-[#C62828] font-medium"
+                >
+                  View All
+                </Link>
+              </div>
+
+              {/* Tasks List */}
+              <div className="flex-1 overflow-auto divide-y divide-gray-100">
+                {recentTasks.length === 0 ? (
+                  <div className="p-4 text-center">
+                    <p className="text-gray-500 text-sm">No tasks yet</p>
+                  </div>
+                ) : (
+                  recentTasks.slice(0, 3).map((task: any) => (
+                    <div key={task.id} className="px-4 py-2 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-start gap-2">
+                        <div
+                          className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                            task.priority === 'high'
+                              ? 'bg-red-500'
+                              : task.priority === 'medium'
+                              ? 'bg-yellow-500'
+                              : 'bg-green-500'
+                          }`}
+                        ></div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 text-sm truncate">{task.title}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${
+                              task.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : task.status === 'in_progress'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-green-100 text-green-700'
+                            }`}>
+                              {task.status === 'in_progress' ? 'In Progress' : task.status}
                             </span>
-                          )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
+                  ))
+                )}
+              </div>
           </div>
 
         </div>
@@ -693,6 +692,45 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Floating Chat Button */}
+      <button
+        onClick={() => setIsChatPanelOpen(!isChatPanelOpen)}
+        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all z-40 ${
+          isChatPanelOpen
+            ? 'bg-gray-600 hover:bg-gray-700'
+            : 'bg-[#D32F2F] hover:bg-[#C62828]'
+        }`}
+      >
+        {isChatPanelOpen ? (
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <>
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            {escalatedChatsCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full flex items-center justify-center">
+                {escalatedChatsCount}
+              </span>
+            )}
+          </>
+        )}
+      </button>
+
+      {/* Action Items Panel */}
+      {isChatPanelOpen && (
+        <div className="fixed bottom-24 right-6 w-96 max-h-[70vh] bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden z-30">
+          <ActionItemsQueue
+            maxItems={5}
+            showHeader={true}
+            compactMode={true}
+            className="max-h-[70vh] overflow-auto"
+          />
+        </div>
+      )}
     </div>
   );
 }

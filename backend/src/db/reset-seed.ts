@@ -675,7 +675,7 @@ async function resetSeed() {
       },
     ];
 
-    await db.insert(opportunities).values(allOpportunities);
+    await db.insert(opportunities).values(allOpportunities as any);
 
     logger.info('Fresh opportunities created (unassigned)');
 
