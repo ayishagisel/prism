@@ -13,8 +13,10 @@ const httpServer = createServer(app);
 // Initialize WebSocket service
 websocketService.initialize(httpServer);
 
-httpServer.listen(port, () => {
+// Bind to 0.0.0.0 to accept connections from outside (required for Railway/Docker)
+httpServer.listen(port, '0.0.0.0', () => {
   logger.info(`Server running on port ${port}`);
+  logger.info(`Listening on 0.0.0.0:${port}`);
   logger.info(`Environment: ${config.server.env}`);
   logger.info('WebSocket service initialized');
   if (config.demoMode) {
