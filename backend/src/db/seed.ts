@@ -12,7 +12,7 @@ import { v4 as uuid } from 'uuid';
 import { logger } from '../utils/logger';
 import bcryptjs from 'bcryptjs';
 
-async function seed() {
+export async function seed() {
   try {
     logger.info('Starting database seed...');
 

@@ -56,6 +56,18 @@ export const createApp = () => {
     res.json({ status: 'ok' });
   });
 
+  // One-time seed endpoint (remove after seeding production)
+  app.post('/api/seed', async (req: Request, res: Response) => {
+    try {
+      const { seed } = await import('./db/seed');
+      await seed();
+      res.json({ success: true, message: 'Database seeded successfully' });
+    } catch (error: any) {
+      logger.error('Seed failed', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // Auth routes (no auth required)
   app.post('/api/auth/login', (req, res) => authController.login(req, res));
   app.post('/api/auth/register', (req, res) => authController.registerAgency(req, res));
